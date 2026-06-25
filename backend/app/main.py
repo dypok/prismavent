@@ -5,7 +5,7 @@ from app.models import user
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Prysm API", version="1.0.0")
+app = FastAPI(title="Prismavent API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,4 +17,4 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "API de Prysm conectada y lista"}
+    return {"message": "API de Prismavent conectada y lista"}
