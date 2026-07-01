@@ -4,7 +4,7 @@ import avatarIcon from "../assets/icons/avatar_icon.svg";
 
 export function Topbar(userName = "Carlos") {
   return `
-    <header class="flex justify-end items-center h-20 px-12 bg-white">
+    <header class="flex justify-end items-center h-20 px-12 bg-[#FFF8F1]">
 
       <p class="text-sm text-[#4D4637] mr-8">
         Good morning, ${userName}
