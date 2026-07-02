@@ -17,7 +17,6 @@ class RegisterRequest(BaseModel):
 def register(payload: RegisterRequest):
     try:
         supabase_client = get_supabase_client()
-        # Llama a supabase.auth.sign_up() con credenciales y metadatos del usuario
         response = supabase_client.auth.sign_up({
             "email": payload.email,
             "password": payload.password,
