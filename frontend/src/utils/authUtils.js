@@ -1,7 +1,13 @@
+const TOKEN_KEY = "prismavent_access_token";
+
 export function isAuthenticated() {
-  return !!localStorage.getItem("token");
+  return !!localStorage.getItem(TOKEN_KEY);
 }
 
 export function logout() {
-  localStorage.removeItem("token");
+  localStorage.removeItem(TOKEN_KEY);
+}
+
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
 }

@@ -1,3 +1,5 @@
+import { login } from "../service/api.js";
+
 export function Auth() {
     return `
         <div class="min-h-screen bg-[#F8F5F0] flex items-center justify-center p-6 font-sans">
@@ -163,18 +165,26 @@ window.closeModalAndRedirect = function() {
 // ====================== MANEJO DE FORMULARIOS ======================
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Login
-    const loginForm = document.getElementById('login-form');
+    // Login
+    const loginForm = document.getElementById("login-form");
+
     if (loginForm) {
-        loginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    // TODO: reemplazar con el verdadero JWT cuando la autenticacion del backend sea integrada 
-    localStorage.setItem("token", "temp-token");
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-    window.history.pushState({}, "", "/dashboard");
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
 
-    window.dispatchEvent(new PopStateEvent("popstate"));
-    });
+            try {
+                await login(email, password);
+
+                window.history.pushState({}, "", "/dashboard");
+                window.dispatchEvent(new PopStateEvent("popstate"));
+
+            } catch (error) {
+                alert(error.message);
+            }
+       });
 }
 
   // Registro
