@@ -87,7 +87,7 @@ export function Auth() {
                     <div class="relative">
                         <input type="password" id="signup-password" placeholder="Crea una contraseña segura" 
                             class="w-full px-5 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#C9A84C] text-base">
-                        <𓁺button type="button" onclick="togglePassword(this)" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xl">𓁺</button>
+                        <button type="button" onclick="togglePassword(this)" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xl">𓁺</button>
                     </div>
                     </div>
 

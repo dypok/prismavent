@@ -25,6 +25,11 @@ function renderPage() {
     
   // Rutas del Dashboard
   } else if (path === '/dashboard' || path === '/home') {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+}
     document.querySelector("#app").innerHTML = `
       <div class="flex h-screen">
         ${Sidebar("dashboard")}

@@ -2,6 +2,14 @@ import dashboardIcon from "../assets/icons/dashboard_icon.svg";
 import eventsIcon from "../assets/icons/events_icon.svg";
 import historyIcon from "../assets/icons/history_icon.svg";
 import providersIcon from "../assets/icons/providers_icon.svg";
+import { logout } from "../utils/authUtils.js";
+
+window.handleLogout = function () {
+  logout();
+
+  window.history.pushState({}, "", "/login");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};
 
 const menuItems = [
   {
@@ -92,12 +100,22 @@ export function Sidebar(active = "dashboard") {
 
             </div>
 
-            <div class="px-6 pb-6">
-                <button
-                    class="w-full bg-[#C9A84C] text-white py-3 rounded-md font-medium hover:bg-[#b89539] transition"
+            <div class="px-6 space-y-3">
+
+              <button
+                 class="w-full bg-[#C9A84C] text-white py-3 rounded-lg font-medium hover:bg-[#b89539] transition"
+              >
+                  + New Event
+              </button>
+
+               <button
+                  id="logout-btn"
+                  onclick="handleLogout()"
+                  class="w-full border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-100 transition"
                 >
-                    + New Event
-                </button>
+                        Cerrar sesión
+              </button>
+
             </div>
 
         </aside>
