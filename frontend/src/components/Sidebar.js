@@ -11,6 +11,11 @@ window.handleLogout = function () {
   window.dispatchEvent(new PopStateEvent("popstate"));
 };
 
+window.goToCreateEvent = function () {
+  window.history.pushState({}, "", "/events/new");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};
+
 const menuItems = [
   {
     id: "dashboard",
@@ -103,7 +108,8 @@ export function Sidebar(active = "dashboard") {
             <div class="px-6 space-y-3">
 
               <button
-                 class="w-full bg-[#C9A84C] text-white py-3 rounded-lg font-medium hover:bg-[#b89539] transition"
+                onclick="goToCreateEvent()"
+                class="w-full bg-[#C9A84C] text-white py-3 rounded-lg font-medium hover:bg-[#b89539] transition"
               >
                   + New Event
               </button>
