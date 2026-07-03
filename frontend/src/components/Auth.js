@@ -166,11 +166,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Login
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        console.log('Login:', email);
-        alert(' Login simulado exitoso');
+        loginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    // TODO: reemplazar con el verdadero JWT cuando la autenticacion del backend sea integrada 
+    localStorage.setItem("token", "temp-token");
+
+    window.history.pushState({}, "", "/dashboard");
+
+    window.dispatchEvent(new PopStateEvent("popstate"));
     });
 }
 
