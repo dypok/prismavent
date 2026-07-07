@@ -1,4 +1,4 @@
-import { login } from "../service/api.js";
+import { login, register} from "../service/api.js";
 
 export function Auth() {
     return `
@@ -187,21 +187,30 @@ document.addEventListener('DOMContentLoaded', () => {
        });
 }
 
-  // Registro
-    const signupForm = document.getElementById('signup-form');
-    if (signupForm) {
-        signupForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = document.getElementById('signup-name').value;
-        const email = document.getElementById('signup-email').value;
+    // Registro
+    const signupForm = document.getElementById("signup-form");
 
-        console.log('Registro exitoso:', { name, email });
-    
-      // Mostrar modal
-        document.getElementById('confirmation-modal').classList.remove('hidden');
-    
-      // Auto cerrar después de 2.5 segundos
-        setTimeout(closeModalAndRedirect, 2500);
+    if (signupForm) {
+            signupForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+        const name = document.getElementById("signup-name").value;
+        const email = document.getElementById("signup-email").value;
+        const password = document.getElementById("signup-password").value;
+        const phone = document.getElementById("signup-phone").value;
+
+        try {
+            await register(name, email, password, phone);
+
+            document
+                .getElementById("confirmation-modal")
+                .classList.remove("hidden");
+
+            setTimeout(closeModalAndRedirect, 2500);
+
+        } catch (error) {
+            alert(error.message);
+        }
     });
 }
 });

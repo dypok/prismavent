@@ -1,13 +1,13 @@
-const TOKEN_KEY = "prismavent_access_token";
+import { getAccessToken, clearAccessToken } from "../service/api.js";
 
 export function isAuthenticated() {
-  return !!localStorage.getItem(TOKEN_KEY);
+  return !!getAccessToken();
 }
 
 export function logout() {
-  localStorage.removeItem(TOKEN_KEY);
+  clearAccessToken();
 }
 
 export function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  return getAccessToken();
 }

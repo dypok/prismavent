@@ -4,7 +4,6 @@ import { Auth } from "./components/Auth.js";
 import { Sidebar } from "./components/Sidebar.js";
 import { Topbar } from "./components/Topbar.js";
 
-console.log(" Main.js cargado - Ruta:", window.location.pathname);
 
 function renderPage() {
   const path = window.location.pathname;
