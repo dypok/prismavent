@@ -1,1 +1,30 @@
 @import "tailwindcss";
+
+/* ===== ANIMACIONES FLIP CARD ===== */
+.perspective-1000 {
+    perspective: 1200px;
+}
+
+#flip-card {
+    perspective: 1200px;
+}
+
+#login-side, #signup-side {
+    backface-visibility: hidden;
+    transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15);
+}
+
+#login-side {
+    transform: rotateY(0deg);
+}
+
+#signup-side {
+    transform: rotateY(180deg);
+}
+
+/* Efecto hover suave */
+#flip-card:hover {
+    transform: scale(1.01);
+    transition: transform 0.3s ease;
+}
