@@ -20,3 +20,17 @@ def get_supabase_client() -> Client:
             "SUPABASE_ANON_KEY in your .env file."
         )
     return supabase
+# cambios para manejo de tokens
+def get_supabase_client_for_user(token: str) -> Client:
+    """
+    Devuelve un cliente de Supabase autenticado con el JWT del usuario,
+    necesario para que las políticas RLS puedan resolver auth.uid().
+    """
+    if not SUPABASE_URL or not SUPABASE_ANON_KEY:
+        raise RuntimeError(
+            "Supabase client is not configured. Please set SUPABASE_URL and "
+            "SUPABASE_ANON_KEY in your .env file."
+        )
+    client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+    client.postgrest.auth(token)
+    return client

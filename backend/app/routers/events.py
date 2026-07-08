@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request
-from app.core.supabase import get_supabase_client
+from app.core.supabase import get_supabase_client_for_user
 from app.schemas.events import EventCreate, EventResponse, EventDetailResponse
 from typing import List
 
@@ -12,14 +12,14 @@ def create_event(payload: EventCreate, request: Request):
         raise HTTPException(status_code=401, detail="Unauthorized: User not found in request state")
     
     user_id = user.id
-    supabase_client = get_supabase_client()
+    supabase_client = get_supabase_client_for_user(request.state.token)
     
     # 1. Prepare event data
     event_data = {
         "user_id": user_id,
         "name": payload.name,
         "description": payload.description,
-        "event_date": payload.event_date,
+        "event_date": payload.event_date.isoformat(), #para que antes de mandarlo se haga string de nuevo :P
         "guest_count": payload.guest_count,
         "max_budget": float(payload.max_budget) if payload.max_budget is not None else None,
         "template_id": payload.template_id,
@@ -28,7 +28,7 @@ def create_event(payload: EventCreate, request: Request):
         "city_custom": payload.city_custom,
         "event_type_id": payload.event_type_id,
         "location": payload.location,
-        "status": payload.status,
+        "status": "borrador",# fijamos borrador aqui :p
         "visibility_status": payload.visibility_status,
     }
     
@@ -98,7 +98,7 @@ def get_event(event_id: str, request: Request):
         raise HTTPException(status_code=401, detail="Unauthorized: User not found in request state")
         
     user_id = user.id
-    supabase_client = get_supabase_client()
+    supabase_client = get_supabase_client_for_user(request.state.token)
     
     try:
         # Fetch event details
