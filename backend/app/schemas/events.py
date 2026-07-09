@@ -59,3 +59,7 @@ class EventItemResponse(BaseModel):
 
 class EventDetailResponse(EventResponse):
     items: list[EventItemResponse] = []
+
+class EventWithStatsResponse(EventResponse):
+    progreso: float = 0.0
+    total_estimado: Decimal = Decimal("0.0")

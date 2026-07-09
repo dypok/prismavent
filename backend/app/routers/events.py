@@ -14,6 +14,28 @@ def create_event(payload: EventCreate, request: Request, db: Session = Depends(g
         raise HTTPException(status_code=401, detail="Unauthorized: User not found in request state")
     
     user_id = user.id
+    supabase_client = get_supabase_client_for_user(request.state.token)
+    
+    # 1. Prepare event data
+    event_data = {
+        "user_id": user_id,
+        "name": payload.name,
+        "description": payload.description,
+        "event_date": payload.event_date.isoformat(), #para que antes de mandarlo se haga string de nuevo :P
+        "guest_count": payload.guest_count,
+        "max_budget": float(payload.max_budget) if payload.max_budget is not None else None,
+        "template_id": payload.template_id,
+        "user_template_id": payload.user_template_id,
+        "city_id": payload.city_id,
+        "city_custom": payload.city_custom,
+        "event_type_id": payload.event_type_id,
+        "location": payload.location,
+        "status": "borrador",# fijamos borrador aqui :p
+        "visibility_status": payload.visibility_status,
+    }
+    
+    # Remove None values so database defaults apply
+    event_data = {k: v for k, v in event_data.items() if v is not None}
     
     try:
         # 1. Fetch template items if template_id or user_template_id is provided
@@ -59,7 +81,7 @@ def create_event(payload: EventCreate, request: Request, db: Session = Depends(g
             "city_custom": payload.city_custom,
             "event_type_id": payload.event_type_id,
             "location": payload.location,
-            "status": "borrador", # Forzar "borrador" según el commit HEAD
+            "status": payload.status,
             "visibility_status": payload.visibility_status
         }
         
