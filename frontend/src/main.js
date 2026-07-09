@@ -3,34 +3,32 @@ import { isAuthenticated } from "./utils/authUtils.js";
 import { Auth } from "./components/Auth.js";
 import { Sidebar } from "./components/Sidebar.js";
 import { Topbar } from "./components/Topbar.js";
-import { CreateEvent } from "./pages/CreateEvent.js";
+import { NewEventSelection } from "./components/NewEventSelection.js";
 
-console.log(" Main.js cargado - Ruta:", window.location.pathname);
+console.log("Main.js cargado - Ruta:", window.location.pathname);
 
 function renderPage() {
   const path = window.location.pathname;
-  // Si el usuario ya inició sesión y trata de entrar al login
-  if (
-    isAuthenticated() &&
-    (path === "/" || path === "/auth" || path === "/login")
-  ) {
-    window.history.replaceState({}, "", "/dashboard");
+
+  // Si está autenticado y está en rutas de login → ir a crear evento directamente
+  if (isAuthenticated() && (path === "/" || path === "/auth" || path === "/login" || path === "/register")) {
+    window.history.replaceState({}, "", "/events/new");
     renderPage();
     return;
   }
 
-  // Rutas de autenticación
+  // Rutas de Autenticación
   if (path === '/auth' || path === '/login' || path === '/register' || path === '/') {
     document.querySelector("#app").innerHTML = Auth();
     
-    
-  // Rutas del Dashboard
+  // Dashboard
   } else if (path === '/dashboard' || path === '/home') {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
       renderPage();
       return;
-}
+    }
+
     document.querySelector("#app").innerHTML = `
       <div class="flex h-screen">
         ${Sidebar("dashboard")}
@@ -43,27 +41,32 @@ function renderPage() {
         </div>
       </div>
     `;
-    
-  } 
-  // Ruta Crear Evento
-  else if (path === "/events/new") {
 
+  // Crear Nuevo Evento
+  } else if (path === "/events/new") {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
       renderPage();
       return;
     }
 
-    document.querySelector("#app").innerHTML = CreateEvent();
-  }
+    document.querySelector("#app").innerHTML = `
+      <div class="flex h-screen overflow-hidden">
+        ${Sidebar("new-event")}
+        <div class="flex-1 overflow-auto bg-[#FFF8F1]">
+          ${NewEventSelection()}
+        </div>
+      </div>
+    `;
+
   // 404
-  else {
+  } else {
     document.querySelector("#app").innerHTML = `
       <div class="min-h-screen flex items-center justify-center">
         <div class="text-center">
           <h1 class="text-6xl font-bold text-red-500">404</h1>
           <p class="text-2xl mt-4">Página no encontrada</p>
-          <a href="/auth" class="mt-6 inline-block px-6 py-3 bg-amber-600 text-white rounded-2xl">Ir al Login</a>
+          <a href="/events/new" class="mt-6 inline-block px-6 py-3 bg-amber-600 text-white rounded-2xl">Ir a Crear Evento</a>
         </div>
       </div>
     `;
@@ -73,5 +76,5 @@ function renderPage() {
 // Render inicial
 renderPage();
 
-// Soporte para botones atrás/adelante del navegador
+// Soporte para botones de navegador
 window.addEventListener('popstate', renderPage);

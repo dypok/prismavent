@@ -1,129 +1,69 @@
 import dashboardIcon from "../assets/icons/dashboard_icon.svg";
 import eventsIcon from "../assets/icons/events_icon.svg";
-import historyIcon from "../assets/icons/history_icon.svg";
 import providersIcon from "../assets/icons/providers_icon.svg";
-import { logout } from "../utils/authUtils.js";
+import historyIcon from "../assets/icons/history_icon.svg";
 
-window.handleLogout = function () {
-  logout();
-
-  window.history.pushState({}, "", "/login");
-  window.dispatchEvent(new PopStateEvent("popstate"));
-};
-
-window.goToCreateEvent = function () {
-  window.history.pushState({}, "", "/events/new");
-  window.dispatchEvent(new PopStateEvent("popstate"));
-};
-
-const menuItems = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: dashboardIcon
-  },
-  {
-    id: "events",
-    label: "My Events",
-    icon: eventsIcon
-  },
-  {
-    id: "providers",
-    label: "Providers",
-    icon: providersIcon
-  },
-  {
-    id: "history",
-    label: "History",
-    icon: historyIcon
-  }
-];
-
-export function Sidebar(active = "dashboard") {
-  const menu = menuItems
-  .map((item) => {
-    const isActive = item.id === active;
-
-    return `
-      <li
-        class="
-        flex
-        items-center
-        gap-3
-        px-7
-        py-3
-        cursor-pointer
-        transition
-        relative
-        ${
-            isActive
-                ? "text-[#755B00] font-medium"
-                : "text-gray-500 hover:text-[#6B4F1D]"
-        }
-        "
-        >
-
-        ${isActive
-        ? `<span class="absolute left-0 top-0 h-full w-1 bg-[#755B00] rounded-r"></span>`
-        : ""}
-
-        <img
-        src="${item.icon}"
-        alt="${item.label}"
-        class="w-4 h-4"
-        />
-
-        <span class="text-sm">
-        ${item.label}
-        </span>
-
-        </li>
-    `;
-  })
-  .join("");
-
+export function Sidebar(active = "new-event") {
   return `
-        <aside class="w-60 min-h-screen bg-F8F0E4 border-r border-gray-200 shadow-md flex flex-col justify-between py-8">
+    <aside class="w-72 min-h-screen bg-[#FFF8F1] border-r border-[#E9E1D7] flex flex-col">
+      
+      <!-- Logo -->
+      <div class="px-8 pt-10 pb-8">
+        <h1 class="font-display text-3xl tracking-tight text-[#755B00]">Prismavent</h1>
+        <p class="text-[#9E8E6E] text-sm mt-1 tracking-widest">Event Planning</p>
+      </div>
 
-            <div>
+      <!-- Menú -->
+      <nav class="flex-1 px-3">
+        <ul class="space-y-1">
+          <li onclick="navigateTo('/dashboard')" 
+              class="flex items-center gap-3 px-6 py-3.5 rounded-xl hover:bg-white transition cursor-pointer">
+            <img src="${dashboardIcon}" class="w-5 h-5" alt="Dashboard">
+            <span class="font-medium text-[#1E1B15]">Dashboard</span>
+          </li>
 
-                <div class="px-7 mb-14">
-                    <div class="h-12 flex items-center">
-                          Logo de Prismavent 
-                    </div>
+          <li onclick="navigateTo('/events')" 
+              class="flex items-center gap-3 px-6 py-3.5 rounded-xl hover:bg-white transition cursor-pointer">
+            <img src="${eventsIcon}" class="w-5 h-5" alt="My Events">
+            <span class="font-medium text-[#1E1B15]">My Events</span>
+          </li>
 
-                    <p class="font-body text-xs tracking-[0.2em] uppercase text-gray-500 mt-1">
-                        Event Planning
-                    </p>
-                </div>
+          <!-- New Event Activo -->
+          <li onclick="navigateTo('/events/new')" 
+              class="flex items-center gap-3 px-6 py-3.5 bg-[#FEF3C7] border-l-4 border-[#755B00] text-[#755B00] font-semibold rounded-xl cursor-pointer hover:bg-[#FDE68A]">
+            <span class="text-xl">✚</span>
+            <span class="font-display">New Event</span>
+          </li>
 
-                <nav>
-                    <ul class="space-y-2">
-                        ${menu}
-                    </ul>
-                </nav>
+          <li onclick="navigateTo('/providers')" 
+              class="flex items-center gap-3 px-6 py-3.5 rounded-xl hover:bg-white transition cursor-pointer">
+            <img src="${providersIcon}" class="w-5 h-5" alt="Providers">
+            <span class="font-medium text-[#1E1B15]">Providers</span>
+          </li>
 
-            </div>
+          <li onclick="navigateTo('/history')" 
+              class="flex items-center gap-3 px-6 py-3.5 rounded-xl hover:bg-white transition cursor-pointer">
+            <img src="${historyIcon}" class="w-5 h-5" alt="History">
+            <span class="font-medium text-[#1E1B15]">History</span>
+          </li>
+        </ul>
+      </nav>
 
-            <div class="px-6 space-y-3">
-
-              <button
-                onclick="goToCreateEvent()"
-                class="w-full bg-[#C9A84C] text-white py-3 rounded-lg font-medium hover:bg-[#b89539] transition"
-              >
-                  + New Event
-              </button>
-
-               <button
-                  id="logout-btn"
-                  onclick="handleLogout()"
-                  class="w-full border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-100 transition"
-                >
-                        Cerrar sesión
-              </button>
-
-            </div>
-
-        </aside>
-`;
+      <!-- Perfil -->
+      <div class="mt-auto p-6 border-t border-[#E9E1D7]">
+        <div class="flex items-center gap-3 mb-6 px-3">
+          <div class="w-10 h-10 bg-[#C9A84C] text-[#1C1A17] rounded-full flex items-center justify-center font-bold text-xl">C</div>
+          <div>
+            <p class="font-medium text-[#1E1B15]">Carlos</p>
+            <p class="text-xs text-[#9E8E6E]">Event Director</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  `;
 }
+
+window.navigateTo = function(path) {
+  window.history.pushState({}, "", path);
+  window.location.reload();
+};
