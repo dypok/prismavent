@@ -37,6 +37,30 @@ export async function login(email, password) {
   return data;
 }
 
+// ---- Singup: LLama al backend para crear un nuevo usuario en Supabase ---
+export async function register(name, email, password, phone) {
+  const res = await fetch(`${BASE_URL}/auth/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      name,
+      email,
+      password,
+      phone
+    })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.detail || "Registration failed.");
+  }
+
+  return data;
+}
+
 // --- Fetch autenticado: adjunta el token a cada petición al backend ---
 
 export async function apiFetch(path, options = {}) {

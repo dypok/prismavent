@@ -7,8 +7,6 @@ import { NewEventSelection } from "./components/NewEventSelection.js";
 import { CustomEventForm } from "./components/CustomEventForm.js";
 import { EventTemplatesGrid } from "./components/EventTemplatesGrid.js";
 
-console.log("Main.js cargado - Ruta:", window.location.pathname);
-
 function renderPage() {
   const path = window.location.pathname;
 
