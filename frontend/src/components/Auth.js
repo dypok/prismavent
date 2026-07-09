@@ -1,3 +1,5 @@
+import { login, register} from "../service/api.js";
+
 export function Auth() {
     return `
         <div class="min-h-screen bg-[#F8F5F0] flex items-center justify-center p-6 font-sans">
@@ -163,35 +165,52 @@ window.closeModalAndRedirect = function() {
 // ====================== MANEJO DE FORMULARIOS ======================
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Login
-    const loginForm = document.getElementById('login-form');
+    // Login
+    const loginForm = document.getElementById("login-form");
+
     if (loginForm) {
-        loginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    // TODO: reemplazar con el verdadero JWT cuando la autenticacion del backend sea integrada 
-    localStorage.setItem("token", "temp-token");
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-    window.history.pushState({}, "", "/dashboard");
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
 
-    window.dispatchEvent(new PopStateEvent("popstate"));
-    });
+            try {
+                await login(email, password);
+
+                window.history.pushState({}, "", "/dashboard");
+                window.dispatchEvent(new PopStateEvent("popstate"));
+
+            } catch (error) {
+                alert(error.message);
+            }
+       });
 }
 
-  // Registro
-    const signupForm = document.getElementById('signup-form');
-    if (signupForm) {
-        signupForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = document.getElementById('signup-name').value;
-        const email = document.getElementById('signup-email').value;
+    // Registro
+    const signupForm = document.getElementById("signup-form");
 
-        console.log('Registro exitoso:', { name, email });
-    
-      // Mostrar modal
-        document.getElementById('confirmation-modal').classList.remove('hidden');
-    
-      // Auto cerrar después de 2.5 segundos
-        setTimeout(closeModalAndRedirect, 2500);
+    if (signupForm) {
+            signupForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+        const name = document.getElementById("signup-name").value;
+        const email = document.getElementById("signup-email").value;
+        const password = document.getElementById("signup-password").value;
+        const phone = document.getElementById("signup-phone").value;
+
+        try {
+            await register(name, email, password, phone);
+
+            document
+                .getElementById("confirmation-modal")
+                .classList.remove("hidden");
+
+            setTimeout(closeModalAndRedirect, 2500);
+
+        } catch (error) {
+            alert(error.message);
+        }
     });
 }
 });

@@ -1,7 +1,13 @@
+import { getAccessToken, clearAccessToken } from "../service/api.js";
+
 export function isAuthenticated() {
-  return !!localStorage.getItem("token");
+  return !!getAccessToken();
 }
 
 export function logout() {
-  localStorage.removeItem("token");
+  clearAccessToken();
+}
+
+export function getToken() {
+  return getAccessToken();
 }

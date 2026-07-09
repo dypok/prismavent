@@ -6,7 +6,7 @@ export function EventTemplateCard({
   buttonText,
 }) {
   return `
-    <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:-translate-y-1 transition-all duration-300 hover:shadow-xl">
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:-translate-y-1 transition-all duration-300 ">
 
       <div
         class="h-36 flex items-center justify-center text-5xl"

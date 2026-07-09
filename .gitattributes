@@ -1,0 +1,10 @@
+# Normaliza todos los archivos de texto a LF en el repositorio,
+# sin importar el sistema operativo donde se edite o clone.
+* text=auto eol=lf
+
+# Los binarios nunca deben normalizarse
+*.svg -text
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
