@@ -21,6 +21,7 @@ class SupabaseAuthMiddleware(BaseHTTPMiddleware):
             supabase_client = get_supabase_client()
             response = supabase_client.auth.get_user(token)
             request.state.user = response.user
+            request.state.token = token #agregamos por aca el token
         except Exception as e:
             return JSONResponse(
                 status_code=401,
