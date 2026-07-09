@@ -4,6 +4,7 @@ import { Auth } from "./components/Auth.js";
 import { Sidebar } from "./components/Sidebar.js";
 import { Topbar } from "./components/Topbar.js";
 import { CreateEvent } from "./pages/CreateEvent.js";
+import { EventDetail } from "./pages/EventDetail.js";
 
 console.log(" Main.js cargado - Ruta:", window.location.pathname);
 
@@ -56,6 +57,19 @@ function renderPage() {
 
     document.querySelector("#app").innerHTML = CreateEvent();
   }
+
+  // Ruta Detalle del Evento
+  else if (path === "/events/detail") {
+
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+
+    document.querySelector("#app").innerHTML = EventDetail();
+  }
+
   // 404
   else {
     document.querySelector("#app").innerHTML = `
