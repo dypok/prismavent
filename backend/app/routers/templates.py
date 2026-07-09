@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
-from app.schemas.templates import TemplateResponse
+from app.schemas.template import TemplateResponse
 from typing import List
 
 router = APIRouter(prefix="/templates", tags=["templates"])

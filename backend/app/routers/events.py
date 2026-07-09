@@ -2,7 +2,10 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
-from app.schemas.events import EventCreate, EventResponse, EventDetailResponse
+from app.schemas.event import EventCreate, EventResponse, EventDetailResponse, EventDetailOut
+from app.core.supabase import get_supabase_client_for_user
+from app.dependencies import get_current_user
+from app.services import budget_service
 from typing import List
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -133,19 +136,13 @@ def create_event(payload: EventCreate, request: Request, db: Session = Depends(g
             raise e
         raise HTTPException(status_code=400, detail=f"Error creating event: {str(e)}")
 
-@router.get("/{event_id}", response_model=EventDetailResponse)
-def get_event(event_id: str, request: Request, db: Session = Depends(get_db)):
-    user = getattr(request.state, "user", None)
-    if not user:
-        raise HTTPException(status_code=401, detail="Unauthorized: User not found in request state")
-        
-    user_id = user.id
-    
+@router.get("/{event_id}", response_model=EventDetailOut)
+def get_event(event_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     try:
-        # Fetch event details
+        # Fetch event details validating user ownership
         event_res = db.execute(
             text("SELECT * FROM events WHERE id = :id AND user_id = :user_id"),
-            {"id": event_id, "user_id": user_id}
+            {"id": event_id, "user_id": current_user.id}
         ).fetchone()
         
         if not event_res:
@@ -153,13 +150,22 @@ def get_event(event_id: str, request: Request, db: Session = Depends(get_db)):
             
         event = dict(event_res._mapping)
         
-        # Fetch event items
+        # Fetch associated event items
         items_res = db.execute(
             text("SELECT * FROM event_items WHERE event_id = :event_id"),
             {"event_id": event_id}
         ).fetchall()
         
-        event["items"] = [dict(item._mapping) for item in items_res] if items_res else []
+        event_items = [dict(item._mapping) for item in items_res] if items_res else []
+        
+        # Calculate budget metrics
+        total_estimated = budget_service.calculate_total_estimated(event_items)
+        budget_alert = budget_service.check_budget_alert(total_estimated, event.get("max_budget"))
+        
+        # Populate response dictionary
+        event["event_items"] = event_items
+        event["total_estimated"] = total_estimated
+        event["budget_alert"] = budget_alert
         
         return event
     except Exception as e:
