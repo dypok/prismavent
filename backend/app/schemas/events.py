@@ -1,7 +1,8 @@
 from pydantic import BaseModel, field_validator
 from typing import Optional
 from decimal import Decimal
-from datetime import date
+from datetime import date, datetime
+from uuid import UUID
 
 class EventCreate(BaseModel):
     name: str
@@ -26,28 +27,28 @@ class EventCreate(BaseModel):
         return value
 
 class EventResponse(BaseModel):
-    id: str
-    user_id: str
+    id: UUID
+    user_id: UUID
     name: str
     description: Optional[str] = None
-    event_date: str
+    event_date: date
     guest_count: int
     max_budget: Optional[Decimal] = None
-    template_id: Optional[str] = None
-    user_template_id: Optional[str] = None
-    city_id: Optional[str] = None
+    template_id: Optional[UUID] = None
+    user_template_id: Optional[UUID] = None
+    city_id: Optional[UUID] = None
     city_custom: Optional[str] = None
-    event_type_id: Optional[str] = None
+    event_type_id: Optional[UUID] = None
     location: Optional[str] = None
     status: str
     visibility_status: str
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
 
 class EventItemResponse(BaseModel):
-    id: str
-    event_id: str
-    provider_id: Optional[str] = None
+    id: UUID
+    event_id: UUID
+    provider_id: Optional[UUID] = None
     provider_name: Optional[str] = None
     category_name: Optional[str] = None
     name: str
