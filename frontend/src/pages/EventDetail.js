@@ -1,5 +1,6 @@
 import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
+import { EventStepper } from "../components/EventStepper.js";
 
 export function EventDetail() {
   return `
@@ -15,6 +16,8 @@ export function EventDetail() {
 
         <!-- Columna izquierda -->
         <div class="w-3/5 bg-white rounded-2xl border border-gray-200 p-6">
+        
+          ${EventStepper(1)}
 
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-semibold">Event Resource</h2>
