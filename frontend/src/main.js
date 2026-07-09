@@ -4,24 +4,23 @@ import { Auth } from "./components/Auth.js";
 import { Sidebar } from "./components/Sidebar.js";
 import { Topbar } from "./components/Topbar.js";
 import { NewEventSelection } from "./components/NewEventSelection.js";
+import { CustomEventForm } from "./components/CustomEventForm.js";
+import { EventTemplatesGrid } from "./components/EventTemplatesGrid.js";
 
 console.log("Main.js cargado - Ruta:", window.location.pathname);
 
 function renderPage() {
   const path = window.location.pathname;
 
-  // Si está autenticado y está en rutas de login → ir a crear evento directamente
   if (isAuthenticated() && (path === "/" || path === "/auth" || path === "/login" || path === "/register")) {
     window.history.replaceState({}, "", "/events/new");
     renderPage();
     return;
   }
 
-  // Rutas de Autenticación
   if (path === '/auth' || path === '/login' || path === '/register' || path === '/') {
     document.querySelector("#app").innerHTML = Auth();
     
-  // Dashboard
   } else if (path === '/dashboard' || path === '/home') {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
@@ -42,7 +41,6 @@ function renderPage() {
       </div>
     `;
 
-  // Crear Nuevo Evento
   } else if (path === "/events/new") {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
@@ -50,16 +48,18 @@ function renderPage() {
       return;
     }
 
+    // 🔧 CAMBIO 1: innerHTML solo para el layout (Sidebar + contenedor vacío)
     document.querySelector("#app").innerHTML = `
       <div class="flex h-screen overflow-hidden">
         ${Sidebar("new-event")}
-        <div class="flex-1 overflow-auto bg-[#FFF8F1]">
-          ${NewEventSelection()}
-        </div>
+        <div id="new-event-content" class="flex-1 overflow-auto bg-[#FFF8F1]"></div>
       </div>
     `;
 
-  // 404
+    // 🔧 CAMBIO 2: appendChild para insertar el componente DOM
+    const contentArea = document.querySelector("#new-event-content");
+    contentArea.appendChild(NewEventSelection());
+
   } else {
     document.querySelector("#app").innerHTML = `
       <div class="min-h-screen flex items-center justify-center">
@@ -73,8 +73,6 @@ function renderPage() {
   }
 }
 
-// Render inicial
 renderPage();
 
-// Soporte para botones de navegador
 window.addEventListener('popstate', renderPage);
