@@ -1,3 +1,5 @@
+import { login, register } from "../service/api.js";
+
 export function Auth() {
     return `
         <div class="min-h-screen bg-[#F8F5F0] flex items-center justify-center p-6 font-sans">
@@ -57,6 +59,8 @@ export function Auth() {
                             class="w-full bg-[#C9A84C] hover:bg-[#B8963A] text-white font-semibold py-3.5 rounded-2xl text-base tracking-wider">
                     ACCESS WORKSPACE →
                     </button>
+
+                    <p id="login-error" class="hidden text-sm text-red-600 text-center"></p>
                 </form>
                 </div>
             </div>
@@ -101,6 +105,8 @@ export function Auth() {
                             class="w-full bg-[#C9A84C] hover:bg-[#B8963A] text-white font-semibold py-3.5 rounded-2xl text-base tracking-wider mt-3">
                     CREATE ACCOUNT →
                     </button>
+
+                    <p id="signup-error" class="hidden text-sm text-red-600 text-center"></p>
                 </form>
                 </div>
             </div>
@@ -167,29 +173,59 @@ window.closeModalAndRedirect = function() {
 // eventos sobre "document" (igual que en CustomEventForm.js), que
 // funciona sin importar cuándo se insertó el formulario en el DOM.
 
-document.addEventListener("submit", (e) => {
+document.addEventListener("submit", async (e) => {
   // Login
   if (e.target.id === "login-form") {
     e.preventDefault();
-    // TODO: reemplazar con el verdadero JWT cuando la autenticacion del backend sea integrada
-    localStorage.setItem("token", "temp-token");
 
-    window.history.pushState({}, "", "/dashboard");
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+    const errorEl = document.getElementById("login-error");
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+
+    errorEl.classList.add("hidden");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Entrando...";
+
+    try {
+      await login(email, password);
+      window.history.pushState({}, "", "/dashboard");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    } catch (err) {
+      errorEl.textContent = err.message || "No se pudo iniciar sesión.";
+      errorEl.classList.remove("hidden");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "ACCESS WORKSPACE →";
+    }
   }
 
   // Registro
   if (e.target.id === "signup-form") {
     e.preventDefault();
+
     const name = document.getElementById("signup-name").value;
     const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
+    const phone = document.getElementById("signup-phone").value;
+    const errorEl = document.getElementById("signup-error");
+    const submitBtn = e.target.querySelector('button[type="submit"]');
 
-    console.log("Registro exitoso:", { name, email });
+    errorEl.classList.add("hidden");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creando cuenta...";
 
-    // Mostrar modal
-    document.getElementById("confirmation-modal").classList.remove("hidden");
-
-    // Auto cerrar después de 2.5 segundos
-    setTimeout(closeModalAndRedirect, 2500);
+    try {
+      await register(name, email, password, phone);
+      // Mostrar modal
+      document.getElementById("confirmation-modal").classList.remove("hidden");
+      // Auto cerrar después de 2.5 segundos
+      setTimeout(closeModalAndRedirect, 2500);
+    } catch (err) {
+      errorEl.textContent = err.message || "No se pudo crear la cuenta.";
+      errorEl.classList.remove("hidden");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "CREATE ACCOUNT →";
+    }
   }
 });
