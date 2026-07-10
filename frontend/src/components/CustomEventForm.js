@@ -10,6 +10,8 @@
 //    innerHTML) para rellenar el formulario si el usuario viene desde
 //    una plantilla seleccionada en EventTemplatesGrid.
 
+import { apiFetch } from "../service/api.js";
+
 export function CustomEventForm() {
     return `
     <div class="w-full max-w-3xl mx-auto bg-white rounded-3xl shadow-xl">
@@ -137,6 +139,8 @@ export function CustomEventForm() {
             class="flex-1 py-4 border border-[#D0C5B2] rounded-2xl font-medium hover:bg-gray-50">Cancelar</button>
           <button type="submit" class="flex-1 py-4 bg-[#755B00] hover:bg-[#5F4A00] text-white font-semibold rounded-2xl">Crear Evento →</button>
         </div>
+
+        <p id="createEventError" class="hidden text-sm text-red-600 text-center"></p>
       </form>
     </div>
   `;
@@ -199,14 +203,48 @@ export function prefillCustomEventForm() {
     localStorage.removeItem("selectedEventTemplate");
 }
 
-// TODO (ticket aparte): conectar este submit con apiFetch("/events", ...)
-// de services/api.js para crear el evento de verdad en el backend.
-// Por ahora conserva el comportamiento original(solo
-// muestra los datos capturados).
-document.addEventListener("submit", (e) => {
-    if (e.target.id === "createEventForm") {
-        e.preventDefault();
-        alert("Formulario capturado (falta conectar con el backend, ver TODO en CustomEventForm.js)");
-        console.log("Evento completo:", Object.fromEntries(new FormData(e.target)));
+// Al confirmar: llama a POST /events con los campos que sí existen en
+// el schema del backend (EventCreate). Los campos del formulario que
+// todavía no tienen equivalente en el backend (catering, audiovisual,
+// streaming, speakers, material promocional) NO se envían por ahora
+// -- ver nota más abajo, es una limitación conocida, no un descuido.
+document.addEventListener("submit", async (e) => {
+    if (e.target.id !== "createEventForm") return;
+    e.preventDefault();
+
+    const errorEl = document.getElementById("createEventError");
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+
+    const payload = {
+        name: document.getElementById("eventName").value,
+        event_date: document.getElementById("eventDate").value,
+        guest_count: parseInt(document.getElementById("guestCount").value, 10) || 0,
+        location: document.getElementById("eventLocation").value || null,
+        description: document.getElementById("notes").value || null,
+    };
+
+    const maxBudgetValue = document.getElementById("maxBudget").value;
+    if (maxBudgetValue) payload.max_budget = parseFloat(maxBudgetValue);
+
+    if (errorEl) errorEl.classList.add("hidden");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creando evento...";
+
+    try {
+        const createdEvent = await apiFetch("/events", {
+            method: "POST",
+            body: JSON.stringify(payload),
+        });
+
+        localStorage.removeItem("selectedEventTemplate");
+        window.history.pushState({}, "", `/events/detail?id=${createdEvent.id}`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+    } catch (err) {
+        if (errorEl) {
+            errorEl.textContent = err.message || "No se pudo crear el evento.";
+            errorEl.classList.remove("hidden");
+        }
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Crear Evento →";
     }
 });

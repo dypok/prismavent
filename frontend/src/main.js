@@ -65,7 +65,8 @@ function renderPage() {
       renderPage();
       return;
     }
-    document.querySelector("#app").innerHTML = EventDetail();
+    const eventId = new URLSearchParams(window.location.search).get("id");
+    document.querySelector("#app").innerHTML = EventDetail(eventId);
   }
   // Flujo: evento personalizado (desde cero, o pre-rellenado desde plantilla)
   else if (path === "/events/new/custom") {
