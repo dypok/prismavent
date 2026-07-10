@@ -11,7 +11,7 @@ import { prefillCustomEventForm } from "./components/CustomEventForm.js";
 
 console.log(" Main.js cargado - Ruta:", window.location.pathname);
 
-function renderPage() {
+async function renderPage() {
   const path = window.location.pathname;
   // Si el usuario ya inició sesión y trata de entrar al login
   if (
@@ -58,6 +58,7 @@ function renderPage() {
     }
     document.querySelector("#app").innerHTML = CreateEvent();
   }
+
   // Ruta Detalle del Evento
   else if (path === "/events/detail") {
     if (!isAuthenticated()) {
@@ -66,8 +67,9 @@ function renderPage() {
       return;
     }
     const eventId = new URLSearchParams(window.location.search).get("id");
-    document.querySelector("#app").innerHTML = EventDetail(eventId);
+    document.querySelector("#app").innerHTML = await EventDetail(eventId);
   }
+
   // Flujo: evento personalizado (desde cero, o pre-rellenado desde plantilla)
   else if (path === "/events/new/custom") {
     if (!isAuthenticated()) {

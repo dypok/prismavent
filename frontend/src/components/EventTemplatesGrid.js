@@ -5,7 +5,7 @@
 
 const TEMPLATES = [
     {
-        id: "birthday",
+        id: "b1000000-0000-0000-0000-000000000002",
         title: "Cumpleaños",
         description: "Celebración personal con decoración, pastel y música.",
         icon: "🎂",
@@ -23,7 +23,7 @@ const TEMPLATES = [
         },
     },
     {
-        id: "wedding",
+        id: "b1000000-0000-0000-0000-000000000001",
         title: "Boda",
         description: "Ceremonia elegante con banquete, música y decoración floral.",
         icon: "💍",
@@ -287,11 +287,13 @@ const TEMPLATES = [
 // formulario (que lo pre-rellena). Reemplaza los CustomEvent que usaba
 // la versión original (templateSelected / showCustomEventForm).
 window.handleGridTemplateSelect = function (templateId) {
+  
     const template = TEMPLATES.find((t) => t.id === templateId);
+
     if (template) {
         localStorage.setItem(
             "selectedEventTemplate",
-            JSON.stringify(template.preset),
+            JSON.stringify(template),
         );
     }
     window.history.pushState({}, "", "/events/new/custom");

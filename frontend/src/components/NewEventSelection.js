@@ -91,6 +91,8 @@ export function NewEventSelection() {
 
     window.addEventListener('templateSelected', (e) => {
         const template = e.detail;
+
+
         localStorage.setItem('selectedEventTemplate', JSON.stringify(template.preset));
         startCustomEvent();
     });
