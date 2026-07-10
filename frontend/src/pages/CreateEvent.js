@@ -1,14 +1,19 @@
 import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
-import { EventTemplateCard } from "../components/EventTemplateCard.js";
-import CumpleañosIcon from "../assets/icons/cumpleaños_icon.svg";
-import BodaIcon from "../assets/icons/corazon_icon.svg";
-//TIENE DE MOMENTO EL ICONO DE CORAZON PORQUE EL DE LAPTOP NO ME DEJA DESARGARLO
-import TechIcon from "../assets/icons/corazon_icon.svg";
-import PersonalizadoIcon from "../assets/icons/personalizado_icon.svg";
+
+// Se registra una sola vez: decide a qué flujo redirigir según la
+// opción elegida en la pantalla de selección inicial.
+window.handleTemplateSelect = function (option) {
+    if (option === "custom") {
+        window.history.pushState({}, "", "/events/new/custom");
+    } else {
+        window.history.pushState({}, "", "/events/new/template");
+    }
+    window.dispatchEvent(new PopStateEvent("popstate"));
+};
 
 export function CreateEvent() {
-  return `
+    return `
     <div class="flex h-screen">
 
       ${Sidebar()}
@@ -17,60 +22,54 @@ export function CreateEvent() {
 
         ${Topbar("Carlos")}
 
-        <main class="flex-1 bg-[#FFF8F1] px-14 py-12 overflow-auto">
+        <main class="flex-1 bg-[#FFF8F1] flex items-center justify-center p-8 overflow-auto">
+          <div class="w-full max-w-5xl">
 
-            <h1 class="text-5xl font-bold text-[#2E241B]"
-                style="font-family:'Playfair Display', serif;"
-            >
-                Elige una plantilla para tu nuevo evento
-            </h1>
-
-            <p class="mt-4 max-w-3xl text-lg leading-8 text-[#5B5145]"
-            >
-                Selecciona un punto de partida para tu planificación...
-            </p>
-
-           
-           <div class="grid grid-cols-2 gap-8 mt-14">
-
-                ${EventTemplateCard({
-                    title: "Boda",
-                    description:
-                    "Romance y logística de alta gama. Incluye flujos de RSVP, catering y coordinación de ceremonia.",
-                     icon: `<img src="${BodaIcon}" class="w-16 h-16" alt="Wedding">`,
-                    backgroundColor: "#FCECEC",
-                    buttonText: "Seleccionar",
-                })}
-
-                ${EventTemplateCard({
-                    title: "Cumpleaños",
-                    description:
-                    "Celebraciones vibrantes. Configuración para DJ, pastel, lista de invitados y actividades.",
-                    icon: `<img src="${CumpleañosIcon}" class="w-16 h-16" alt="Wedding">`,
-                    backgroundColor: "#F8F2D8",
-                    buttonText: "Seleccionar",
-                })}
-
-                ${EventTemplateCard({
-                    title: "Tech / Startup",
-                    description:
-                    "Enfoque en networking, pantallas, registro rápido y patrocinios corporativos.",
-                    icon: `<img src="${TechIcon}" class="w-16 h-16" alt="Wedding">`,
-                    backgroundColor: "#ECE9E5",
-                    buttonText: "Seleccionar",
-                })}
-
-                ${EventTemplateCard({
-                    title: "Personalizado",
-                    description:
-                    "Lienzo en blanco. Construye la estructura de tu evento desde cero con flexibilidad total.",
-                     icon: `<img src="${PersonalizadoIcon}" class="w-16 h-16" alt="Wedding">`,
-                    backgroundColor: "#DDF0E5",
-                    buttonText: "Comenzar en blanco",
-                })}
-
+            <div class="text-center mb-16">
+              <h1 class="font-display text-5xl md:text-6xl text-[#1E1B15] leading-tight tracking-tight"
+                  style="font-family:'Playfair Display', serif;">
+                Crea tu próximo evento
+              </h1>
+              <p class="mt-6 text-[#4D4637] text-xl max-w-2xl mx-auto font-medium">
+                ¿Cómo deseas comenzar la planificación de tu gran día?
+                Elige el camino que mejor se adapte a tus necesidades.
+              </p>
             </div>
 
+            <div class="grid md:grid-cols-2 gap-8">
+
+              <div onclick="window.handleTemplateSelect('template')"
+                  class="group bg-white border border-[#E9E1D7] hover:border-[#C9A84C] rounded-3xl p-10 cursor-pointer transition-all hover:-translate-y-3 hover:shadow-2xl">
+                <div class="w-16 h-16 bg-[#FEF3C7] rounded-2xl flex items-center justify-center mb-8 text-3xl group-hover:scale-110 transition-transform">
+                  ✨
+                </div>
+                <h2 class="font-display text-3xl text-[#1E1B15] mb-4">Usar una Plantilla</h2>
+                <p class="text-[#4D4637] text-[17px] leading-relaxed">
+                  Ahorra tiempo con estructuras predefinidas para Bodas, Cumpleaños o Eventos Corporativos.
+                </p>
+                <div class="mt-10 flex items-center gap-3 text-[#755B00] font-semibold text-lg">
+                  Comenzar con guía
+                  <span class="text-2xl transition-transform group-hover:translate-x-2">→</span>
+                </div>
+              </div>
+
+              <div onclick="window.handleTemplateSelect('custom')"
+                  class="group bg-white border border-[#E9E1D7] hover:border-[#755B00] rounded-3xl p-10 cursor-pointer transition-all hover:-translate-y-3 hover:shadow-2xl">
+                <div class="w-16 h-16 bg-[#D1FAE5] rounded-2xl flex items-center justify-center mb-8 text-3xl group-hover:scale-110 transition-transform">
+                  ✏️
+                </div>
+                <h2 class="font-display text-3xl text-[#1E1B15] mb-4">Evento Personalizado</h2>
+                <p class="text-[#4D4637] text-[17px] leading-relaxed">
+                  ¿Tienes una visión única? Comienza desde cero sobre un lienzo en blanco.
+                </p>
+                <div class="mt-10 flex items-center gap-3 text-[#755B00] font-semibold text-lg">
+                  Crear desde cero
+                  <span class="text-2xl transition-transform group-hover:translate-x-2">→</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </main>
 
       </div>

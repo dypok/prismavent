@@ -2,6 +2,13 @@ import dashboardIcon from "../assets/icons/dashboard_icon.svg";
 import eventsIcon from "../assets/icons/events_icon.svg";
 import providersIcon from "../assets/icons/providers_icon.svg";
 import historyIcon from "../assets/icons/history_icon.svg";
+import { logout } from "../utils/authUtils.js";
+
+window.handleLogout = function () {
+  logout();
+  window.history.pushState({}, "", "/login");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};
 
 export function Sidebar(active = "new-event") {
   return `
@@ -57,9 +64,10 @@ export function Sidebar(active = "new-event") {
             <p class="text-xs text-[#9E8E6E]">Event Director</p>
           </div>
         </div>
-        <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] rounded-xl transition text-sm font-medium">
+<button onclick="window.handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] rounded-xl transition text-sm font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
           Cerrar Sesión
+        </button>
         </button>
       </div>
     </aside>
@@ -68,13 +76,8 @@ export function Sidebar(active = "new-event") {
 
 window.navigateTo = function(path) {
   window.history.pushState({}, "", path);
-  window.location.reload();
+window.navigateTo = function(path) {
+  window.history.pushState({}, "", path);
+  window.dispatchEvent(new PopStateEvent("popstate"));
 };
-
-// 🔧 NUEVO: Función de logout
-window.handleLogout = function() {
-  localStorage.removeItem('token'); // o el nombre que uses para el token
-  localStorage.removeItem('selectedEventTemplate');
-  window.history.pushState({}, "", "/login");
-  window.location.reload();
 };
