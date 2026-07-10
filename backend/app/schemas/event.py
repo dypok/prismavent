@@ -4,6 +4,7 @@ from decimal import Decimal
 from datetime import date, datetime
 from uuid import UUID
 from app.schemas.event_item import EventItemResponse, EventItemOut
+from app.schemas.guest import GuestResponse
 
 class EventCreate(BaseModel):
     name: str
@@ -69,7 +70,23 @@ class EventDetailOut(BaseModel):
     status: str
     visibility_status: str
     event_items: list[EventItemOut]
+    guests: list[GuestResponse] = []
+    registered_guests_count: int = 0
+    confirmed_guests_count: int = 0
+    unconfirmed_guests_count: int = 0
     total_estimated: Decimal
     budget_alert: bool
     created_at: datetime
     updated_at: datetime
+
+
+class EventUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    event_date: Optional[date] = None
+    guest_count: Optional[int] = None
+    max_budget: Optional[Decimal] = None
+    city_id: Optional[UUID] = None
+    city_custom: Optional[str] = None
+    location: Optional[str] = None
+    visibility_status: Optional[str] = None
