@@ -88,6 +88,10 @@ export async function apiFetch(path, options = {}) {
 
   return data;
 }
+
+export async function getEventById(eventId) {
+  return await apiFetch(`/events/${eventId}`);
+}
 // --- Ejemplo ilustrativo —  patrón a usar cada vez que necesites pedirle datos protegidos al backend (eventos, usuarios, etc). ---
 // import { apiFetch } from "./services/api.js";
 // const eventos = await apiFetch("/events");

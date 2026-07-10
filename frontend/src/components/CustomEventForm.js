@@ -200,7 +200,6 @@ export function prefillCustomEventForm() {
 
     // Se consume una sola vez: si el usuario navega a /events/new/custom
     // directamente después, no debe seguir viendo datos de una plantilla vieja.
-    localStorage.removeItem("selectedEventTemplate");
 }
 
 // Al confirmar: llama a POST /events con los campos que sí existen en
@@ -222,6 +221,14 @@ document.addEventListener("submit", async (e) => {
         location: document.getElementById("eventLocation").value || null,
         description: document.getElementById("notes").value || null,
     };
+    //------------------------------------------------------------------------------------==================0
+    const selectedTemplate = JSON.parse(      
+        localStorage.getItem("selectedEventTemplate")
+    );
+
+    if (selectedTemplate) {
+        payload.template_id = selectedTemplate.id;
+    }
 
     const maxBudgetValue = document.getElementById("maxBudget").value;
     if (maxBudgetValue) payload.max_budget = parseFloat(maxBudgetValue);

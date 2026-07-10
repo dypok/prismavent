@@ -1,6 +1,8 @@
 import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
+import { getEventById } from "../service/api.js";
+import { BudgetPanel } from "../components/BudgetPanel.js";
 
 // NOTA: por ahora solo recibe y muestra el eventId que llega por la URL
 // (?id=...) para confirmar que el redirect desde CustomEventForm.js
@@ -8,7 +10,16 @@ import { EventStepper } from "../components/EventStepper.js";
 // presupuesto, items) vía GET /events/{id} y reemplazar los placeholders
 // de abajo es trabajo pendiente de otro ticket, fuera del alcance de
 // "Llamada POST /events al confirmar y redirigir al detalle".
-export function EventDetail(eventId) {
+export async function EventDetail(eventId) {
+  let event = null;
+
+    if (eventId) {
+      try {
+        event = await getEventById(eventId);
+      } catch (error) {
+        console.error(error);
+      }
+  }
   return `
     <div class="flex min-h-screen bg-[#F8F5F0]">
 
@@ -48,9 +59,7 @@ export function EventDetail(eventId) {
               Stepper
             </div>
 
-            <div class="rounded-xl border border-gray-200 p-4">
-              Budget Summary
-            </div>
+            ${BudgetPanel(event)}
 
             <div class="rounded-xl border border-gray-200 p-4">
               Event Information
@@ -67,3 +76,4 @@ export function EventDetail(eventId) {
     </div>
   `;
 }
+
