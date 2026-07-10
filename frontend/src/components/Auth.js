@@ -1,5 +1,3 @@
-import { login, register} from "../service/api.js";
-
 export function Auth() {
     return `
         <div class="min-h-screen bg-[#F8F5F0] flex items-center justify-center p-6 font-sans">
@@ -163,54 +161,35 @@ window.closeModalAndRedirect = function() {
 };
 
 // ====================== MANEJO DE FORMULARIOS ======================
-document.addEventListener('DOMContentLoaded', () => {
+// NOTA: no se usa 'DOMContentLoaded' porque este HTML se inserta
+// dinámicamente (innerHTML) mucho después de que ese evento ya se
+// disparó una sola vez al cargar la página. Se usa delegación de
+// eventos sobre "document" (igual que en CustomEventForm.js), que
+// funciona sin importar cuándo se insertó el formulario en el DOM.
 
-    // Login
-    const loginForm = document.getElementById("login-form");
+document.addEventListener("submit", (e) => {
+  // Login
+  if (e.target.id === "login-form") {
+    e.preventDefault();
+    // TODO: reemplazar con el verdadero JWT cuando la autenticacion del backend sea integrada
+    localStorage.setItem("token", "temp-token");
 
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
+    window.history.pushState({}, "", "/dashboard");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  }
 
-            const email = document.getElementById("login-email").value;
-            const password = document.getElementById("login-password").value;
+  // Registro
+  if (e.target.id === "signup-form") {
+    e.preventDefault();
+    const name = document.getElementById("signup-name").value;
+    const email = document.getElementById("signup-email").value;
 
-            try {
-                await login(email, password);
+    console.log("Registro exitoso:", { name, email });
 
-                window.history.pushState({}, "", "/dashboard");
-                window.dispatchEvent(new PopStateEvent("popstate"));
+    // Mostrar modal
+    document.getElementById("confirmation-modal").classList.remove("hidden");
 
-            } catch (error) {
-                alert(error.message);
-            }
-       });
-}
-
-    // Registro
-    const signupForm = document.getElementById("signup-form");
-
-    if (signupForm) {
-            signupForm.addEventListener("submit", async (e) => {
-                e.preventDefault();
-
-        const name = document.getElementById("signup-name").value;
-        const email = document.getElementById("signup-email").value;
-        const password = document.getElementById("signup-password").value;
-        const phone = document.getElementById("signup-phone").value;
-
-        try {
-            await register(name, email, password, phone);
-
-            document
-                .getElementById("confirmation-modal")
-                .classList.remove("hidden");
-
-            setTimeout(closeModalAndRedirect, 2500);
-
-        } catch (error) {
-            alert(error.message);
-        }
-    });
-}
+    // Auto cerrar después de 2.5 segundos
+    setTimeout(closeModalAndRedirect, 2500);
+  }
 });
