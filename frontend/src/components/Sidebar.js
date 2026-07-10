@@ -2,6 +2,13 @@ import dashboardIcon from "../assets/icons/dashboard_icon.svg";
 import eventsIcon from "../assets/icons/events_icon.svg";
 import providersIcon from "../assets/icons/providers_icon.svg";
 import historyIcon from "../assets/icons/history_icon.svg";
+import { logout } from "../utils/authUtils.js";
+
+window.handleLogout = function () {
+  logout();
+  window.history.pushState({}, "", "/login");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};
 
 export function Sidebar(active = "new-event") {
   return `
@@ -58,6 +65,12 @@ export function Sidebar(active = "new-event") {
             <p class="text-xs text-[#9E8E6E]">Event Director</p>
           </div>
         </div>
+        <button
+          onclick="window.handleLogout()"
+          class="w-full border border-[#D0C5B2] text-[#4D4637] py-2.5 rounded-xl text-sm font-medium hover:bg-white transition"
+        >
+          Cerrar sesión
+        </button>
       </div>
     </aside>
   `;
@@ -65,5 +78,5 @@ export function Sidebar(active = "new-event") {
 
 window.navigateTo = function(path) {
   window.history.pushState({}, "", path);
-  window.location.reload();
+  window.dispatchEvent(new PopStateEvent("popstate"));
 };
