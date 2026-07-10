@@ -2,10 +2,15 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
-from app.schemas.event import EventCreate, EventResponse, EventDetailResponse, EventDetailOut
+from app.schemas.event import EventCreate, EventResponse, EventDetailResponse, EventDetailOut, EventUpdate
 from app.core.supabase import get_supabase_client_for_user
 from app.dependencies import get_current_user
 from app.services import budget_service
+from app.services.event_service import (
+    validate_event_not_finalized,
+    validate_event_date_not_past,
+    validate_guest_count_editable
+)
 from typing import List
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -172,3 +177,89 @@ def get_event(event_id: str, db: Session = Depends(get_db), current_user = Depen
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=400, detail=f"Error retrieving event details: {str(e)}")
+
+
+def map_event_to_detail(event_data: dict, db: Session) -> dict:
+    event = dict(event_data)
+    event_id = str(event["id"])
+    
+    # Fetch associated event items
+    items_res = db.execute(
+        text("SELECT * FROM event_items WHERE event_id = :event_id"),
+        {"event_id": event_id}
+    ).fetchall()
+    
+    event_items = [dict(item._mapping) for item in items_res] if items_res else []
+    
+    # Calculate budget metrics
+    total_estimated = budget_service.calculate_total_estimated(event_items)
+    budget_alert = budget_service.check_budget_alert(total_estimated, event.get("max_budget"))
+    
+    # Populate response dictionary
+    event["event_items"] = event_items
+    event["total_estimated"] = total_estimated
+    event["budget_alert"] = budget_alert
+    
+    return event
+
+
+@router.patch("/{event_id}", response_model=EventDetailOut)
+def update_event(
+    event_id: str,
+    payload: EventUpdate,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        # Fetch event details validating user ownership
+        event_res = db.execute(
+            text("SELECT * FROM events WHERE id = :id AND user_id = :user_id"),
+            {"id": event_id, "user_id": current_user.id}
+        ).fetchone()
+
+        if event_res is None:
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
+
+        event = event_res._mapping
+        validate_event_not_finalized(event["status"])
+        validate_event_date_not_past(payload.event_date)
+        validate_guest_count_editable(payload.guest_count, event.get("guest_tracking_enabled", False))
+
+        updated = db.execute(
+            text("""
+                UPDATE events
+                SET name = COALESCE(:name, name),
+                    description = COALESCE(:description, description),
+                    event_date = COALESCE(:event_date, event_date),
+                    guest_count = COALESCE(:guest_count, guest_count),
+                    max_budget = COALESCE(:max_budget, max_budget),
+                    city_id = COALESCE(:city_id, city_id),
+                    city_custom = COALESCE(:city_custom, city_custom),
+                    location = COALESCE(:location, location),
+                    visibility_status = COALESCE(:visibility_status, visibility_status),
+                    updated_at = NOW()
+                WHERE id = :id AND user_id = :user_id
+                RETURNING *
+            """),
+            {
+                "id": event_id,
+                "user_id": current_user.id,
+                "name": payload.name,
+                "description": payload.description,
+                "event_date": payload.event_date,
+                "guest_count": payload.guest_count,
+                "max_budget": payload.max_budget,
+                "city_id": payload.city_id,
+                "city_custom": payload.city_custom,
+                "location": payload.location,
+                "visibility_status": payload.visibility_status,
+            }
+        ).fetchone()
+        
+        db.commit()
+        return map_event_to_detail(updated._mapping, db)
+    except Exception as e:
+        db.rollback()
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=400, detail=f"Error updating event: {str(e)}")

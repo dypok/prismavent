@@ -40,6 +40,7 @@ class TestIntegrationEvents(unittest.TestCase):
         cls.event_id_1 = str(uuid4())
         cls.event_id_2 = str(uuid4())
         cls.event_id_3 = str(uuid4())
+        cls.event_id_finalized = str(uuid4())
         
         # Setup data in DB
         cls.db = SessionLocal()
@@ -59,6 +60,11 @@ class TestIntegrationEvents(unittest.TestCase):
                 INSERT INTO events (id, user_id, name, event_date, guest_count, max_budget, status, visibility_status)
                 VALUES (:id, :user_id, :name, '2026-10-10', 50, :max_budget, 'confirmado', 'active')
             """), {"id": cls.event_id_3, "user_id": USER_A_ID, "name": "Event A - No Budget Limit", "max_budget": None})
+
+            cls.db.execute(text("""
+                INSERT INTO events (id, user_id, name, event_date, guest_count, max_budget, status, visibility_status)
+                VALUES (:id, :user_id, :name, '2026-10-10', 50, :max_budget, 'finalizado', 'active')
+            """), {"id": cls.event_id_finalized, "user_id": USER_A_ID, "name": "Event A - Finalized", "max_budget": 500.00})
 
             # Insert items associated with each event
             cls.db.execute(text("INSERT INTO event_items (id, event_id, name, quantity, unit_price, confirmed) VALUES (:id, :event_id, 'Item 1', 2, 30.00, true)"), {"id": str(uuid4()), "event_id": cls.event_id_1})
@@ -80,7 +86,7 @@ class TestIntegrationEvents(unittest.TestCase):
         db = SessionLocal()
         try:
             db.execute(text("DELETE FROM event_items WHERE event_id IN (:e1, :e2, :e3)"), {"e1": cls.event_id_1, "e2": cls.event_id_2, "e3": cls.event_id_3})
-            db.execute(text("DELETE FROM events WHERE id IN (:e1, :e2, :e3)"), {"e1": cls.event_id_1, "e2": cls.event_id_2, "e3": cls.event_id_3})
+            db.execute(text("DELETE FROM events WHERE id IN (:e1, :e2, :e3, :e4)"), {"e1": cls.event_id_1, "e2": cls.event_id_2, "e3": cls.event_id_3, "e4": cls.event_id_finalized})
             db.commit()
         finally:
             db.close()
@@ -121,6 +127,73 @@ class TestIntegrationEvents(unittest.TestCase):
         current_test_user = MockUser(USER_B_ID)
         response = self.client.get(f"/events/{self.event_id_1}", headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 404)
+
+    def test_patch_event_success(self):
+        """PATCH: Should successfully update name and max_budget, updating updated_at."""
+        global current_test_user
+        current_test_user = MockUser(USER_A_ID)
+        payload = {
+            "name": "Event A - Updated Name",
+            "max_budget": 800.00
+        }
+        response = self.client.patch(f"/events/{self.event_id_2}", json=payload, headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["name"], "Event A - Updated Name")
+        self.assertEqual(float(data["max_budget"]), 800.0)
+        self.assertIsNotNone(data["updated_at"])
+        # event_date should be untouched (COALESCE)
+        self.assertEqual(data["event_date"], "2026-10-10")
+
+    def test_patch_event_past_date(self):
+        """PATCH: Should return 400 if updating event_date to a past date."""
+        global current_test_user
+        current_test_user = MockUser(USER_A_ID)
+        payload = {
+            "event_date": "2020-01-01"
+        }
+        response = self.client.patch(f"/events/{self.event_id_2}", json=payload, headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("event_date no puede ser una fecha en el pasado", response.json()["detail"])
+
+    def test_patch_event_finalized(self):
+        """PATCH: Should return 400 if trying to modify a finalized event."""
+        global current_test_user
+        current_test_user = MockUser(USER_A_ID)
+        payload = {
+            "name": "New Name"
+        }
+        response = self.client.patch(f"/events/{self.event_id_finalized}", json=payload, headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("No se puede modificar un evento finalizado", response.json()["detail"])
+
+    def test_patch_event_ignore_fields(self):
+        """PATCH: Should ignore fields not present in EventUpdate (status, template_id) and successfully edit editable fields."""
+        global current_test_user
+        current_test_user = MockUser(USER_A_ID)
+        payload = {
+            "name": "Another Name Change",
+            "status": "finalizado",
+            "template_id": "3c608982-f8cb-4eaa-b439-740b3371c131"
+        }
+        response = self.client.patch(f"/events/{self.event_id_2}", json=payload, headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["name"], "Another Name Change")
+        # Ignored fields should not have changed in DB
+        self.assertEqual(data["status"], "borrador")
+        self.assertNotEqual(data["template_id"], "3c608982-f8cb-4eaa-b439-740b3371c131")
+
+    def test_patch_event_unauthorized(self):
+        """PATCH: Should return 404 if User B tries to modify User A's event."""
+        global current_test_user
+        current_test_user = MockUser(USER_B_ID)
+        payload = {
+            "name": "Malicious Edit Attempt"
+        }
+        response = self.client.patch(f"/events/{self.event_id_1}", json=payload, headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 404)
+
 
 if __name__ == "__main__":
     unittest.main()

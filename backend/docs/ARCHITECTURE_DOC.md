@@ -81,12 +81,61 @@ Una vez completadas tus capas, importa y registra tu router en el archivo princi
 
 ---
 
-## 4. Guía de Pruebas y Mocking de Autenticación
+## 4. Estrategia de Consultas a Base de Datos: SQL Directo vs ORM
+
+En **Prismavent**, decidimos implementar un enfoque híbrido en el acceso a datos. Aunque usamos **SQLAlchemy** como infraestructura, los routers ejecutan consultas **SQL directas/nativas** mediante `db.execute(text(...))` en lugar de utilizar métodos puros del ORM (como `db.query(Model)` o `db.add()`).
+
+### 4.1 ¿Por qué decidimos usar SQL Directo en los routers?
+
+1. **Rendimiento superior (Evitar "Overhead" del ORM):**
+   El ORM tradicional realiza la "hidratación" de objetos, mapeando cada fila obtenida de la base de datos a una instancia de modelo de Python y rastreando su estado de cambios. En flujos de lectura y escritura rápidos de la API, esto genera un consumo de CPU innecesario. Al usar `result._mapping`, obtenemos diccionarios de clave-valor nativos que se inyectan directamente en los esquemas de validación de Pydantic, acelerando la respuesta drásticamente.
+
+2. **Control absoluto y depuración fluida:**
+   Facilita la escritura y mantenimiento de sentencias complejas de SQL (por ejemplo, inserciones multitabla utilizando `RETURNING`, cláusulas `ON CONFLICT`, o filtrados avanzados). El desarrollador escribe exactamente el mismo código que correría en el explorador de Supabase o PostgreSQL, sin tener que descifrar la sintaxis equivalente en el DSL de consultas de SQLAlchemy.
+
+3. **Prevención de dependencias circulares:**
+   Evitamos tener que importar todos los modelos físicos de base de datos (`app/models/event.py`, `app/models/event_item.py`, etc.) en cada router simplemente para hacer consultas sencillas. Esto desacopla el router del modelo físico del ORM y previene bugs de importación circular en Python.
+
+### 4.2 ¿Qué rol mantiene SQLAlchemy entonces?
+
+SQLAlchemy no se descarta; se utiliza como el motor de infraestructura central para:
+* **Manejo del Ciclo de Vida y Sesión de Conexiones:** La inyección de dependencias `Depends(get_db)` gestiona automáticamente cuándo se abre y cierra cada sesión de base de datos (`SessionLocal`).
+* **Pooling de Conexiones:** Mantenemos las ventajas de rendimiento del pooling nativo de conexiones a Postgres.
+* **Control de Transacciones:** Lógicas críticas de escritura (como clonar ítems de una plantilla al crear un evento) siguen gozando de la seguridad de transacciones ACID gracias a los métodos `db.commit()` y `db.rollback()`.
+
+### 4.3 Seguridad y Prevención de Inyección SQL (SQL Injection)
+
+El enfoque de SQL directo es **completamente seguro contra Inyección SQL** en el backend actual de **Prismavent** debido a que todas las consultas dinámicas implementan **parametrización estricta**.
+
+Cuando el motor de base de datos recibe una consulta parametrizada, compila la estructura SQL por separado de los datos de entrada. Esto significa que si un atacante envía código malicioso (ej. `'; DROP TABLE events; --`), Postgres tratará dicha entrada estrictamente como un valor de tipo string o UUID y no como código ejecutable.
+
+#### Ejemplo de Código Seguro en el Backend:
+```python
+# SEGURO: La query y los datos de entrada se envían al motor de base de datos por separado.
+event_res = db.execute(
+    text("SELECT * FROM events WHERE id = :id AND user_id = :user_id"),
+    {"id": event_id, "user_id": current_user.id}
+).fetchone()
+```
+
+### 4.4 Recomendaciones de Seguridad para Desarrolladores
+
+Para evitar brechas de seguridad accidentales, el equipo de desarrollo de backend debe apegarse a las siguientes normas:
+
+1. **Uso Obligatorio de `text()`:** Todas las sentencias SQL escritas en string dentro de Python deben ser explícitamente envueltas en el constructor `text()` de SQLAlchemy.
+2. **Prohibición de Interpolación y Concatenación:**
+   * **NUNCA** utilices F-strings de Python (ej. `f"SELECT * FROM events WHERE id = '{event_id}'"`) para ingresar variables.
+   * **NUNCA** utilices concatenación de strings con el operador `+` para construir queries.
+   * **NUNCA** utilices interpolación clásica con el operador `%`.
+3. **Mapeo con Placeholders y Diccionarios:** Toda variable dinámica debe declararse en el string de la query usando la sintaxis `:nombre_parametro`, y pasarse como un diccionario en el segundo argumento de `db.execute()`.
+4. **Validación Previa con Pydantic:** Todos los datos recibidos desde peticiones HTTP deben ser previamente validados y sanitizados a través de los esquemas de Pydantic antes de llegar a la capa de base de datos.
+
+---
+
+## 5. Guía de Pruebas y Mocking de Autenticación
 
 Al escribir pruebas de integración para endpoints protegidos, se debe usar `fastapi.testclient.TestClient`. Como la autenticación se maneja a nivel de middleware interceptor, sigue estas buenas prácticas:
 
 1. **Mockear el Middleware**: Sobrescribe la función `get_supabase_client` del middleware de autenticación (`app.middlewares.auth_middleware.get_supabase_client`) para que retorne un cliente de prueba mockeado.
 2. **Controlar el Usuario Autenticado**: Haz que la llamada mockeada retorne un objeto de usuario simulado con el ID necesario para las pruebas de propiedad.
 3. **Enviar Cabeceras de Autorización**: En cada petición del cliente de pruebas, envía un Bearer Token en los headers (ej. `headers={"Authorization": "Bearer test-token"}`) para habilitar el paso exitoso del middleware.
-
-
