@@ -259,3 +259,26 @@ def update_event(
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=400, detail=f"Error updating event: {str(e)}")
+    
+# ==================== NUEVO: LISTAR EVENTOS DEL USUARIO ====================
+@router.get("", response_model=List[EventResponse])  # ← Agrega esto
+def get_events(current_user = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Obtener todos los eventos del usuario actual"""
+    try:
+        events = db.execute(
+            text("""
+                SELECT id, user_id, name, description, event_date, guest_count, 
+                    max_budget, template_id, user_template_id, city_id, 
+                    city_custom, event_type_id, location, status, 
+                    visibility_status, created_at, updated_at
+                FROM events 
+                WHERE user_id = :user_id 
+                ORDER BY created_at DESC
+            """),
+            {"user_id": current_user.id}
+        ).fetchall()
+
+        return [dict(event._mapping) for event in events]
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")
