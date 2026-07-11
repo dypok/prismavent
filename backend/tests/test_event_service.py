@@ -10,7 +10,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from app.services.event_service import (
     validate_event_not_finalized,
     validate_event_date_not_past,
-    validate_guest_count_editable
+    validate_guest_count_editable,
+    validate_event_is_draft
 )
 
 class TestEventService(unittest.TestCase):
@@ -63,6 +64,20 @@ class TestEventService(unittest.TestCase):
             validate_guest_count_editable(None, False)
         except HTTPException:
             self.fail("validate_guest_count_editable raised HTTPException unexpectedly")
+
+    def test_validate_event_is_draft_not_draft(self):
+        """Should raise HTTPException (400) if event status is not 'borrador'."""
+        with self.assertRaises(HTTPException) as ctx:
+            validate_event_is_draft("planificando")
+        self.assertEqual(ctx.exception.status_code, 400)
+        self.assertIn("Solo se pueden eliminar eventos en estado borrador", ctx.exception.detail)
+
+    def test_validate_event_is_draft_success(self):
+        """Should not raise error if event status is 'borrador'."""
+        try:
+            validate_event_is_draft("borrador")
+        except HTTPException:
+            self.fail("validate_event_is_draft raised HTTPException unexpectedly")
 
 if __name__ == "__main__":
     unittest.main()

@@ -32,6 +32,7 @@ class TestIntegrationEvents(unittest.TestCase):
         cls.event_id_2 = str(uuid4())
         cls.event_id_3 = str(uuid4())
         cls.event_id_finalized = str(uuid4())
+        cls.event_id_delete = str(uuid4())
         
         # Setup data in DB
         cls.db = SessionLocal()
@@ -57,6 +58,11 @@ class TestIntegrationEvents(unittest.TestCase):
                 VALUES (:id, :user_id, :name, '2026-10-10', 50, :max_budget, 'finalizado', 'active')
             """), {"id": cls.event_id_finalized, "user_id": USER_A_ID, "name": "Event A - Finalized", "max_budget": 500.00})
 
+            cls.db.execute(text("""
+                INSERT INTO events (id, user_id, name, event_date, guest_count, max_budget, status, visibility_status)
+                VALUES (:id, :user_id, :name, '2026-10-10', 50, :max_budget, 'borrador', 'active')
+            """), {"id": cls.event_id_delete, "user_id": USER_A_ID, "name": "Event A - For Deletion", "max_budget": 300.00})
+
             # Insert items associated with each event
             cls.db.execute(text("INSERT INTO event_items (id, event_id, name, quantity, unit_price, confirmed) VALUES (:id, :event_id, 'Item 1', 2, 30.00, true)"), {"id": str(uuid4()), "event_id": cls.event_id_1})
             cls.db.execute(text("INSERT INTO event_items (id, event_id, name, quantity, unit_price, confirmed) VALUES (:id, :event_id, 'Item 2', 1, 50.00, false)"), {"id": str(uuid4()), "event_id": cls.event_id_1})
@@ -64,6 +70,8 @@ class TestIntegrationEvents(unittest.TestCase):
             cls.db.execute(text("INSERT INTO event_items (id, event_id, name, quantity, unit_price, confirmed) VALUES (:id, :event_id, 'Item 3', 3, 100.00, true)"), {"id": str(uuid4()), "event_id": cls.event_id_2})
 
             cls.db.execute(text("INSERT INTO event_items (id, event_id, name, quantity, unit_price, confirmed) VALUES (:id, :event_id, 'Item 4', 1, 50.00, true)"), {"id": str(uuid4()), "event_id": cls.event_id_3})
+
+            cls.db.execute(text("INSERT INTO event_items (id, event_id, name, quantity, unit_price, confirmed) VALUES (:id, :event_id, 'Item Delete', 1, 10.00, false)"), {"id": str(uuid4()), "event_id": cls.event_id_delete})
 
             cls.db.commit()
         except Exception as e:
@@ -76,8 +84,8 @@ class TestIntegrationEvents(unittest.TestCase):
     def tearDownClass(cls):
         db = SessionLocal()
         try:
-            db.execute(text("DELETE FROM event_items WHERE event_id IN (:e1, :e2, :e3)"), {"e1": cls.event_id_1, "e2": cls.event_id_2, "e3": cls.event_id_3})
-            db.execute(text("DELETE FROM events WHERE id IN (:e1, :e2, :e3, :e4)"), {"e1": cls.event_id_1, "e2": cls.event_id_2, "e3": cls.event_id_3, "e4": cls.event_id_finalized})
+            db.execute(text("DELETE FROM event_items WHERE event_id IN (:e1, :e2, :e3, :edel)"), {"e1": cls.event_id_1, "e2": cls.event_id_2, "e3": cls.event_id_3, "edel": cls.event_id_delete})
+            db.execute(text("DELETE FROM events WHERE id IN (:e1, :e2, :e3, :e4, :edel)"), {"e1": cls.event_id_1, "e2": cls.event_id_2, "e3": cls.event_id_3, "e4": cls.event_id_finalized, "edel": cls.event_id_delete})
             db.commit()
         finally:
             db.close()
@@ -181,6 +189,37 @@ class TestIntegrationEvents(unittest.TestCase):
             "name": "Malicious Edit Attempt"
         }
         response = self.client.patch(f"/events/{self.event_id_1}", json=payload, headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_event_success(self):
+        """DELETE: Should successfully delete draft event and return 200."""
+        self.current_test_user = MockUser(USER_A_ID)
+        response = self.client.delete(f"/events/{self.event_id_delete}", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["message"], "Evento eliminado exitosamente")
+
+        # Verify event is deleted in DB
+        db = SessionLocal()
+        try:
+            event = db.execute(text("SELECT * FROM events WHERE id = :id"), {"id": self.event_id_delete}).fetchone()
+            self.assertIsNone(event)
+            # Verify event_items are also cascade deleted
+            item = db.execute(text("SELECT * FROM event_items WHERE event_id = :event_id"), {"event_id": self.event_id_delete}).fetchone()
+            self.assertIsNone(item)
+        finally:
+            db.close()
+
+    def test_delete_event_not_draft(self):
+        """DELETE: Should return 400 if event status is not 'borrador'."""
+        self.current_test_user = MockUser(USER_A_ID)
+        response = self.client.delete(f"/events/{self.event_id_1}", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Solo se pueden eliminar eventos en estado borrador", response.json()["detail"])
+
+    def test_delete_event_unauthorized(self):
+        """DELETE: Should return 404 if unauthorized user attempts to delete the event."""
+        self.current_test_user = MockUser(USER_B_ID)
+        response = self.client.delete(f"/events/{self.event_id_delete}", headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 404)
 
 if __name__ == "__main__":

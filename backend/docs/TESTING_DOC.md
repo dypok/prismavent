@@ -66,6 +66,10 @@ La siguiente tabla resume los casos de prueba ejecutados y el comportamiento esp
 | **TC-10** | Ignorar campos no editables | PATCH `/events/{id}` enviando `status` o `template_id` | HTTP 200, campos ignorados silenciosamente en base de datos | Integración | **PASSED** |
 | **TC-11** | Control de propiedad PATCH (404) | Usuario B intenta modificar el evento de Usuario A | HTTP 404 Not Found (Protección de datos) | Integración | **PASSED** |
 | **TC-12** | Validaciones unitarias del servicio | Validaciones de fecha, estado e invitados en aislamiento | Comportamiento correcto de excepciones HTTPException (400) | Unitario | **PASSED** |
+| **TC-13** | Eliminar evento borrador exitoso | DELETE `/events/{id}` en evento con status = `"borrador"` | HTTP 200, mensaje de éxito, registros cascade-deleted en BD | Integración | **PASSED** |
+| **TC-14** | Bloquear eliminación de evento no borrador | DELETE `/events/{id}` en evento con status != `"borrador"` | HTTP 400 Bad Request | Integración | **PASSED** |
+| **TC-15** | Control de propiedad DELETE (404) | Usuario B intenta eliminar el evento de Usuario A | HTTP 404 Not Found (Protección de datos) | Integración | **PASSED** |
+| **TC-16** | Validar estado borrador (Unitario) | `validate_event_is_draft` con status diferente a `"borrador"` | HTTPException (400) | Unitario | **PASSED** |
 
 ---
 

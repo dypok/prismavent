@@ -323,6 +323,20 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
   }
   ```
 
+### 5.4 Eliminar Evento (DELETE)
+* **Endpoint:** `DELETE /events/{event_id}`
+* **Seguridad:** Requiere Token (`Authorization: Bearer <token>`).
+* **Descripción:** Elimina un evento existente junto con todos sus recursos e invitados asociados (eliminación en cascada).
+* **Reglas de negocio aplicadas:**
+  * El evento debe pertenecer al usuario autenticado (de lo contrario retorna `HTTP 404 Not Found`).
+  * El evento únicamente se puede eliminar si se encuentra en estado `"borrador"`. Si se encuentra en cualquier otro estado (ej. `"planificando"`, `"confirmado"`, `"finalizado"`), la petición será rechazada con `HTTP 400 Bad Request`.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "message": "Evento eliminado exitosamente"
+  }
+  ```
+
 ---
 
 ## 6. Endpoints de Gestión de Invitados (`/events/{event_id}/guests`)

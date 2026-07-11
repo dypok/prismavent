@@ -25,3 +25,13 @@ def validate_guest_count_editable(payload_guest_count: int | None, guest_trackin
             status_code=400,
             detail="guest_count se calcula automáticamente desde la lista de invitados y no puede editarse manualmente"
         )
+
+def validate_event_is_draft(status: str) -> None:
+    """
+    Raises a 400 Bad Request error if the event's status is not 'borrador'.
+    """
+    if status != "borrador":
+        raise HTTPException(
+            status_code=400,
+            detail="Solo se pueden eliminar eventos en estado borrador"
+        )

@@ -9,7 +9,8 @@ from app.services import budget_service
 from app.services.event_service import (
     validate_event_not_finalized,
     validate_event_date_not_past,
-    validate_guest_count_editable
+    validate_guest_count_editable,
+    validate_event_is_draft
 )
 from typing import List
 
@@ -262,3 +263,38 @@ def get_events(current_user = Depends(get_current_user), db: Session = Depends(g
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")
+
+@router.delete("/{event_id}")
+def delete_event(
+    event_id: str,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Deletes an event if its status is 'borrador' and the event belongs to the authenticated user.
+    """
+    try:
+        # Fetch event details validating user ownership and status
+        event_res = db.execute(
+            text("SELECT status FROM events WHERE id = :id AND user_id = :user_id"),
+            {"id": event_id, "user_id": current_user.id}
+        ).fetchone()
+        
+        if not event_res:
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
+            
+        event = event_res._mapping
+        validate_event_is_draft(event["status"])
+        
+        db.execute(
+            text("DELETE FROM events WHERE id = :id AND user_id = :user_id"),
+            {"id": event_id, "user_id": current_user.id}
+        )
+        db.commit()
+        
+        return {"message": "Evento eliminado exitosamente"}
+    except Exception as e:
+        db.rollback()
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=400, detail=f"Error deleting event: {str(e)}")
