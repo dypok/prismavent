@@ -15,7 +15,7 @@ export function clearAccessToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
-// --- Login: llama al backend y guarda el access_token de la sesión ---
+// --- Login y Register (sin cambios) ---
 
 export async function login(email, password) {
   const res = await fetch(`${BASE_URL}/auth/login`, {
@@ -33,11 +33,9 @@ export async function login(email, password) {
   }
 
   setAccessToken(data.session.access_token);
-
   return data;
 }
 
-// ---- Singup: LLama al backend para crear un nuevo usuario en Supabase ---
 export async function register(name, email, password, phone) {
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
@@ -61,7 +59,7 @@ export async function register(name, email, password, phone) {
   return data;
 }
 
-// --- Fetch autenticado: adjunta el token a cada petición al backend ---
+// --- Fetch autenticado (sin cambios) ---
 
 export async function apiFetch(path, options = {}) {
   const token = getAccessToken();
@@ -89,9 +87,65 @@ export async function apiFetch(path, options = {}) {
   return data;
 }
 
+// ========================
+// NUEVOS MÉTODOS PARA EL SPRINT
+// ========================
+
+// Obtener todos los eventos del usuario (para el grid)
+export async function getEvents() {
+  return await apiFetch('/events');   // ← CORREGIDO
+}
+
+// Obtener un evento por ID
 export async function getEventById(eventId) {
   return await apiFetch(`/events/${eventId}`);
 }
-// --- Ejemplo ilustrativo —  patrón a usar cada vez que necesites pedirle datos protegidos al backend (eventos, usuarios, etc). ---
-// import { apiFetch } from "./services/api.js";
-// const eventos = await apiFetch("/events");
+
+// Obtener templates (útil para crear evento)
+export async function getTemplates() {
+  return await apiFetch('/templates');
+}
+
+// Obtener invitados de un evento
+export async function getEventGuests(eventId) {
+  return await apiFetch(`/events/${eventId}/guests`);
+}
+
+// Crear un nuevo invitado
+export async function createGuest(eventId, guestData) {
+  return await apiFetch(`/events/${eventId}/guests`, {
+    method: 'POST',
+    body: JSON.stringify(guestData)
+  });
+}
+
+// Actualizar invitado
+export async function updateGuest(eventId, guestId, guestData) {
+  return await apiFetch(`/events/${eventId}/guests/${guestId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(guestData)
+  });
+}
+
+// Eliminar invitado
+export async function deleteGuest(eventId, guestId) {
+  return await apiFetch(`/events/${eventId}/guests/${guestId}`, {
+    method: 'DELETE'
+  });
+}
+
+export default {
+  login,
+  register,
+  getEvents,
+  getEventById,
+  getTemplates,
+  getEventGuests,
+  createGuest,
+  updateGuest,
+  deleteGuest,
+  setAccessToken,
+  getAccessToken,
+  clearAccessToken,
+  apiFetch
+};

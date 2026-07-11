@@ -9,11 +9,14 @@ import { CustomEventFlow } from "./pages/CustomEventFlow.js";
 import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
 import { prefillCustomEventForm } from "./components/CustomEventForm.js";
 
-console.log(" Main.js cargado - Ruta:", window.location.pathname);
+// === NUEVA IMPORTACIÓN ===
+import MyEvents from "./pages/MyEvents.js";
+
+console.log("Main.js cargado - Ruta:", window.location.pathname);
 
 async function renderPage() {
   const path = window.location.pathname;
-  // Si el usuario ya inició sesión y trata de entrar al login
+
   if (
     isAuthenticated() &&
     (path === "/" || path === "/auth" || path === "/login")
@@ -26,7 +29,6 @@ async function renderPage() {
   // Rutas de autenticación
   if (path === '/auth' || path === '/login' || path === '/register' || path === '/') {
     document.querySelector("#app").innerHTML = Auth();
-
 
   // Rutas del Dashboard
   } else if (path === '/dashboard' || path === '/home') {
@@ -48,19 +50,27 @@ async function renderPage() {
       </div>
     `;
 
-  }
+  // === RUTA: MIS EVENTOS ===
+  } else if (path === '/my-events' || path === '/events') {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    const myEventsPage = new MyEvents();
+    await myEventsPage.init();
+
   // Ruta Crear Evento
-  else if (path === "/events/new") {
+  } else if (path === "/events/new") {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
       renderPage();
       return;
     }
     document.querySelector("#app").innerHTML = CreateEvent();
-  }
 
   // Ruta Detalle del Evento
-  else if (path === "/events/detail") {
+  } else if (path === "/events/detail") {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
       renderPage();
@@ -68,10 +78,9 @@ async function renderPage() {
     }
     const eventId = new URLSearchParams(window.location.search).get("id");
     document.querySelector("#app").innerHTML = await EventDetail(eventId);
-  }
 
-  // Flujo: evento personalizado (desde cero, o pre-rellenado desde plantilla)
-  else if (path === "/events/new/custom") {
+  // Flujo: evento personalizado
+  } else if (path === "/events/new/custom") {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
       renderPage();
@@ -79,18 +88,18 @@ async function renderPage() {
     }
     document.querySelector("#app").innerHTML = CustomEventFlow();
     prefillCustomEventForm();
-  }
+
   // Flujo: evento desde plantilla
-  else if (path === "/events/new/template") {
+  } else if (path === "/events/new/template") {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
       renderPage();
       return;
     }
     document.querySelector("#app").innerHTML = TemplateEventFlow();
-  }
+
   // 404
-  else {
+  } else {
     document.querySelector("#app").innerHTML = `
       <div class="min-h-screen flex items-center justify-center">
         <div class="text-center">
@@ -106,5 +115,5 @@ async function renderPage() {
 // Render inicial
 renderPage();
 
-// Soporte para botones atrás/adelante del navegador
+// Soporte para botones atrás/adelante
 window.addEventListener('popstate', renderPage);
