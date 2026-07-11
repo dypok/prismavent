@@ -64,8 +64,7 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
       "user_metadata": {
         "name": "Juan Pérez",
         "phone": "+573001234567"
-      },
-      ...
+      }
     }
   }
   ```
@@ -167,7 +166,7 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
   }
   ```
   > [!NOTE]
-  > El campo `event_date` **debe ser una fecha futura**. Si se envía la fecha de hoy o una fecha pasada, el backend responderá con un error de validación `HTTP 422 Unprocessable Entity`.
+  > El campo `event_date` **debe ser una fecha futura**. Si se envía la fecha de hoy o una fecha pasada, el backend responderá con un error de validación `HTTP 422 Unprocessable Entity` o `HTTP 400 Bad Request`.
 * **Respuesta Exitosa (HTTP 200 OK):**
   ```json
   {
@@ -191,10 +190,10 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
   }
   ```
 
-### 5.2 Obtener Detalle de un Evento (Con Presupuesto Calculado)
+### 5.2 Obtener Detalle de un Evento (Con Presupuesto y Contadores de Invitados)
 * **Endpoint:** `GET /events/{event_id}`
 * **Seguridad:** Requiere Token (`Authorization: Bearer <token>`).
-* **Descripción:** Obtiene la información detallada de un evento específico que pertenezca al usuario autenticado (si el evento pertenece a otro usuario, la API responderá con `HTTP 404 Not Found` por protección de privacidad).
+* **Descripción:** Obtiene la información detallada de un evento específico que pertenezca al usuario autenticado. Incluye el cálculo del presupuesto, alerta, lista de recursos, lista de invitados y los contadores agregados para el dashboard del cliente.
 * **Parámetros de Ruta (Path Parameters):**
   * `event_id` (UUID): ID único del evento.
 * **Respuesta Exitosa (HTTP 200 OK):**
@@ -225,16 +224,31 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
         "unit_price": "45.00",
         "confirmed": false,
         "notes": null
-      },
-      {
-        "id": "d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a66",
-        "name": "Decoración de Salón",
-        "quantity": 1,
-        "unit_price": "850.00",
-        "confirmed": true,
-        "notes": "Confirmado con el florista local."
       }
     ],
+    "guests": [
+      {
+        "id": "8f88c8b8-4c4c-4e4e-8e8e-c8c8b8a8b8c8",
+        "event_id": "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44",
+        "full_name": "Juan Perez",
+        "confirmed": true,
+        "notes": "Vegetariano",
+        "created_at": "2026-07-10T11:00:00Z",
+        "updated_at": "2026-07-10T11:00:00Z"
+      },
+      {
+        "id": "7f77c7b7-3c3c-3e3e-7e7e-c7c7b7a7b7c7",
+        "event_id": "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44",
+        "full_name": "Maria Lopez",
+        "confirmed": false,
+        "notes": "Mesa 3",
+        "created_at": "2026-07-10T11:05:00Z",
+        "updated_at": "2026-07-10T11:05:00Z"
+      }
+    ],
+    "registered_guests_count": 2,
+    "confirmed_guests_count": 1,
+    "unconfirmed_guests_count": 1,
     "total_estimated": "4450.00",
     "budget_alert": false
   }
@@ -243,12 +257,12 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
 ### 5.3 Actualizar Evento (Edición Parcial - PATCH)
 * **Endpoint:** `PATCH /events/{event_id}`
 * **Seguridad:** Requiere Token (`Authorization: Bearer <token>`).
-* **Descripción:** Permite actualizar de forma parcial la información de un evento existente (por ejemplo, cambiar el nombre, presupuesto máximo, fecha, etc.). Sólo se actualizarán los campos que sean enviados en el cuerpo de la petición.
+* **Descripción:** Permite actualizar de forma parcial la información de un evento existente (por ejemplo, cambiar el nombre, presupuesto máximo, fecha, etc.). Sólo se actualizarán los campos que sean enviados en el cuerpo de la petición (hasta 9 campos editables).
 * **Campos Editables en el Body:**
   * `name` (String, Opcional): Nuevo nombre del evento.
   * `description` (String, Opcional): Nueva descripción.
   * `event_date` (String YYYY-MM-DD, Opcional): Nueva fecha. **Debe ser una fecha futura (posterior a hoy)**; de lo contrario, responderá con HTTP 400.
-  * `guest_count` (Integer, Opcional): Cantidad manual de invitados. **Sólo es editable cuando el modo de tracking de invitados por nombre está desactivado**; si el modo de tracking está activo (cuando esté desarrollada la historia futura), este campo no se acepta y la petición responderá con HTTP 400.
+  * `guest_count` (Integer, Opcional): Cantidad manual de invitados. **Sólo es editable cuando el modo de tracking de invitados por nombre está desactivado**; si el modo de tracking está activo, este campo no se acepta y la petición responderá con HTTP 400.
   * `max_budget` (Decimal, Opcional): Nuevo presupuesto máximo.
   * `city_id` (String UUID, Opcional): ID de la ciudad del evento.
   * `city_custom` (String, Opcional): Nombre de ciudad personalizada.
@@ -256,7 +270,7 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
   * `visibility_status` (String, Opcional): Estado de visibilidad (ej. `"active"`).
   
   > [!IMPORTANT]
-  > Campos como `id`, `user_id`, `status`, `template_id`, `user_template_id`, `created_at` y `updated_at` **no son editables** y se ignoran silenciosamente si son enviados en la petición. El campo `updated_at` se actualiza de forma automática por el backend en cada edición exitosa.
+  > Campos como `id`, `user_id`, `status`, `template_id`, `user_template_id`, `created_at` y `updated_at` **no son editables** y se ignoran silenciosamente si son enviados en la petición. El campo `updated_at` se actualiza de forma automática por el backend a `NOW()` en cada edición exitosa.
 
   > [!CAUTION]
   > Si el estado actual del evento es `"finalizado"`, el evento es inmutable. Cualquier intento de actualizarlo retornará un error `HTTP 400 Bad Request`.
@@ -300,6 +314,10 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
         "notes": null
       }
     ],
+    "guests": [],
+    "registered_guests_count": 0,
+    "confirmed_guests_count": 0,
+    "unconfirmed_guests_count": 0,
     "total_estimated": "3600.00",
     "budget_alert": false
   }
@@ -307,15 +325,93 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
 
 ---
 
-## 6. Lógica de Negocio de Presupuestos (Campos Clave)
+## 6. Endpoints de Gestión de Invitados (`/events/{event_id}/guests`)
+
+Todos los endpoints siguientes requieren token de acceso JWT en la cabecera `Authorization` y validan que el evento pertenezca al usuario autenticado. Además, si el evento está en estado `"finalizado"`, cualquier operación de escritura (`POST`, `PATCH`, `DELETE`) será bloqueada con un error `HTTP 400 Bad Request`.
+
+### 6.1 Listar Invitados de un Evento
+* **Endpoint:** `GET /events/{event_id}/guests`
+* **Descripción:** Devuelve el listado completo de invitados agregados al evento en orden cronológico de creación.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  [
+    {
+      "id": "8f88c8b8-4c4c-4e4e-8e8e-c8c8b8a8b8c8",
+      "event_id": "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44",
+      "full_name": "Juan Perez",
+      "confirmed": true,
+      "notes": "Vegetariano",
+      "created_at": "2026-07-10T11:00:00Z",
+      "updated_at": "2026-07-10T11:00:00Z"
+    }
+  ]
+  ```
+
+### 6.2 Crear Invitado (Sincronización Automática de Cupo)
+* **Endpoint:** `POST /events/{event_id}/guests`
+* **Descripción:** Agrega un nuevo invitado al evento.
+* **Regla Especial de Sincronización:** Si al guardar el nuevo invitado el total de personas en la lista supera el cupo previsto (`guest_count` del evento), el backend **actualizará automáticamente** el valor de `guest_count` del evento en la base de datos para alinearlo con el total real, actualizando también su fecha `updated_at`.
+* **Cuerpo de la Petición (Request Body):**
+  ```json
+  {
+    "full_name": "Carlos Gomez",
+    "confirmed": false,
+    "notes": "Trae acompañante"
+  }
+  ```
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "id": "9a99d9b9-5c5c-5e5e-9e9e-c9c9b9a9b9c9",
+    "event_id": "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44",
+    "full_name": "Carlos Gomez",
+    "confirmed": false,
+    "notes": "Trae acompañante",
+    "created_at": "2026-07-10T18:20:00Z",
+    "updated_at": "2026-07-10T18:20:00Z"
+  }
+  ```
+
+### 6.3 Editar Invitado
+* **Endpoint:** `PATCH /events/{event_id}/guests/{guest_id}`
+* **Descripción:** Actualiza de forma parcial el nombre, el estado de confirmación o las notas de un invitado existente.
+* **Cuerpo de la Petición (Request Body):**
+  ```json
+  {
+    "confirmed": true
+  }
+  ```
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "id": "9a99d9b9-5c5c-5e5e-9e9e-c9c9b9a9b9c9",
+    "event_id": "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44",
+    "full_name": "Carlos Gomez",
+    "confirmed": true,
+    "notes": "Trae acompañante",
+    "created_at": "2026-07-10T18:20:00Z",
+    "updated_at": "2026-07-10T18:20:02Z"
+  }
+  ```
+
+### 6.4 Eliminar Invitado
+* **Endpoint:** `DELETE /events/{event_id}/guests/{guest_id}`
+* **Descripción:** Elimina el registro del invitado del evento.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "message": "Invitado eliminado exitosamente"
+  }
+  ```
+
+---
+
+## 7. Lógica de Negocio de Presupuestos (Campos Clave)
 
 Cuando consumas el endpoint `GET /events/{event_id}`, verás dos campos de vital importancia para la interfaz del usuario:
 1. **`total_estimated` (String conteniendo un Decimal):** Es la suma calculada en el backend de todos los ítems del evento, multiplicando cantidad por precio unitario:
-   $$\text{total\_estimated} = \sum (\text{quantity} \times \text{unit\_price})$$
+    $$\text{total\_estimated} = \sum (\text{quantity} \times \text{unit\_price})$$
 2. **`budget_alert` (Boolean):**
    * Es `true` si `total_estimated` supera estrictamente el presupuesto máximo definido (`max_budget`).
-   * Es `false` si el total estimado está dentro del presupuesto máximo, o si `max_budget` es `null` (lo que significa que el evento no tiene establecido un presupuesto límite).
+   * Es `false` si el total estimado está dentro del presupuesto máximo, o si `max_budget` es `null`.
    * Esta alerta está diseñada para activar alertas visuales (ejemplo: cambiar la barra a color rojo) en el dashboard del cliente.
-
-> [!TIP]
-> **Recomendación para el Frontend:** Aunque `total_estimated` y `max_budget` se devuelven como strings para evitar pérdidas de precisión por redondeo flotante de JSON en JavaScript, debes parsearlos usando `Number()` o una biblioteca de precisión matemática (como `big.js` o `decimal.js`) antes de realizar cálculos visuales en la interfaz del usuario.

@@ -4,15 +4,12 @@ import unittest
 from uuid import uuid4
 from fastapi.testclient import TestClient
 from sqlalchemy import text
+from unittest.mock import MagicMock, patch
 
 # Add backend directory to sys.path so app can be imported
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from app.database import SessionLocal
-
-# Mock the Supabase middleware before importing the main FastAPI app
-from unittest.mock import MagicMock
-import app.middlewares.auth_middleware as auth_middleware
 
 USER_A_ID = "9f716fd2-e147-4211-a5c0-98e0f5143e19"
 USER_B_ID = "3c608982-f8cb-4eaa-b439-740b3371c131"
@@ -24,12 +21,6 @@ class MockUser:
 class MockAuthResponse:
     def __init__(self, user):
         self.user = user
-
-current_test_user = MockUser(USER_A_ID)
-
-mock_client = MagicMock()
-mock_client.auth.get_user = lambda token: MockAuthResponse(current_test_user)
-auth_middleware.get_supabase_client = lambda: mock_client
 
 from app.main import app
 
@@ -91,10 +82,18 @@ class TestIntegrationEvents(unittest.TestCase):
         finally:
             db.close()
 
+    def setUp(self):
+        self.current_test_user = MockUser(USER_A_ID)
+        self.mock_client = MagicMock()
+        self.mock_client.auth.get_user = lambda token: MockAuthResponse(self.current_test_user)
+        self.patcher = patch('app.middlewares.auth_middleware.get_supabase_client', return_value=self.mock_client)
+        self.patcher.start()
+
+    def tearDown(self):
+        self.patcher.stop()
+
     def test_get_event_over_budget(self):
         """TC-01: Event exceeds budget limit, alert should be True."""
-        global current_test_user
-        current_test_user = MockUser(USER_A_ID)
         response = self.client.get(f"/events/{self.event_id_1}", headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -103,8 +102,6 @@ class TestIntegrationEvents(unittest.TestCase):
 
     def test_get_event_under_budget(self):
         """TC-02: Event is under budget limit, alert should be False."""
-        global current_test_user
-        current_test_user = MockUser(USER_A_ID)
         response = self.client.get(f"/events/{self.event_id_2}", headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -113,8 +110,6 @@ class TestIntegrationEvents(unittest.TestCase):
 
     def test_get_event_no_budget_limit(self):
         """TC-03: Event has no budget limit (max_budget is None), alert should be False."""
-        global current_test_user
-        current_test_user = MockUser(USER_A_ID)
         response = self.client.get(f"/events/{self.event_id_3}", headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -123,15 +118,13 @@ class TestIntegrationEvents(unittest.TestCase):
 
     def test_get_event_unauthorized_access(self):
         """TC-04: Unauthorized user trying to access other user's event should get 404."""
-        global current_test_user
-        current_test_user = MockUser(USER_B_ID)
+        self.current_test_user = MockUser(USER_B_ID)
         response = self.client.get(f"/events/{self.event_id_1}", headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 404)
 
     def test_patch_event_success(self):
         """PATCH: Should successfully update name and max_budget, updating updated_at."""
-        global current_test_user
-        current_test_user = MockUser(USER_A_ID)
+        self.current_test_user = MockUser(USER_A_ID)
         payload = {
             "name": "Event A - Updated Name",
             "max_budget": 800.00
@@ -147,8 +140,7 @@ class TestIntegrationEvents(unittest.TestCase):
 
     def test_patch_event_past_date(self):
         """PATCH: Should return 400 if updating event_date to a past date."""
-        global current_test_user
-        current_test_user = MockUser(USER_A_ID)
+        self.current_test_user = MockUser(USER_A_ID)
         payload = {
             "event_date": "2020-01-01"
         }
@@ -158,8 +150,7 @@ class TestIntegrationEvents(unittest.TestCase):
 
     def test_patch_event_finalized(self):
         """PATCH: Should return 400 if trying to modify a finalized event."""
-        global current_test_user
-        current_test_user = MockUser(USER_A_ID)
+        self.current_test_user = MockUser(USER_A_ID)
         payload = {
             "name": "New Name"
         }
@@ -169,8 +160,7 @@ class TestIntegrationEvents(unittest.TestCase):
 
     def test_patch_event_ignore_fields(self):
         """PATCH: Should ignore fields not present in EventUpdate (status, template_id) and successfully edit editable fields."""
-        global current_test_user
-        current_test_user = MockUser(USER_A_ID)
+        self.current_test_user = MockUser(USER_A_ID)
         payload = {
             "name": "Another Name Change",
             "status": "finalizado",
@@ -186,14 +176,12 @@ class TestIntegrationEvents(unittest.TestCase):
 
     def test_patch_event_unauthorized(self):
         """PATCH: Should return 404 if User B tries to modify User A's event."""
-        global current_test_user
-        current_test_user = MockUser(USER_B_ID)
+        self.current_test_user = MockUser(USER_B_ID)
         payload = {
             "name": "Malicious Edit Attempt"
         }
         response = self.client.patch(f"/events/{self.event_id_1}", json=payload, headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 404)
-
 
 if __name__ == "__main__":
     unittest.main()

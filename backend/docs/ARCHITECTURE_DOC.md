@@ -139,3 +139,71 @@ Al escribir pruebas de integración para endpoints protegidos, se debe usar `fas
 1. **Mockear el Middleware**: Sobrescribe la función `get_supabase_client` del middleware de autenticación (`app.middlewares.auth_middleware.get_supabase_client`) para que retorne un cliente de prueba mockeado.
 2. **Controlar el Usuario Autenticado**: Haz que la llamada mockeada retorne un objeto de usuario simulado con el ID necesario para las pruebas de propiedad.
 3. **Enviar Cabeceras de Autorización**: En cada petición del cliente de pruebas, envía un Bearer Token en los headers (ej. `headers={"Authorization": "Bearer test-token"}`) para habilitar el paso exitoso del middleware.
+
+---
+
+## 6. Estándar de Arquitectura Frontend: Patrón de Componentes y Rutas
+
+A raíz del desarrollo del flujo de creación de eventos (plantilla vs. personalizado), surgieron dos patrones distintos e incompatibles para construir pantallas en el frontend. El equipo definió cuál es el estándar oficial de ahora en adelante.
+
+### Patrón Oficial (Adoptado)
+
+* **Componentes como funciones que devuelven un string de HTML**, insertado en el DOM vía `innerHTML`.
+* **Navegación mediante URLs reales**, usando `window.history.pushState()` seguido de `window.dispatchEvent(new PopStateEvent("popstate"))`.
+* `main.js` centraliza el ruteo: escucha `popstate` y decide qué componente renderizar según `window.location.pathname`.
+* Los manejadores de eventos (`onclick`, `onsubmit`, etc.) se registran como funciones globales en `window` (ej. `window.handleLogout`, `window.navigateTo`) o mediante **delegación de eventos sobre `document`** (ver sección 7) cuando el elemento aún no existe en el DOM al momento de cargar el script.
+
+**Ejemplo correcto:**
+```js
+window.handleTemplateSelect = function (option) {
+  window.history.pushState({}, "", "/events/new/custom");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};
+```
+
+### Patrón Descontinuado (No usar)
+
+* Componentes que devuelven un nodo del DOM vía `document.createElement(...)`.
+* Cambios de vista manipulando `innerHTML` de un contenedor interno, sin cambiar la URL del navegador.
+* Comunicación entre componentes mediante `CustomEvent` / `window.dispatchEvent(new CustomEvent(...))` en vez de rutas.
+* Navegación forzando `window.location.reload()`.
+
+**Por qué se descartó:** rompe la navegación por URL (recargar la página o compartir un link no lleva al usuario al mismo lugar), pierde el estado de la SPA en cada clic, y no es compatible con el sistema de rutas ya centralizado en `main.js`.
+
+Si tu historia de usuario requiere una pantalla nueva, sigue el patrón oficial. Si encuentras código con el patrón descontinuado, coordina con el equipo antes de reescribirlo o extenderlo.
+
+---
+
+## 7. Advertencia: SPA y el evento `DOMContentLoaded`
+
+**Nunca uses `document.addEventListener('DOMContentLoaded', ...)` para enganchar eventos de un formulario o componente.**
+
+`DOMContentLoaded` se dispara **una sola vez**, cuando el HTML *inicial* del documento termina de cargar. Como esta aplicación es una SPA, la mayoría de los componentes (formularios, botones, etc.) se insertan **dinámicamente** en el DOM mucho después de ese momento — para cuando el componente existe, el evento ya se disparó y nunca se vuelve a disparar. El resultado es un bug silencioso: el listener nunca se registra y el formulario simplemente no responde a los clics, sin ningún error en consola.
+
+**Usa delegación de eventos sobre `document` en su lugar**, que funciona sin importar cuándo se insertó el elemento:
+
+```js
+// ❌ Incorrecto: el formulario puede no existir aún cuando esto corre,
+// o este evento ya pudo haber ocurrido antes de insertarlo.
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('login-form').addEventListener('submit', handleLogin);
+});
+
+// ✅ Correcto: funciona sin importar cuándo se inserta el formulario en el DOM.
+document.addEventListener('submit', (e) => {
+  if (e.target.id === 'login-form') {
+    handleLogin(e);
+  }
+});
+```
+
+---
+
+## 8. Convención de Coordinación en Ramas Compartidas
+
+Cuando dos o más integrantes trabajan sobre archivos relacionados (por ejemplo, componentes de una misma pantalla) en la misma rama o en ramas que van a mergearse pronto, sigue estas reglas para evitar pisar el trabajo de otros:
+
+1. **Avisa antes de subir cambios a una rama que no es la tuya**, especialmente si vas a reescribir o reemplazar archivos que otro compañero ya está usando activamente.
+2. **Evita hacer push directo de código experimental o sin terminar** a la rama de otro integrante sin coordinarlo primero — usa tu propia rama o un PR para que el dueño de la rama pueda revisar antes de integrar.
+3. **Si necesitas tomar contenido de otra rama** (componentes, estilos, lógica), tráelo explícitamente (`git show`, `git diff`, merge coordinado) en vez de que llegue como un push directo inesperado.
+4. **Si detectas que un archivo fue sobrescrito sin aviso**, no lo reviertas en silencio: comunica el hallazgo en el canal del equipo antes de decidir cómo proceder, para evitar ciclos de "reescribir sobre lo reescrito".

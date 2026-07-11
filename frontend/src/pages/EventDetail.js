@@ -1,8 +1,25 @@
 import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
+import { getEventById } from "../service/api.js";
+import { BudgetPanel } from "../components/BudgetPanel.js";
 
-export function EventDetail() {
+// NOTA: por ahora solo recibe y muestra el eventId que llega por la URL
+// (?id=...) para confirmar que el redirect desde CustomEventForm.js
+// funciona correctamente. Traer los datos reales del evento (nombre,
+// presupuesto, items) vía GET /events/{id} y reemplazar los placeholders
+// de abajo es trabajo pendiente de otro ticket, fuera del alcance de
+// "Llamada POST /events al confirmar y redirigir al detalle".
+export async function EventDetail(eventId) {
+  let event = null;
+
+    if (eventId) {
+      try {
+        event = await getEventById(eventId);
+      } catch (error) {
+        console.error(error);
+      }
+  }
   return `
     <div class="flex min-h-screen bg-[#F8F5F0]">
 
@@ -42,12 +59,11 @@ export function EventDetail() {
               Stepper
             </div>
 
-            <div class="rounded-xl border border-gray-200 p-4">
-              Budget Summary
-            </div>
+            ${BudgetPanel(event)}
 
             <div class="rounded-xl border border-gray-200 p-4">
               Event Information
+              ${eventId ? `<p class="text-xs text-gray-400 mt-2">ID: ${eventId}</p>` : `<p class="text-xs text-red-500 mt-2">Sin ID de evento en la URL</p>`}
             </div>
 
           </div>
@@ -60,3 +76,4 @@ export function EventDetail() {
     </div>
   `;
 }
+

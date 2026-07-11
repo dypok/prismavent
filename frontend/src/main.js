@@ -5,12 +5,18 @@ import { Sidebar } from "./components/Sidebar.js";
 import { Topbar } from "./components/Topbar.js";
 import { CreateEvent } from "./pages/CreateEvent.js";
 import { EventDetail } from "./pages/EventDetail.js";
+import { CustomEventFlow } from "./pages/CustomEventFlow.js";
+import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
+import { prefillCustomEventForm } from "./components/CustomEventForm.js";
 
-console.log(" Main.js cargado - Ruta:", window.location.pathname);
+// === NUEVA IMPORTACIÓN ===
+import MyEvents from "./pages/MyEvents.js";
 
-function renderPage() {
+console.log("Main.js cargado - Ruta:", window.location.pathname);
+
+async function renderPage() {
   const path = window.location.pathname;
-  // Si el usuario ya inició sesión y trata de entrar al login
+
   if (
     isAuthenticated() &&
     (path === "/" || path === "/auth" || path === "/login")
@@ -23,15 +29,14 @@ function renderPage() {
   // Rutas de autenticación
   if (path === '/auth' || path === '/login' || path === '/register' || path === '/') {
     document.querySelector("#app").innerHTML = Auth();
-    
-    
+
   // Rutas del Dashboard
   } else if (path === '/dashboard' || path === '/home') {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
       renderPage();
       return;
-}
+    }
     document.querySelector("#app").innerHTML = `
       <div class="flex h-screen">
         ${Sidebar("dashboard")}
@@ -44,34 +49,57 @@ function renderPage() {
         </div>
       </div>
     `;
-    
-  } 
-  // Ruta Crear Evento
-  else if (path === "/events/new") {
 
+  // === RUTA: MIS EVENTOS ===
+  } else if (path === '/my-events' || path === '/events') {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
       renderPage();
       return;
     }
+    const myEventsPage = new MyEvents();
+    await myEventsPage.init();
 
+  // Ruta Crear Evento
+  } else if (path === "/events/new") {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
     document.querySelector("#app").innerHTML = CreateEvent();
-  }
 
   // Ruta Detalle del Evento
-  else if (path === "/events/detail") {
-
+  } else if (path === "/events/detail") {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
       renderPage();
       return;
     }
+    const eventId = new URLSearchParams(window.location.search).get("id");
+    document.querySelector("#app").innerHTML = await EventDetail(eventId);
 
-    document.querySelector("#app").innerHTML = EventDetail();
-  }
+  // Flujo: evento personalizado
+  } else if (path === "/events/new/custom") {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    document.querySelector("#app").innerHTML = CustomEventFlow();
+    prefillCustomEventForm();
+
+  // Flujo: evento desde plantilla
+  } else if (path === "/events/new/template") {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    document.querySelector("#app").innerHTML = TemplateEventFlow();
 
   // 404
-  else {
+  } else {
     document.querySelector("#app").innerHTML = `
       <div class="min-h-screen flex items-center justify-center">
         <div class="text-center">
@@ -87,5 +115,5 @@ function renderPage() {
 // Render inicial
 renderPage();
 
-// Soporte para botones atrás/adelante del navegador
+// Soporte para botones atrás/adelante
 window.addEventListener('popstate', renderPage);

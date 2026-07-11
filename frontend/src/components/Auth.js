@@ -1,4 +1,4 @@
-import { login, register} from "../service/api.js";
+import { login, register } from "../service/api.js";
 
 export function Auth() {
     return `
@@ -59,6 +59,8 @@ export function Auth() {
                             class="w-full bg-[#C9A84C] hover:bg-[#B8963A] text-white font-semibold py-3.5 rounded-2xl text-base tracking-wider">
                     ACCESS WORKSPACE →
                     </button>
+
+                    <p id="login-error" class="hidden text-sm text-red-600 text-center"></p>
                 </form>
                 </div>
             </div>
@@ -103,6 +105,8 @@ export function Auth() {
                             class="w-full bg-[#C9A84C] hover:bg-[#B8963A] text-white font-semibold py-3.5 rounded-2xl text-base tracking-wider mt-3">
                     CREATE ACCOUNT →
                     </button>
+
+                    <p id="signup-error" class="hidden text-sm text-red-600 text-center"></p>
                 </form>
                 </div>
             </div>
@@ -163,54 +167,65 @@ window.closeModalAndRedirect = function() {
 };
 
 // ====================== MANEJO DE FORMULARIOS ======================
-document.addEventListener('DOMContentLoaded', () => {
+// NOTA: no se usa 'DOMContentLoaded' porque este HTML se inserta
+// dinámicamente (innerHTML) mucho después de que ese evento ya se
+// disparó una sola vez al cargar la página. Se usa delegación de
+// eventos sobre "document" (igual que en CustomEventForm.js), que
+// funciona sin importar cuándo se insertó el formulario en el DOM.
 
-    // Login
-    const loginForm = document.getElementById("login-form");
+document.addEventListener("submit", async (e) => {
+  // Login
+  if (e.target.id === "login-form") {
+    e.preventDefault();
 
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+    const errorEl = document.getElementById("login-error");
+    const submitBtn = e.target.querySelector('button[type="submit"]');
 
-            const email = document.getElementById("login-email").value;
-            const password = document.getElementById("login-password").value;
+    errorEl.classList.add("hidden");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Entrando...";
 
-            try {
-                await login(email, password);
+    try {
+      await login(email, password);
+      window.history.pushState({}, "", "/dashboard");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    } catch (err) {
+      errorEl.textContent = err.message || "No se pudo iniciar sesión.";
+      errorEl.classList.remove("hidden");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "ACCESS WORKSPACE →";
+    }
+  }
 
-                window.history.pushState({}, "", "/dashboard");
-                window.dispatchEvent(new PopStateEvent("popstate"));
+  // Registro
+  if (e.target.id === "signup-form") {
+    e.preventDefault();
 
-            } catch (error) {
-                alert(error.message);
-            }
-       });
-}
+    const name = document.getElementById("signup-name").value;
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
+    const phone = document.getElementById("signup-phone").value;
+    const errorEl = document.getElementById("signup-error");
+    const submitBtn = e.target.querySelector('button[type="submit"]');
 
-    // Registro
-    const signupForm = document.getElementById("signup-form");
+    errorEl.classList.add("hidden");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creando cuenta...";
 
-    if (signupForm) {
-            signupForm.addEventListener("submit", async (e) => {
-                e.preventDefault();
-
-        const name = document.getElementById("signup-name").value;
-        const email = document.getElementById("signup-email").value;
-        const password = document.getElementById("signup-password").value;
-        const phone = document.getElementById("signup-phone").value;
-
-        try {
-            await register(name, email, password, phone);
-
-            document
-                .getElementById("confirmation-modal")
-                .classList.remove("hidden");
-
-            setTimeout(closeModalAndRedirect, 2500);
-
-        } catch (error) {
-            alert(error.message);
-        }
-    });
-}
+    try {
+      await register(name, email, password, phone);
+      // Mostrar modal
+      document.getElementById("confirmation-modal").classList.remove("hidden");
+      // Auto cerrar después de 2.5 segundos
+      setTimeout(closeModalAndRedirect, 2500);
+    } catch (err) {
+      errorEl.textContent = err.message || "No se pudo crear la cuenta.";
+      errorEl.classList.remove("hidden");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "CREATE ACCOUNT →";
+    }
+  }
 });

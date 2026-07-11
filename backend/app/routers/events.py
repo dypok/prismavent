@@ -22,28 +22,6 @@ def create_event(payload: EventCreate, request: Request, db: Session = Depends(g
         raise HTTPException(status_code=401, detail="Unauthorized: User not found in request state")
     
     user_id = user.id
-    supabase_client = get_supabase_client_for_user(request.state.token)
-    
-    # 1. Prepare event data
-    event_data = {
-        "user_id": user_id,
-        "name": payload.name,
-        "description": payload.description,
-        "event_date": payload.event_date.isoformat(), #para que antes de mandarlo se haga string de nuevo :P
-        "guest_count": payload.guest_count,
-        "max_budget": float(payload.max_budget) if payload.max_budget is not None else None,
-        "template_id": payload.template_id,
-        "user_template_id": payload.user_template_id,
-        "city_id": payload.city_id,
-        "city_custom": payload.city_custom,
-        "event_type_id": payload.event_type_id,
-        "location": payload.location,
-        "status": "borrador",# fijamos borrador aqui :p
-        "visibility_status": payload.visibility_status,
-    }
-    
-    # Remove None values so database defaults apply
-    event_data = {k: v for k, v in event_data.items() if v is not None}
     
     try:
         # 1. Fetch template items if template_id or user_template_id is provided
@@ -89,7 +67,7 @@ def create_event(payload: EventCreate, request: Request, db: Session = Depends(g
             "city_custom": payload.city_custom,
             "event_type_id": payload.event_type_id,
             "location": payload.location,
-            "status": payload.status,
+            "status": "borrador", # Esto dejenlo como borrador >:(
             "visibility_status": payload.visibility_status
         }
         
@@ -153,26 +131,7 @@ def get_event(event_id: str, db: Session = Depends(get_db), current_user = Depen
         if not event_res:
             raise HTTPException(status_code=404, detail="Event not found")
             
-        event = dict(event_res._mapping)
-        
-        # Fetch associated event items
-        items_res = db.execute(
-            text("SELECT * FROM event_items WHERE event_id = :event_id"),
-            {"event_id": event_id}
-        ).fetchall()
-        
-        event_items = [dict(item._mapping) for item in items_res] if items_res else []
-        
-        # Calculate budget metrics
-        total_estimated = budget_service.calculate_total_estimated(event_items)
-        budget_alert = budget_service.check_budget_alert(total_estimated, event.get("max_budget"))
-        
-        # Populate response dictionary
-        event["event_items"] = event_items
-        event["total_estimated"] = total_estimated
-        event["budget_alert"] = budget_alert
-        
-        return event
+        return map_event_to_detail(event_res._mapping, db)
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
@@ -183,7 +142,7 @@ def map_event_to_detail(event_data: dict, db: Session) -> dict:
     event = dict(event_data)
     event_id = str(event["id"])
     
-    # Fetch associated event items
+    # 1. Fetch associated event items
     items_res = db.execute(
         text("SELECT * FROM event_items WHERE event_id = :event_id"),
         {"event_id": event_id}
@@ -191,12 +150,29 @@ def map_event_to_detail(event_data: dict, db: Session) -> dict:
     
     event_items = [dict(item._mapping) for item in items_res] if items_res else []
     
-    # Calculate budget metrics
+    # 2. Fetch associated guests
+    guests_res = db.execute(
+        text("SELECT * FROM guests WHERE event_id = :event_id ORDER BY created_at ASC"),
+        {"event_id": event_id}
+    ).fetchall()
+    
+    guests = [dict(g._mapping) for g in guests_res] if guests_res else []
+    
+    # 3. Calculate budget metrics
     total_estimated = budget_service.calculate_total_estimated(event_items)
     budget_alert = budget_service.check_budget_alert(total_estimated, event.get("max_budget"))
     
-    # Populate response dictionary
+    # 4. Calculate guest counters
+    registered_guests_count = len(guests)
+    confirmed_guests_count = sum(1 for g in guests if g["confirmed"])
+    unconfirmed_guests_count = registered_guests_count - confirmed_guests_count
+    
+    # 5. Populate response dictionary
     event["event_items"] = event_items
+    event["guests"] = guests
+    event["registered_guests_count"] = registered_guests_count
+    event["confirmed_guests_count"] = confirmed_guests_count
+    event["unconfirmed_guests_count"] = unconfirmed_guests_count
     event["total_estimated"] = total_estimated
     event["budget_alert"] = budget_alert
     
@@ -263,3 +239,26 @@ def update_event(
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=400, detail=f"Error updating event: {str(e)}")
+    
+# ==================== NUEVO: LISTAR EVENTOS DEL USUARIO ====================
+@router.get("", response_model=List[EventResponse])
+def get_events(current_user = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Obtener todos los eventos del usuario actual"""
+    try:
+        events = db.execute(
+            text("""
+                SELECT id, user_id, name, description, event_date, guest_count, 
+                    max_budget, template_id, user_template_id, city_id, 
+                    city_custom, event_type_id, location, status, 
+                    visibility_status, created_at, updated_at
+                FROM events 
+                WHERE user_id = :user_id 
+                ORDER BY created_at DESC
+            """),
+            {"user_id": current_user.id}
+        ).fetchall()
+
+        return [dict(event._mapping) for event in events]
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")
