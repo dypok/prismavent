@@ -16,10 +16,17 @@ export async function EventDetail(eventId) {
     if (eventId) {
       try {
         event = await getEventById(eventId);
+
       } catch (error) {
         console.error(error);
       }
   }
+  
+  const totalResources = event?.event_items?.length || 0;
+
+  const confirmedResources =
+    event?.event_items?.filter(item => item.confirmed).length || 0;
+
   return `
     <div class="flex min-h-screen bg-[#F8F5F0]">
 
@@ -40,7 +47,7 @@ export async function EventDetail(eventId) {
             <h2 class="text-2xl font-semibold">Event Resource</h2>
 
             <span class="text-sm text-gray-500">
-              0 of 0 confirmed
+              ${confirmedResources} of ${totalResources} confirmed
             </span>
           </div>
 
