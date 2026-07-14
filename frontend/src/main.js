@@ -9,6 +9,7 @@ import { CustomEventFlow } from "./pages/CustomEventFlow.js";
 import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
 import { prefillCustomEventForm } from "./components/CustomEventForm.js";
 import { deleteEvent } from "./service/api.js";
+import { showToast } from "./components/Toast.js";
 
 // === NUEVA IMPORTACIÓN ===
 import MyEvents from "./pages/MyEvents.js";
@@ -111,10 +112,10 @@ async function renderPage() {
           window.history.pushState({}, "", "/events");
           window.dispatchEvent(new PopStateEvent("popstate"));
 
-          alert("Event deleted successfully.");
+          showToast("Event deleted successfully.");
 
         } catch (error) {
-          alert("Unable to delete event.");
+          showToast(error.message, "error");
           console.error(error);
         }
       });
