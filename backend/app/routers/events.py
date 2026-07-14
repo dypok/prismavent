@@ -1,9 +1,8 @@
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
-from app.schemas.event import EventCreate, EventResponse, EventDetailResponse, EventDetailOut, EventUpdate, EventStatusUpdate
-from app.core.supabase import get_supabase_client_for_user
+from app.schemas.event import EventCreate, EventResponse, EventDetailOut, EventUpdate, EventStatusUpdate
 from app.dependencies import get_current_user
 from app.services import budget_service
 from app.services.event_service import (
@@ -16,34 +15,8 @@ from typing import List
 router = APIRouter(prefix="/events", tags=["events"])
 
 @router.post("", response_model=EventResponse)
-def create_event(payload: EventCreate, request: Request, db: Session = Depends(get_db)):
-    user = getattr(request.state, "user", None)
-    if not user:
-        raise HTTPException(status_code=401, detail="Unauthorized: User not found in request state")
-    
-    user_id = user.id
-    # supabase_client = get_supabase_client_for_user(request.state.token)
-    
-    # # 1. Prepare event data
-    # event_data = {
-    #     "user_id": user_id,
-    #     "name": payload.name,
-    #     "description": payload.description,
-    #     "event_date": payload.event_date.isoformat(), #para que antes de mandarlo se haga string de nuevo :P
-    #     "guest_count": payload.guest_count,
-    #     "max_budget": float(payload.max_budget) if payload.max_budget is not None else None,
-    #     "template_id": payload.template_id,
-    #     "user_template_id": payload.user_template_id,
-    #     "city_id": payload.city_id,
-    #     "city_custom": payload.city_custom,
-    #     "event_type_id": payload.event_type_id,
-    #     "location": payload.location,
-    #     "status": "borrador",# fijamos borrador aqui :p
-    #     "visibility_status": payload.visibility_status,
-    # }
-    
-    # # Remove None values so database defaults apply
-    # event_data = {k: v for k, v in event_data.items() if v is not None}
+def create_event(payload: EventCreate, current_user = Depends(get_current_user), db: Session = Depends(get_db)):
+    user_id = current_user.id
     
     try:
         # 1. Fetch template items if template_id or user_template_id is provided
@@ -312,13 +285,26 @@ def get_events(current_user = Depends(get_current_user), db: Session = Depends(g
     try:
         events = db.execute(
             text("""
-                SELECT id, user_id, name, description, event_date, guest_count, 
-                    max_budget, template_id, user_template_id, city_id, 
-                    city_custom, event_type_id, location, status, 
-                    visibility_status, created_at, updated_at
-                FROM events 
-                WHERE user_id = :user_id 
-                ORDER BY created_at DESC
+                SELECT e.id, e.user_id, e.name, e.description, e.event_date,
+                    e.guest_count, e.max_budget, e.template_id, e.user_template_id,
+                    e.city_id, e.city_custom, e.event_type_id, e.location,
+                    e.status, e.visibility_status, e.created_at, e.updated_at,
+                    COALESCE(g.confirmed_count, 0) AS confirmed_guests_count,
+                    COALESCE(b.total, 0) AS total_estimated
+                FROM events e
+                LEFT JOIN (
+                    SELECT event_id, COUNT(*) AS confirmed_count
+                    FROM guests
+                    WHERE confirmed = true
+                    GROUP BY event_id
+                ) g ON g.event_id = e.id
+                LEFT JOIN (
+                    SELECT event_id, SUM(quantity * unit_price) AS total
+                    FROM event_items
+                    GROUP BY event_id
+                ) b ON b.event_id = e.id
+                WHERE e.user_id = :user_id
+                ORDER BY e.created_at DESC
             """),
             {"user_id": current_user.id}
         ).fetchall()
