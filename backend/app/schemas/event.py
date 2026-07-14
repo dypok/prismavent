@@ -90,3 +90,19 @@ class EventUpdate(BaseModel):
     city_custom: Optional[str] = None
     location: Optional[str] = None
     visibility_status: Optional[str] = None
+
+# Estados válidos del ciclo de vida de un evento (ver event_service.py,
+# formatters.js y FRONTEND_INTEGRATION_GUIDE.md, que ya asumen estos 3)
+VALID_EVENT_STATUSES = {"borrador", "confirmado", "finalizado"}
+
+class EventStatusUpdate(BaseModel):
+    status: str
+
+    @field_validator("status")
+    @classmethod
+    def status_must_be_valid(cls, value: str) -> str:
+        if value not in VALID_EVENT_STATUSES:
+            raise ValueError(
+                f"status inválido: '{value}'. Debe ser uno de: {', '.join(sorted(VALID_EVENT_STATUSES))}"
+            )
+        return value

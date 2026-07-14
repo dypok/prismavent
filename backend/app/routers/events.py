@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
-from app.schemas.event import EventCreate, EventResponse, EventDetailResponse, EventDetailOut, EventUpdate
+from app.schemas.event import EventCreate, EventResponse, EventDetailResponse, EventDetailOut, EventUpdate, EventStatusUpdate
 from app.core.supabase import get_supabase_client_for_user
 from app.dependencies import get_current_user
 from app.services import budget_service
@@ -261,6 +261,49 @@ def update_event(
         raise HTTPException(status_code=400, detail=f"Error updating event: {str(e)}")
     
 # ==================== NUEVO: LISTAR EVENTOS DEL USUARIO ====================
+@router.patch("/{event_id}/status", response_model=EventDetailOut)
+def update_event_status(
+    event_id: str,
+    payload: EventStatusUpdate,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        # Fetch event details validating user ownership
+        event_res = db.execute(
+            text("SELECT * FROM events WHERE id = :id AND user_id = :user_id"),
+            {"id": event_id, "user_id": current_user.id}
+        ).fetchone()
+
+        if event_res is None:
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
+
+        event = event_res._mapping
+        validate_event_not_finalized(event["status"])
+
+        updated = db.execute(
+            text("""
+                UPDATE events
+                SET status = :status,
+                    updated_at = NOW()
+                WHERE id = :id AND user_id = :user_id
+                RETURNING *
+            """),
+            {
+                "id": event_id,
+                "user_id": current_user.id,
+                "status": payload.status,
+            }
+        ).fetchone()
+
+        db.commit()
+        return map_event_to_detail(updated._mapping, db)
+    except Exception as e:
+        db.rollback()
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=400, detail=f"Error updating event status: {str(e)}")
+
 @router.get("", response_model=List[EventResponse])  # ← Agrega esto
 def get_events(current_user = Depends(get_current_user), db: Session = Depends(get_db)):
     """Obtener todos los eventos del usuario actual"""
