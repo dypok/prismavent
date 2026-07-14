@@ -79,8 +79,6 @@ Crea el archivo del router en plural. Este archivo debe definir los endpoints ne
 ### 6. Registro en el Entry Point ([app/main.py](../backend/app/main.py))
 Una vez completadas tus capas, importa y registra tu router en el archivo principal utilizando `app.include_router(tu_router)`.
 
----
-
 ## 4. Estrategia de Consultas a Base de Datos: SQL Directo vs ORM
 
 En **Prismavent**, decidimos implementar un enfoque híbrido en el acceso a datos. Aunque usamos **SQLAlchemy** como infraestructura, los routers ejecutan consultas **SQL directas/nativas** mediante `db.execute(text(...))` en lugar de utilizar métodos puros del ORM (como `db.query(Model)` o `db.add()`).
