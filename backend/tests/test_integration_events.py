@@ -76,6 +76,7 @@ class TestIntegrationEvents(unittest.TestCase):
     def tearDownClass(cls):
         db = SessionLocal()
         try:
+            db.execute(text("DELETE FROM event_history WHERE event_id IN (:e1, :e2, :e3)"), {"e1": cls.event_id_1, "e2": cls.event_id_2, "e3": cls.event_id_3})
             db.execute(text("DELETE FROM event_items WHERE event_id IN (:e1, :e2, :e3)"), {"e1": cls.event_id_1, "e2": cls.event_id_2, "e3": cls.event_id_3})
             db.execute(text("DELETE FROM events WHERE id IN (:e1, :e2, :e3, :e4)"), {"e1": cls.event_id_1, "e2": cls.event_id_2, "e3": cls.event_id_3, "e4": cls.event_id_finalized})
             db.commit()
@@ -240,3 +241,79 @@ class TestIntegrationEvents(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("No se puede modificar un evento finalizado", response.json()["detail"])
+
+    def test_status_change_creates_history_record(self):
+        """PATCH /status: Should insert a row into event_history with previous_status, new_status, changed_at."""
+        event_id = str(uuid4())
+        db = SessionLocal()
+        try:
+            db.execute(text("""
+                INSERT INTO events (id, user_id, name, event_date, guest_count, status, visibility_status)
+                VALUES (:id, :user_id, 'History Test', '2026-12-01', 10, 'borrador', 'active')
+            """), {"id": event_id, "user_id": USER_A_ID})
+            db.commit()
+        finally:
+            db.close()
+
+        response = self.client.patch(
+            f"/events/{event_id}/status",
+            json={"status": "confirmado"},
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 200)
+
+        db = SessionLocal()
+        try:
+            row = db.execute(
+                text("SELECT * FROM event_history WHERE event_id = :event_id ORDER BY changed_at ASC"),
+                {"event_id": event_id}
+            ).fetchone()
+            self.assertIsNotNone(row)
+            self.assertEqual(row.previous_status, "borrador")
+            self.assertEqual(row.new_status, "confirmado")
+            self.assertEqual(str(row.event_id), event_id)
+            self.assertEqual(str(row.changed_by), USER_A_ID)
+            self.assertIsNotNone(row.changed_at)
+        finally:
+            db.close()
+
+    def test_full_status_lifecycle_history(self):
+        """PATCH /status: Two transitions should produce two history rows."""
+        event_id = str(uuid4())
+        db = SessionLocal()
+        try:
+            db.execute(text("""
+                INSERT INTO events (id, user_id, name, event_date, guest_count, status, visibility_status)
+                VALUES (:id, :user_id, 'Lifecycle Test', '2026-12-01', 10, 'borrador', 'active')
+            """), {"id": event_id, "user_id": USER_A_ID})
+            db.commit()
+        finally:
+            db.close()
+
+        r1 = self.client.patch(
+            f"/events/{event_id}/status",
+            json={"status": "confirmado"},
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(r1.status_code, 200)
+
+        r2 = self.client.patch(
+            f"/events/{event_id}/status",
+            json={"status": "finalizado"},
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(r2.status_code, 200)
+
+        db = SessionLocal()
+        try:
+            rows = db.execute(
+                text("SELECT previous_status, new_status FROM event_history WHERE event_id = :event_id ORDER BY changed_at ASC"),
+                {"event_id": event_id}
+            ).fetchall()
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[0].previous_status, "borrador")
+            self.assertEqual(rows[0].new_status, "confirmado")
+            self.assertEqual(rows[1].previous_status, "confirmado")
+            self.assertEqual(rows[1].new_status, "finalizado")
+        finally:
+            db.close()

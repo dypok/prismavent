@@ -8,7 +8,8 @@ from app.services import budget_service
 from app.services.event_service import (
     validate_event_not_finalized,
     validate_event_date_not_past,
-    validate_status_transition
+    validate_status_transition,
+    log_status_change
 )
 from typing import List
 
@@ -256,6 +257,8 @@ def update_event_status(
         validate_event_not_finalized(event["status"])
         validate_status_transition(event["status"], payload.status)
 
+        previous_status = event["status"]
+
         updated = db.execute(
             text("""
                 UPDATE events
@@ -270,6 +273,14 @@ def update_event_status(
                 "status": payload.status,
             }
         ).fetchone()
+
+        log_status_change(
+            event_id=event_id,
+            previous_status=previous_status,
+            new_status=payload.status,
+            changed_by=str(current_user.id),
+            db=db,
+        )
 
         db.commit()
         return map_event_to_detail(updated._mapping, db)

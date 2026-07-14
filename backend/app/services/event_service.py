@@ -1,5 +1,7 @@
 from datetime import date
 from fastapi import HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.schemas.event import STATUS_SEQUENCE
 
 def validate_status_transition(current_status: str, new_status: str) -> None:
@@ -47,3 +49,26 @@ def validate_event_date_not_past(event_date: date) -> None:
             status_code=400,
             detail="event_date no puede ser una fecha en el pasado"
         )
+
+def log_status_change(
+    event_id: str,
+    previous_status: str | None,
+    new_status: str,
+    changed_by: str | None,
+    db: Session,
+) -> None:
+    """
+    Inserts a row into event_history recording a status transition.
+    """
+    db.execute(
+        text("""
+            INSERT INTO event_history (event_id, previous_status, new_status, changed_by)
+            VALUES (:event_id, :previous_status, :new_status, :changed_by)
+        """),
+        {
+            "event_id": event_id,
+            "previous_status": previous_status,
+            "new_status": new_status,
+            "changed_by": changed_by,
+        },
+    )
