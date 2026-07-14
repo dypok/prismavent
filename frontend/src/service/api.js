@@ -134,6 +134,14 @@ export async function deleteGuest(eventId, guestId) {
   });
 }
 
+// Actualizar estado de un evento
+export async function updateEventStatus(eventId, status) {
+  return await apiFetch(`/events/${eventId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status })
+  });
+}
+
 export default {
   login,
   register,
@@ -144,6 +152,7 @@ export default {
   createGuest,
   updateGuest,
   deleteGuest,
+  updateEventStatus,
   setAccessToken,
   getAccessToken,
   clearAccessToken,
