@@ -16,6 +16,7 @@ export async function EventDetail(eventId) {
     if (eventId) {
       try {
         event = await getEventById(eventId);
+        console.log("Status:", event.status);
 
       } catch (error) {
         console.error(error);
@@ -72,6 +73,62 @@ export async function EventDetail(eventId) {
               Event Information
               ${eventId ? `<p class="text-xs text-gray-400 mt-2">ID: ${eventId}</p>` : `<p class="text-xs text-red-500 mt-2">Sin ID de evento en la URL</p>`}
             </div>
+
+            ${
+                event?.status === "borrador"
+                  ? `
+                    <div class="rounded-2xl border border-red-200 bg-red-50/40 p-5">
+
+                      <div class="flex items-center gap-2 mb-2">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="#DC2626"
+                            stroke-width="2">
+                          <path stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        </svg>
+
+                        <h3 class="text-sm font-semibold text-red-700">
+                          Delete Event
+                        </h3>
+
+                      </div>
+
+                      <p class="text-sm text-gray-600 mb-4">
+                        This action permanently deletes this event and cannot be undone.
+                      </p>
+
+                      <button
+                        class="w-full py-3 rounded-xl border border-red-300 bg-white text-red-600 font-medium hover:bg-red-100 hover:border-red-500 transition flex items-center justify-center gap-2"
+                      >
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2">
+
+                          <path stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M19 7L18.133 19.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"/>
+
+                        </svg>
+
+                        Delete Event
+
+                      </button>
+
+                    </div>
+                  `
+                  : ""
+              }
 
           </div>
 
