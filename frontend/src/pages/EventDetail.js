@@ -3,6 +3,7 @@ import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
 import { getEventById } from "../service/api.js";
 import { BudgetPanel } from "../components/BudgetPanel.js";
+import { DeleteEventModal } from "../components/DeleteEventModal.js";
 
 // NOTA: por ahora solo recibe y muestra el eventId que llega por la URL
 // (?id=...) para confirmar que el redirect desde CustomEventForm.js
@@ -16,8 +17,7 @@ export async function EventDetail(eventId) {
     if (eventId) {
       try {
         event = await getEventById(eventId);
-        console.log("Status:", event.status);
-
+    
       } catch (error) {
         console.error(error);
       }
@@ -104,6 +104,7 @@ export async function EventDetail(eventId) {
                       </p>
 
                       <button
+                        id="open-delete-modal"
                         class="w-full py-3 rounded-xl border border-red-300 bg-white text-red-600 font-medium hover:bg-red-100 hover:border-red-500 transition flex items-center justify-center gap-2"
                       >
 
@@ -136,7 +137,7 @@ export async function EventDetail(eventId) {
 
 </section>
       </main>
-
+    ${DeleteEventModal()}
     </div>
   `;
 }

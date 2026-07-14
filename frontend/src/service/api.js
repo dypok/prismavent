@@ -101,6 +101,13 @@ export async function getEventById(eventId) {
   return await apiFetch(`/events/${eventId}`);
 }
 
+// Eliminar un evento
+export async function deleteEvent(eventId) {
+  return await apiFetch(`/events/${eventId}`, {
+    method: "DELETE"
+  });
+}
+
 // Obtener templates (útil para crear evento)
 export async function getTemplates() {
   return await apiFetch('/templates');
@@ -147,5 +154,6 @@ export default {
   setAccessToken,
   getAccessToken,
   clearAccessToken,
-  apiFetch
+  apiFetch,
+  deleteEvent
 };
