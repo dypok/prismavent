@@ -1,6 +1,4 @@
 export function BudgetPanel(event) {
-  console.log("Total:", event.total_estimated);
-  console.log("Budget:", event.max_budget);
 
   const overBudget = 
   Number(event.total_estimated) > Number(event.max_budget)
