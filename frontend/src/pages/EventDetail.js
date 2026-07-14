@@ -27,6 +27,8 @@ export async function EventDetail(eventId) {
   const confirmedResources =
     event?.event_items?.filter(item => item.confirmed).length || 0;
 
+  const isFinalized = event?.status === 'finalizado';
+
   return `
     <div class="flex min-h-screen bg-[#F8F5F0]">
 
@@ -42,6 +44,12 @@ export async function EventDetail(eventId) {
         <div class="w-3/5 bg-white rounded-2xl border border-gray-200 p-6">
         
           ${EventStepper(1)}
+
+          ${isFinalized ? `
+          <div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-3 text-blue-800 text-sm">
+            Este evento esta finalizado. No se permiten modificaciones.
+          </div>
+          ` : ''}
 
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-semibold">Event Resource</h2>
