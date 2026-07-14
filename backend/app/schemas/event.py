@@ -95,6 +95,8 @@ class EventUpdate(BaseModel):
 # formatters.js y FRONTEND_INTEGRATION_GUIDE.md, que ya asumen estos 3)
 VALID_EVENT_STATUSES = {"borrador", "confirmado", "finalizado"}
 
+STATUS_SEQUENCE = ["borrador", "confirmado", "finalizado"]
+
 class EventStatusUpdate(BaseModel):
     status: str
 

@@ -8,7 +8,8 @@ from app.dependencies import get_current_user
 from app.services import budget_service
 from app.services.event_service import (
     validate_event_not_finalized,
-    validate_event_date_not_past
+    validate_event_date_not_past,
+    validate_status_transition
 )
 from typing import List
 
@@ -280,6 +281,7 @@ def update_event_status(
 
         event = event_res._mapping
         validate_event_not_finalized(event["status"])
+        validate_status_transition(event["status"], payload.status)
 
         updated = db.execute(
             text("""
