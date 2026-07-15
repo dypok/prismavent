@@ -1,5 +1,8 @@
 export function BudgetPanel(event) {
 
+  const overBudget = 
+  Number(event.total_estimated) > Number(event.max_budget)
+
   if (!event) {
     return `
       <div class="bg-white rounded-2xl border border-gray-200 p-6">
@@ -17,6 +20,16 @@ export function BudgetPanel(event) {
       >
         Budget
       </h2>
+
+      ${
+          overBudget
+            ? `
+              <div class="mb-4 rounded-lg border border-amber-300 bg-amber-100 p-3 text-amber-800">
+                ⚠️ You have exceeded your maximum budget.
+              </div>
+            `
+            : ""
+        }
 
       <div id="budget-items" class="space-y-3">
 

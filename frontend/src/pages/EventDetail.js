@@ -8,27 +8,21 @@ export async function EventDetail(eventId) {
   let event = null;
   let original = null;
 
-  if (eventId) {
-    try {
-      event = await getEventById(eventId);
-      original = { ...event };
-    } catch (error) {
-      console.error(error);
-    }
+    if (eventId) {
+      try {
+        event = await getEventById(eventId);
+
+      } catch (error) {
+        console.error(error);
+      }
   }
+  
+  const totalResources = event?.event_items?.length || 0;
 
-  const eventName = event?.name || "Cargando evento...";
-  const eventDate = event?.event_date
-    ? new Date(event.event_date).toLocaleDateString("es-ES", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : "";
+  const confirmedResources =
+    event?.event_items?.filter(item => item.confirmed).length || 0;
 
-  const app = document.querySelector("#app");
-  app.innerHTML = `
+  return `
     <div class="flex min-h-screen bg-[#F8F5F0]">
 
       ${Sidebar("events")}
@@ -59,7 +53,10 @@ export async function EventDetail(eventId) {
               </div>
             </div>
 
-            ${EventStepper(1)}
+            <span class="text-sm text-gray-500">
+              ${confirmedResources} of ${totalResources} confirmed
+            </span>
+          </div>
 
             <section class="flex gap-6">
 

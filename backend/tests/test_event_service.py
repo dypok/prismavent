@@ -10,8 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from app.services.event_service import (
     validate_event_not_finalized,
     validate_event_date_not_past,
-    validate_guest_count_editable,
-    validate_event_is_draft
+    validate_status_transition
 )
 
 class TestEventService(unittest.TestCase):
@@ -49,35 +48,41 @@ class TestEventService(unittest.TestCase):
         except HTTPException:
             self.fail("validate_event_date_not_past raised HTTPException unexpectedly")
 
-    def test_validate_guest_count_editable_blocked(self):
-        """Should raise HTTPException (400) if guest_count is modified and guest tracking is enabled."""
-        with self.assertRaises(HTTPException) as ctx:
-            validate_guest_count_editable(150, True)
-        self.assertEqual(ctx.exception.status_code, 400)
-        self.assertIn("guest_count se calcula automáticamente desde la lista de invitados", ctx.exception.detail)
-
-    def test_validate_guest_count_editable_allowed(self):
-        """Should not raise error if guest_count is None or tracking is disabled."""
+    def test_validate_status_transition_valid_next(self):
+        """Should not raise error when transitioning to the immediately next status."""
         try:
-            validate_guest_count_editable(None, True)
-            validate_guest_count_editable(150, False)
-            validate_guest_count_editable(None, False)
+            validate_status_transition("borrador", "confirmado")
+            validate_status_transition("confirmado", "finalizado")
         except HTTPException:
-            self.fail("validate_guest_count_editable raised HTTPException unexpectedly")
+            self.fail("validate_status_transition raised HTTPException unexpectedly")
 
-    def test_validate_event_is_draft_not_draft(self):
-        """Should raise HTTPException (400) if event status is not 'borrador'."""
+    def test_validate_status_transition_skip(self):
+        """Should raise HTTPException (400) when skipping a status in the sequence."""
         with self.assertRaises(HTTPException) as ctx:
-            validate_event_is_draft("planificando")
+            validate_status_transition("borrador", "finalizado")
         self.assertEqual(ctx.exception.status_code, 400)
-        self.assertIn("Solo se pueden eliminar eventos en estado borrador", ctx.exception.detail)
+        self.assertIn("solo se puede avanzar", ctx.exception.detail)
 
-    def test_validate_event_is_draft_success(self):
-        """Should not raise error if event status is 'borrador'."""
-        try:
-            validate_event_is_draft("borrador")
-        except HTTPException:
-            self.fail("validate_event_is_draft raised HTTPException unexpectedly")
+    def test_validate_status_transition_backward(self):
+        """Should raise HTTPException (400) when going backwards in the sequence."""
+        with self.assertRaises(HTTPException) as ctx:
+            validate_status_transition("confirmado", "borrador")
+        self.assertEqual(ctx.exception.status_code, 400)
+        self.assertIn("solo se puede avanzar", ctx.exception.detail)
+
+    def test_validate_status_transition_invalid_current(self):
+        """Should raise HTTPException (400) if current status is not in the sequence."""
+        with self.assertRaises(HTTPException) as ctx:
+            validate_status_transition("planificando", "borrador")
+        self.assertEqual(ctx.exception.status_code, 400)
+        self.assertIn("Estado actual inválido", ctx.exception.detail)
+
+    def test_validate_status_transition_at_end(self):
+        """Should raise HTTPException (400) when trying to change from the last status."""
+        with self.assertRaises(HTTPException) as ctx:
+            validate_status_transition("finalizado", "borrador")
+        self.assertEqual(ctx.exception.status_code, 400)
+        self.assertIn("es el final de la secuencia", ctx.exception.detail)
 
 if __name__ == "__main__":
     unittest.main()
