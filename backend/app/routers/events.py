@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
 from app.schemas.event import EventCreate, EventResponse, EventDetailOut, EventUpdate, EventStatusUpdate
+from app.schemas.event_item import EventItemCreate, EventItemResponse
 from app.dependencies import get_current_user
 from app.services import budget_service
 from app.services.event_service import (
@@ -360,4 +361,61 @@ def delete_event(
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=400, detail=f"Error deleting event: {str(e)}")
-        raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")
+
+@router.post("/{event_id}/items", response_model=EventItemResponse)
+def create_event_item(
+    event_id: str,
+    payload: EventItemCreate,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Creates a new event item associated with the event after verifying ownership.
+    """
+    try:
+        # 1. Fetch event details first by id to check existence
+        event_res = db.execute(
+            text("SELECT user_id FROM events WHERE id = :id"),
+            {"id": event_id}
+        ).fetchone()
+        
+        if not event_res:
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
+            
+        event = event_res._mapping
+        if str(event["user_id"]) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
+            
+        # 2. Insert event item record (confirmed always starts in False)
+        insert_query = text("""
+            INSERT INTO event_items (
+                event_id, name, quantity, unit_price, notes, confirmed
+            ) VALUES (
+                :event_id, :name, :quantity, :unit_price, :notes, false
+            ) RETURNING id, event_id, provider_id, provider_name, category_name, name, unit, quantity, unit_price, confirmed, notes
+        """)
+        
+        item_params = {
+            "event_id": event_id,
+            "name": payload.name,
+            "quantity": payload.quantity,
+            "unit_price": payload.unit_price,
+            "notes": payload.notes
+        }
+        
+        result = db.execute(insert_query, item_params).fetchone()
+        if not result:
+            raise HTTPException(status_code=400, detail="Failed to create event item in database")
+            
+        created_item = dict(result._mapping)
+        created_item["id"] = str(created_item["id"])
+        created_item["event_id"] = str(created_item["event_id"])
+        
+        db.commit()
+        return created_item
+        
+    except Exception as e:
+        db.rollback()
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=400, detail=f"Error creating event item: {str(e)}")
