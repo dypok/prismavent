@@ -62,3 +62,61 @@ def validate_event_is_draft(status: str) -> None:
             status_code=400,
             detail="Solo se pueden eliminar eventos en estado borrador"
         )
+
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from app.services import budget_service
+
+def get_event_detail(event_id: str, db: Session) -> dict:
+    """
+    Fetches the event and its associated details (items, guests, budget, guest counters)
+    and returns a dictionary matching the EventDetailOut schema.
+    """
+    # 1. Fetch event details first by id
+    event_res = db.execute(
+        text("SELECT * FROM events WHERE id = :id"),
+        {"id": event_id}
+    ).fetchone()
+    
+    if not event_res:
+        raise HTTPException(status_code=404, detail="Evento no encontrado")
+        
+    event = dict(event_res._mapping)
+    
+    # 2. Fetch associated event items
+    items_res = db.execute(
+        text("SELECT * FROM event_items WHERE event_id = :event_id"),
+        {"event_id": event_id}
+    ).fetchall()
+    
+    event_items = [dict(item._mapping) for item in items_res] if items_res else []
+    
+    # 3. Fetch associated guests
+    guests_res = db.execute(
+        text("SELECT * FROM guests WHERE event_id = :event_id ORDER BY created_at ASC"),
+        {"event_id": event_id}
+    ).fetchall()
+    
+    guests = [dict(g._mapping) for g in guests_res] if guests_res else []
+    
+    # 4. Calculate budget metrics using database summation
+    total_estimated = budget_service.calculate_total(event_id, db)
+    budget_alert = budget_service.check_budget_alert(total_estimated, event.get("max_budget"))
+    amount_over_budget = budget_service.get_amount_over_budget(total_estimated, event.get("max_budget"))
+    
+    # 5. Calculate guest counters
+    registered_guests_count = len(guests)
+    confirmed_guests_count = sum(1 for g in guests if g["confirmed"])
+    unconfirmed_guests_count = registered_guests_count - confirmed_guests_count
+    
+    # 6. Populate response dictionary
+    event["event_items"] = event_items
+    event["guests"] = guests
+    event["registered_guests_count"] = registered_guests_count
+    event["confirmed_guests_count"] = confirmed_guests_count
+    event["unconfirmed_guests_count"] = unconfirmed_guests_count
+    event["total_estimated"] = total_estimated
+    event["budget_alert"] = budget_alert
+    event["amount_over_budget"] = amount_over_budget
+    
+    return event

@@ -85,18 +85,21 @@ class TestIntegrationEventItems(unittest.TestCase):
         response = self.client.post(f"/events/{self.event_id_1}/items", json=payload, headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["name"], "Flores Decorativas")
-        self.assertEqual(data["quantity"], 3)
-        self.assertEqual(float(data["unit_price"]), 45.50)
-        self.assertEqual(data["notes"], "Rosas rojas y blancas para las mesas centrales")
-        self.assertFalse(data["confirmed"])
-        self.assertEqual(data["event_id"], self.event_id_1)
-        self.assertIsNotNone(data["id"])
+        self.assertEqual(data["id"], self.event_id_1)
+        
+        # Find the created item in the returned event items list
+        created_item = next((item for item in data["event_items"] if item["name"] == "Flores Decorativas"), None)
+        self.assertIsNotNone(created_item)
+        self.assertEqual(created_item["quantity"], 3)
+        self.assertEqual(float(created_item["unit_price"]), 45.50)
+        self.assertEqual(created_item["notes"], "Rosas rojas y blancas para las mesas centrales")
+        self.assertFalse(created_item["confirmed"])
+        self.assertIsNotNone(created_item["id"])
 
         # Verify in DB
         db = SessionLocal()
         try:
-            db_item = db.execute(text("SELECT * FROM event_items WHERE id = :id"), {"id": data["id"]}).fetchone()
+            db_item = db.execute(text("SELECT * FROM event_items WHERE id = :id"), {"id": created_item["id"]}).fetchone()
             self.assertIsNotNone(db_item)
             item = db_item._mapping
             self.assertEqual(item["name"], "Flores Decorativas")
@@ -185,10 +188,15 @@ class TestIntegrationEventItems(unittest.TestCase):
         response = self.client.patch(f"/events/{self.event_id_1}/items/{self.item_id_1}", json=payload, headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["name"], "Updated Item Name")
-        self.assertEqual(data["quantity"], 10)
-        self.assertEqual(float(data["unit_price"]), 25.99)
-        self.assertEqual(data["notes"], "Updated item notes")
+        self.assertEqual(data["id"], self.event_id_1)
+        
+        # Find the updated item in the list
+        updated_item = next((item for item in data["event_items"] if str(item["id"]) == self.item_id_1), None)
+        self.assertIsNotNone(updated_item)
+        self.assertEqual(updated_item["name"], "Updated Item Name")
+        self.assertEqual(updated_item["quantity"], 10)
+        self.assertEqual(float(updated_item["unit_price"]), 25.99)
+        self.assertEqual(updated_item["notes"], "Updated item notes")
 
         # Verify DB is updated
         db = SessionLocal()
@@ -212,7 +220,11 @@ class TestIntegrationEventItems(unittest.TestCase):
         response = self.client.patch(f"/events/{self.event_id_1}/items/{self.item_id_1}", json=payload, headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertTrue(data["confirmed"])
+        
+        # Find item in returned event details list
+        updated_item = next((item for item in data["event_items"] if str(item["id"]) == self.item_id_1), None)
+        self.assertIsNotNone(updated_item)
+        self.assertTrue(updated_item["confirmed"])
 
         # Verify DB is updated
         db = SessionLocal()
@@ -322,7 +334,12 @@ class TestIntegrationEventItems(unittest.TestCase):
         self.current_test_user = MockUser(USER_A_ID)
         response = self.client.delete(f"/events/{self.event_id_1}/items/{temp_item_id}", headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["message"], "Recurso eliminado exitosamente")
+        data = response.json()
+        self.assertEqual(data["id"], self.event_id_1)
+        
+        # Verify the item is no longer in the returned event's event_items list
+        temp_item_in_list = next((item for item in data["event_items"] if str(item["id"]) == temp_item_id), None)
+        self.assertIsNone(temp_item_in_list)
 
         # Verify DB doesn't have it
         db = SessionLocal()

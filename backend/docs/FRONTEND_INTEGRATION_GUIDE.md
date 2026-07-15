@@ -250,7 +250,8 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
     "confirmed_guests_count": 1,
     "unconfirmed_guests_count": 1,
     "total_estimated": "4450.00",
-    "budget_alert": false
+    "budget_alert": false,
+    "amount_over_budget": "0.00"
   }
   ```
 
@@ -319,7 +320,8 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
     "confirmed_guests_count": 0,
     "unconfirmed_guests_count": 0,
     "total_estimated": "3600.00",
-    "budget_alert": false
+    "budget_alert": false,
+    "amount_over_budget": "0.00"
   }
   ```
 
@@ -429,3 +431,49 @@ Cuando consumas el endpoint `GET /events/{event_id}`, verás dos campos de vital
    * Es `true` si `total_estimated` supera estrictamente el presupuesto máximo definido (`max_budget`).
    * Es `false` si el total estimado está dentro del presupuesto máximo, o si `max_budget` es `null`.
    * Esta alerta está diseñada para activar alertas visuales (ejemplo: cambiar la barra a color rojo) en el dashboard del cliente.
+3. **`amount_over_budget` (String conteniendo un Decimal):**
+   * Indica la diferencia monetaria exacta por la cual el total estimado excede el presupuesto máximo.
+   * Es `0.00` si no se ha excedido el presupuesto o si `max_budget` no está definido.
+
+---
+
+## 8. Endpoints de Gestión de Recursos del Evento (`/events/{event_id}/items`)
+
+Todos los endpoints de gestión de recursos (`event_items`) requieren que el frontend envíe el token de acceso en las cabeceras HTTP (`Authorization: Bearer <token>`). Además, validan la propiedad del evento (solo el dueño puede alterarlos).
+
+Para simplificar el estado en el frontend y evitar llamadas HTTP adicionales para refrescar el presupuesto o el listado del evento, **todas las operaciones de creación, edición y eliminación de recursos retornan el detalle completo y actualizado del evento (`EventDetailOut`)**, con los campos de presupuesto (`total_estimated`, `budget_alert` y `amount_over_budget`) recalculados en tiempo real.
+
+### 8.1 Crear Recurso (Item) del Evento
+* **Endpoint:** `POST /events/{event_id}/items`
+* **Descripción:** Agrega un nuevo ítem/recurso al evento especificado.
+* **Cuerpo de la Petición (Request Body):**
+  ```json
+  {
+    "name": "Música y Sonido",
+    "quantity": 1,
+    "unit_price": 350.00,
+    "notes": "DJ local de Barranquilla"
+  }
+  ```
+* **Respuesta Exitosa (HTTP 200 OK):**
+  Retorna el objeto detallado del evento (`EventDetailOut`), idéntico al de `GET /events/{event_id}`, conteniendo la lista de recursos actualizada y el nuevo cálculo del presupuesto.
+
+### 8.2 Editar Recurso (Item) del Evento
+* **Endpoint:** `PATCH /events/{event_id}/items/{item_id}`
+* **Descripción:** Edita los campos de un ítem existente (incluyendo cantidad, precio unitario, notas o si está confirmado).
+* **Cuerpo de la Petición (Request Body):**
+  ```json
+  {
+    "quantity": 2,
+    "unit_price": 380.00,
+    "confirmed": true
+  }
+  ```
+* **Respuesta Exitosa (HTTP 200 OK):**
+  Retorna el objeto detallado del evento (`EventDetailOut`), recalculando los totales y alertas presupuestarias inmediatamente.
+
+### 8.3 Eliminar Recurso (Item) del Evento
+* **Endpoint:** `DELETE /events/{event_id}/items/{item_id}`
+* **Descripción:** Elimina un recurso del evento.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  Retorna el objeto detallado del evento (`EventDetailOut`), reflejando la eliminación del recurso y la disminución del presupuesto estimado.
