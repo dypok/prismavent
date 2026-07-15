@@ -71,6 +71,7 @@ class EventDetailOut(BaseModel):
     unconfirmed_guests_count: int = 0
     total_estimated: Decimal
     budget_alert: bool
+    amount_over_budget: Decimal
     created_at: datetime
     updated_at: datetime
 

@@ -3,11 +3,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
 from app.schemas.event_item import EventItemCreate, EventItemResponse, EventItemUpdate
+from app.schemas.event import EventDetailOut
+from app.services.event_service import get_event_detail
 from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/events", tags=["event_items"])
 
-@router.post("/{event_id}/items", response_model=EventItemResponse)
+@router.post("/{event_id}/items", response_model=EventDetailOut)
 def create_event_item(
     event_id: str,
     payload: EventItemCreate,
@@ -57,7 +59,7 @@ def create_event_item(
         created_item["event_id"] = str(created_item["event_id"])
         
         db.commit()
-        return created_item
+        return get_event_detail(event_id, db)
         
     except Exception as e:
         db.rollback()
@@ -65,7 +67,7 @@ def create_event_item(
             raise e
         raise HTTPException(status_code=400, detail=f"Error creating event item: {str(e)}")
 
-@router.patch("/{event_id}/items/{item_id}", response_model=EventItemResponse)
+@router.patch("/{event_id}/items/{item_id}", response_model=EventDetailOut)
 def update_event_item(
     event_id: str,
     item_id: str,
@@ -134,7 +136,7 @@ def update_event_item(
         updated_item["event_id"] = str(updated_item["event_id"])
         
         db.commit()
-        return updated_item
+        return get_event_detail(event_id, db)
         
     except Exception as e:
         db.rollback()
@@ -142,7 +144,7 @@ def update_event_item(
             raise e
         raise HTTPException(status_code=400, detail=f"Error updating event item: {str(e)}")
 
-@router.delete("/{event_id}/items/{item_id}")
+@router.delete("/{event_id}/items/{item_id}", response_model=EventDetailOut)
 def delete_event_item(
     event_id: str,
     item_id: str,
@@ -186,7 +188,7 @@ def delete_event_item(
         )
         
         db.commit()
-        return {"message": "Recurso eliminado exitosamente"}
+        return get_event_detail(event_id, db)
         
     except Exception as e:
         db.rollback()

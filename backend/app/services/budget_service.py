@@ -1,5 +1,7 @@
 from decimal import Decimal, InvalidOperation
 from typing import List, Any
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 def calculate_total_estimated(event_items: List[Any]) -> Decimal:
     """
@@ -41,3 +43,33 @@ def check_budget_alert(total_estimated: Decimal, max_budget: Any) -> bool:
         return total_estimated > Decimal(str(max_budget))
     except (ValueError, TypeError, InvalidOperation):
         return False
+
+def calculate_total(event_id: str, db: Session) -> Decimal:
+    """
+    Calculates the total estimated cost of all items in an event by querying the database.
+    total = SUM(quantity * unit_price)
+    """
+    query = text("""
+        SELECT COALESCE(SUM(quantity * unit_price), 0) AS total
+        FROM event_items
+        WHERE event_id = :event_id
+    """)
+    result = db.execute(query, {"event_id": event_id}).fetchone()
+    if result is None or result[0] is None:
+        return Decimal("0.0")
+    return Decimal(str(result[0]))
+
+def get_amount_over_budget(total_estimated: Decimal, max_budget: Any) -> Decimal:
+    """
+    Returns the amount by which total_estimated exceeds max_budget.
+    If total_estimated <= max_budget or max_budget is None/invalid, returns Decimal("0.0").
+    """
+    if max_budget is None:
+        return Decimal("0.0")
+    try:
+        mb = Decimal(str(max_budget))
+        if total_estimated > mb:
+            return total_estimated - mb
+        return Decimal("0.0")
+    except (ValueError, TypeError, InvalidOperation):
+        return Decimal("0.0")
