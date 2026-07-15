@@ -1,4 +1,4 @@
-import api, { updateEventStatus } from '../service/api.js';
+import api from '../service/api.js';
 import { Sidebar } from '../components/Sidebar.js';
 
 function esc(str) {
@@ -225,8 +225,6 @@ window.editEvent = function (id) {
     const budgetRaw = card.querySelector('.card-budget')?.textContent?.replace(/💰\s*\$?/, '').replace(/,/g, '') || '';
     const statusRaw = card.querySelector('.card-status')?.textContent || 'borrador';
 
-    const statusMap = { 'Borrador': 'borrador', 'Activo': 'borrador', 'Confirmado': 'confirmado', 'Finalizado': 'finalizado' };
-    const status = statusMap[statusRaw] || 'borrador';
     const budget = budgetRaw && !isNaN(parseFloat(budgetRaw)) ? parseFloat(budgetRaw) : '';
 
     card.dataset.origName = name;
@@ -235,7 +233,6 @@ window.editEvent = function (id) {
     card.dataset.origLocation = locationRaw;
     card.dataset.origGuests = guestsRaw;
     card.dataset.origBudget = budget;
-    card.dataset.origStatus = status;
 
     card.classList.add('card-editing');
     card.style.transform = 'scale(1.02)';
@@ -263,15 +260,6 @@ window.editEvent = function (id) {
                     <input type="number" id="edit-budget-${id}" min="0" value="${esc(budget)}"
                         class="w-full px-3 py-2 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm mt-1">
                 </div>
-            </div>
-            <div>
-                <label class="text-[10px] font-semibold tracking-widest text-[#4D4637]">ESTADO</label>
-                <select id="edit-status-${id}"
-                    class="w-full px-3 py-2 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm mt-1">
-                    <option value="borrador" ${status === 'borrador' ? 'selected' : ''}>Borrador</option>
-                    <option value="confirmado" ${status === 'confirmado' ? 'selected' : ''}>Confirmado</option>
-                    <option value="finalizado" ${status === 'finalizado' ? 'selected' : ''}>Finalizado</option>
-                </select>
             </div>
             <textarea id="edit-desc-${id}" rows="2"
                 class="w-full px-3 py-2 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm resize-none"
@@ -303,16 +291,10 @@ window.cancelEdit = function (id) {
     const budgetRaw = card.dataset.origBudget || '';
     const dateRaw = card.dataset.origDate || '';
     const locationRaw = card.dataset.origLocation || '';
-    const status = card.dataset.origStatus || 'borrador';
 
     const budgetDisplay = budgetRaw ? `💰 $${parseFloat(budgetRaw).toLocaleString()}` : '';
     const formattedDate = dateRaw ? formatDate(dateRaw) : 'Sin fecha';
     const locationDisplay = locationRaw || 'Sin ubicación';
-
-    const statusClass = status === 'borrador' ? 'bg-yellow-100 text-yellow-700' : status === 'confirmado' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
-    const statusText = status === 'borrador' ? 'Borrador' : status === 'confirmado' ? 'Confirmado' : 'Finalizado';
-    const headerBadge = card.querySelector('.h-32 span');
-    if (headerBadge) { headerBadge.className = `absolute top-3 right-3 px-3 py-0.5 text-[10px] font-medium rounded-full ${statusClass}`; headerBadge.textContent = statusText; }
 
     body.innerHTML = `
         <h3 class="font-semibold text-base text-[#1E1B15] mb-0.5 line-clamp-1 card-name">${esc(name)}</h3>
@@ -342,7 +324,6 @@ window.saveEdit = async function (id) {
     const location = document.getElementById(`edit-location-${id}`)?.value.trim() || null;
     const guestCount = parseInt(document.getElementById(`edit-guests-${id}`)?.value, 10) || null;
     const maxBudget = parseFloat(document.getElementById(`edit-budget-${id}`)?.value) || null;
-    const status = document.getElementById(`edit-status-${id}`)?.value || null;
     const description = document.getElementById(`edit-desc-${id}`)?.value.trim() || null;
 
     if (!name) {
@@ -362,14 +343,6 @@ window.saveEdit = async function (id) {
 
     try {
         await api.updateEvent(id, payload);
-        if (status && status !== card.dataset.origStatus) {
-            await updateEventStatus(id, status);
-        }
-
-        const newStatusText = status === 'borrador' ? 'Borrador' : status === 'confirmado' ? 'Confirmado' : 'Finalizado';
-        const newStatusClass = status === 'borrador' ? 'bg-yellow-100 text-yellow-700' : status === 'confirmado' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
-        const headerBadge = card.querySelector('.h-32 span');
-        if (headerBadge) { headerBadge.className = `absolute top-3 right-3 px-3 py-0.5 text-[10px] font-medium rounded-full ${newStatusClass}`; headerBadge.textContent = newStatusText; }
 
         const formattedDate = eventDate ? formatDate(eventDate) : card.dataset.origDate || 'Sin fecha';
         const locationDisplay = location || 'Sin ubicación';

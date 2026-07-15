@@ -1,8 +1,4 @@
 export function BudgetPanel(event) {
-
-  const overBudget = 
-  Number(event.total_estimated) > Number(event.max_budget)
-
   if (!event) {
     return `
       <div class="bg-white rounded-2xl border border-gray-200 p-6">
@@ -10,6 +6,9 @@ export function BudgetPanel(event) {
       </div>
     `;
   }
+
+  const overBudget = 
+  Number(event.total_estimated) > Number(event.max_budget)
   
   return `
     <div class="bg-white rounded-2xl border border-gray-200 p-6">
@@ -34,32 +33,32 @@ export function BudgetPanel(event) {
       <div id="budget-items" class="space-y-3">
 
         ${
-         event.event_items.length === 0
-             ? `
-             <p class="text-gray-400 text-sm">
-                 No resources added yet.
-             </p>
-             `
-             : event.event_items
-                 .map(
-                 (item) => `
-                     <div class="flex justify-between items-center">
+          event.event_items.length === 0
+              ? `
+              <p class="text-gray-400 text-sm">
+                  No resources added yet.
+              </p>
+              `
+              : event.event_items
+                  .map(
+                  (item) => `
+                      <div class="flex justify-between items-center">
 
-                     <span class="text-gray-700">
-                         ${item.name}
-                     </span>
+                      <span class="text-gray-700">
+                          ${item.name}
+                      </span>
 
-                     <span class="font-medium">
-                         $${(
-                         Number(item.quantity) * Number(item.unit_price)
-                         ).toLocaleString()}
-                     </span>
+                      <span class="font-medium">
+                          $${(
+                          Number(item.quantity) * Number(item.unit_price)
+                          ).toLocaleString()}
+                      </span>
 
-                     </div>
-                 `
-                 )
-                 .join("")
-         }
+                      </div>
+                  `
+                  )
+                  .join("")
+          }
 
       </div>
 

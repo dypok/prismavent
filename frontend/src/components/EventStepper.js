@@ -6,6 +6,9 @@ export function EventStepper(status = "borrador") {
     "Confirmed"
   ];
 
+  const statusToStep = { borrador: 1, confirmado: 3, finalizado: 4 };
+  const currentStep = statusToStep[status] || 1;
+
   return `
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
 
