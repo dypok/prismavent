@@ -161,6 +161,7 @@ export async function updateEventStatus(eventId, status) {
   });
 }
 
+
 export default {
   login,
   register,

@@ -10,6 +10,12 @@ import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
 import { prefillCustomEventForm } from "./components/CustomEventForm.js";
 import { deleteEvent } from "./service/api.js";
 import { showToast } from "./components/Toast.js";
+import { 
+  getEventById,
+  updateEvent,
+  updateEventStatus,
+  createGuest
+ } from "./service/api.js";
 
 // === NUEVA IMPORTACIÓN ===
 import MyEvents from "./pages/MyEvents.js";
@@ -101,25 +107,115 @@ async function renderPage() {
     }
 
     const confirmDelete = document.getElementById("confirm-delete");
-    if (confirmDelete && deleteModal) {
-      confirmDelete.addEventListener("click", async () => {
+      if (confirmDelete && deleteModal) {
+        confirmDelete.addEventListener("click", async () => {
+          try {
+            await deleteEvent(eventId);
+
+            deleteModal.classList.add("hidden");
+            deleteModal.classList.remove("flex");
+
+            window.history.pushState({}, "", "/events");
+            window.dispatchEvent(new PopStateEvent("popstate"));
+
+            showToast("Event deleted successfully.");
+
+          } catch (error) {
+            showToast(error.message, "error");
+            console.error(error);
+          }
+        });
+      }
+    
+    const nextButton = document.getElementById("btn-next-status");
+
+      if (nextButton) {
+        nextButton.addEventListener("click", async () => {
+          try {
+            const currentStatus = nextButton.dataset.currentStatus;
+
+            const nextStatusMap = {
+              borrador: "confirmado",
+              confirmado: "finalizado",
+            };
+
+            const updated = await updateEventStatus(
+              eventId,
+              nextStatusMap[currentStatus]
+            );
+
+            // Volver a cargar la página de detalle
+            window.history.replaceState({}, "", `/events/detail?id=${eventId}`);
+            window.dispatchEvent(new PopStateEvent("popstate"));
+
+          } catch (error) {
+            console.error(error);
+            console.log(error.message);
+          }
+        });
+      }
+
+    //modal de agregar invitados 
+    const addGuestButton = document.getElementById("btn-add-guest");
+    const guestModal = document.getElementById("guest-modal");
+    const cancelGuest = document.getElementById("cancel-guest");
+
+    if (addGuestButton && guestModal) {
+      addGuestButton.addEventListener("click", () => {
+        guestModal.classList.remove("hidden");
+        guestModal.classList.add("flex");
+      });
+    }
+
+    if (cancelGuest && guestModal) {
+      cancelGuest.addEventListener("click", () => {
+        guestModal.classList.add("hidden");
+        guestModal.classList.remove("flex");
+      });
+    }
+
+    const guestForm = document.getElementById("guest-form");
+
+    if (guestForm) {
+      guestForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const event = await getEventById(eventId);
+
+        // Validar si supera el cupo
+        if ((event.guests.length + 1) > event.guest_count) {
+
+          const confirmAdd = confirm(
+            "Este invitado supera el número previsto de asistentes. ¿Desea continuar?"
+          );
+
+          if (!confirmAdd) return;
+        }
+
         try {
-          await deleteEvent(eventId);
 
-          deleteModal.classList.add("hidden");
-          deleteModal.classList.remove("flex");
+          await createGuest(eventId, {
+            full_name: document.getElementById("guest-name").value,
+            confirmed: document.getElementById("guest-confirmed").checked,
+            notes: document.getElementById("guest-notes").value
+          });
 
-          window.history.pushState({}, "", "/events");
+          guestModal.classList.add("hidden");
+          guestModal.classList.remove("flex");
+
+          // Recargar el detalle
+          window.history.replaceState({}, "", `/events/detail?id=${eventId}`);
           window.dispatchEvent(new PopStateEvent("popstate"));
 
-          showToast("Event deleted successfully.");
+          showToast("Guest created successfully.");
 
         } catch (error) {
-          showToast(error.message, "error");
           console.error(error);
+          showToast(error.message, "error");
         }
       });
     }
+
 
   // Flujo: evento personalizado
   } else if (path === "/events/new/custom") {
