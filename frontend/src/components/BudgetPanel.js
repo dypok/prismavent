@@ -1,8 +1,5 @@
 export function BudgetPanel(event) {
 
-  const overBudget = 
-  Number(event.total_estimated) > Number(event.max_budget)
-
   if (!event) {
     return `
       <div class="bg-white rounded-2xl border border-gray-200 p-6">
@@ -10,6 +7,10 @@ export function BudgetPanel(event) {
       </div>
     `;
   }
+
+  const overBudget =
+  event.max_budget != null &&
+  Number(event.total_estimated) > Number(event.max_budget)
   
   return `
     <div class="bg-white rounded-2xl border border-gray-200 p-6">
