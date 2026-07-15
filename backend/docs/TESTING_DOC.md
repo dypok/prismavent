@@ -57,18 +57,18 @@ La siguiente tabla resume los casos de prueba ejecutados y el comportamiento esp
 | **TC-01** | Evento sobre presupuesto | Evento con `max_budget` = 100.00, recursos con total = 110.00 | HTTP 200, `total_estimated` = 110.00, `budget_alert` = True | Integración | **PASSED** |
 | **TC-02** | Evento bajo presupuesto | Evento con `max_budget` = 1000.00, recursos con total = 300.00 | HTTP 200, `total_estimated` = 300.00, `budget_alert` = False | Integración | **PASSED** |
 | **TC-03** | Evento sin presupuesto límite | Evento con `max_budget` = None, recursos con total = 50.00 | HTTP 200, `total_estimated` = 50.00, `budget_alert` = False | Integración | **PASSED** |
-| **TC-04** | Control de propiedad GET (404) | Usuario B intenta obtener el evento de Usuario A | HTTP 404 Not Found (Protección de datos) | Integración | **PASSED** |
+| **TC-04** | Control de propiedad GET (403) | Usuario B intenta obtener el evento de Usuario A | HTTP 403 Forbidden (Protección de datos) | Integración | **PASSED** |
 | **TC-05** | Cálculo con valores nulos (`None`) | Recursos con cantidad o precio unitario como `None` | Tratados internamente como `0` en vez de romper la app | Unitario | **PASSED** |
 | **TC-06** | Presupuesto inválido (No Decimal) | `max_budget` con formato string inválido (ej. `"invalid"`) | Captura el error `InvalidOperation` y retorna `budget_alert` = False | Unitario | **PASSED** |
 | **TC-07** | Edición exitosa parcial (PATCH) | PATCH `/events/{id}` con nuevo `name` y `max_budget` | HTTP 200, datos cambiados, `updated_at` actualizado, otros campos COALESCE | Integración | **PASSED** |
 | **TC-08** | Fecha en el pasado (PATCH) | PATCH `/events/{id}` con `event_date` anterior a hoy | HTTP 400 Bad Request, fecha rechazada | Integración | **PASSED** |
 | **TC-09** | Modificar evento finalizado | PATCH `/events/{id}` en evento con `status = "finalizado"` | HTTP 400 Bad Request, inmutable | Integración | **PASSED** |
 | **TC-10** | Ignorar campos no editables | PATCH `/events/{id}` enviando `status` o `template_id` | HTTP 200, campos ignorados silenciosamente en base de datos | Integración | **PASSED** |
-| **TC-11** | Control de propiedad PATCH (404) | Usuario B intenta modificar el evento de Usuario A | HTTP 404 Not Found (Protección de datos) | Integración | **PASSED** |
+| **TC-11** | Control de propiedad PATCH (403) | Usuario B intenta modificar el evento de Usuario A | HTTP 403 Forbidden (Protección de datos) | Integración | **PASSED** |
 | **TC-12** | Validaciones unitarias del servicio | Validaciones de fecha, estado e invitados en aislamiento | Comportamiento correcto de excepciones HTTPException (400) | Unitario | **PASSED** |
 | **TC-13** | Eliminar evento borrador exitoso | DELETE `/events/{id}` en evento con status = `"borrador"` | HTTP 200, mensaje de éxito, registros cascade-deleted en BD | Integración | **PASSED** |
 | **TC-14** | Bloquear eliminación de evento no borrador | DELETE `/events/{id}` en evento con status != `"borrador"` | HTTP 400 Bad Request | Integración | **PASSED** |
-| **TC-15** | Control de propiedad DELETE (404) | Usuario B intenta eliminar el evento de Usuario A | HTTP 404 Not Found (Protección de datos) | Integración | **PASSED** |
+| **TC-15** | Control de propiedad DELETE (403) | Usuario B intenta eliminar el evento de Usuario A | HTTP 403 Forbidden (Protección de datos) | Integración | **PASSED** |
 | **TC-16** | Validar estado borrador (Unitario) | `validate_event_is_draft` con status diferente a `"borrador"` | HTTPException (400) | Unitario | **PASSED** |
 
 ---

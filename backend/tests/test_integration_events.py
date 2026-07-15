@@ -125,10 +125,10 @@ class TestIntegrationEvents(unittest.TestCase):
         self.assertFalse(data["budget_alert"])
 
     def test_get_event_unauthorized_access(self):
-        """TC-04: Unauthorized user trying to access other user's event should get 404."""
+        """TC-04: Unauthorized user trying to access other user's event should get 403."""
         self.current_test_user = MockUser(USER_B_ID)
         response = self.client.get(f"/events/{self.event_id_1}", headers={"Authorization": "Bearer test-token"})
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_patch_event_success(self):
         """PATCH: Should successfully update name and max_budget, updating updated_at."""
@@ -183,13 +183,13 @@ class TestIntegrationEvents(unittest.TestCase):
         self.assertNotEqual(data["template_id"], "3c608982-f8cb-4eaa-b439-740b3371c131")
 
     def test_patch_event_unauthorized(self):
-        """PATCH: Should return 404 if User B tries to modify User A's event."""
+        """PATCH: Should return 403 if User B tries to modify User A's event."""
         self.current_test_user = MockUser(USER_B_ID)
         payload = {
             "name": "Malicious Edit Attempt"
         }
         response = self.client.patch(f"/events/{self.event_id_1}", json=payload, headers={"Authorization": "Bearer test-token"})
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_delete_event_success(self):
         """DELETE: Should successfully delete draft event and return 200."""
@@ -217,10 +217,10 @@ class TestIntegrationEvents(unittest.TestCase):
         self.assertIn("Solo se pueden eliminar eventos en estado borrador", response.json()["detail"])
 
     def test_delete_event_unauthorized(self):
-        """DELETE: Should return 404 if unauthorized user attempts to delete the event."""
+        """DELETE: Should return 403 if unauthorized user attempts to delete the event."""
         self.current_test_user = MockUser(USER_B_ID)
-        response = self.client.delete(f"/events/{self.event_id_delete}", headers={"Authorization": "Bearer test-token"})
-        self.assertEqual(response.status_code, 404)
+        response = self.client.delete(f"/events/{self.event_id_1}", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 403)
 
 if __name__ == "__main__":
     unittest.main()

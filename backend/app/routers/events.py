@@ -123,16 +123,20 @@ def create_event(payload: EventCreate, request: Request, db: Session = Depends(g
 @router.get("/{event_id}", response_model=EventDetailOut)
 def get_event(event_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     try:
-        # Fetch event details validating user ownership
+        # Fetch event details first by id
         event_res = db.execute(
-            text("SELECT * FROM events WHERE id = :id AND user_id = :user_id"),
-            {"id": event_id, "user_id": current_user.id}
+            text("SELECT * FROM events WHERE id = :id"),
+            {"id": event_id}
         ).fetchone()
         
         if not event_res:
-            raise HTTPException(status_code=404, detail="Event not found")
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
             
-        return map_event_to_detail(event_res._mapping, db)
+        event = event_res._mapping
+        if str(event["user_id"]) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
+            
+        return map_event_to_detail(event, db)
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
@@ -188,16 +192,18 @@ def update_event(
     db: Session = Depends(get_db),
 ):
     try:
-        # Fetch event details validating user ownership
+        # Fetch event details first by id
         event_res = db.execute(
-            text("SELECT * FROM events WHERE id = :id AND user_id = :user_id"),
-            {"id": event_id, "user_id": current_user.id}
+            text("SELECT * FROM events WHERE id = :id"),
+            {"id": event_id}
         ).fetchone()
 
         if event_res is None:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
 
         event = event_res._mapping
+        if str(event["user_id"]) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
         validate_event_not_finalized(event["status"])
         validate_event_date_not_past(payload.event_date)
         validate_guest_count_editable(payload.guest_count, event.get("guest_tracking_enabled", False))
@@ -276,14 +282,17 @@ def delete_event(
     try:
         # Fetch event details validating user ownership and status
         event_res = db.execute(
-            text("SELECT status FROM events WHERE id = :id AND user_id = :user_id"),
-            {"id": event_id, "user_id": current_user.id}
+            text("SELECT status, user_id FROM events WHERE id = :id"),
+            {"id": event_id}
         ).fetchone()
         
         if not event_res:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
             
         event = event_res._mapping
+        if str(event["user_id"]) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
+            
         validate_event_is_draft(event["status"])
         
         db.execute(

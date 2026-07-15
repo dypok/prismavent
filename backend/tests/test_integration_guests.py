@@ -167,12 +167,12 @@ class TestIntegrationGuests(unittest.TestCase):
 
         # List attempt
         response = self.client.get(f"/events/{self.event_id_1}/guests", headers={"Authorization": "Bearer test-token"})
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
         # Create attempt
         payload = {"full_name": "Spy"}
         response = self.client.post(f"/events/{self.event_id_1}/guests", json=payload, headers={"Authorization": "Bearer test-token"})
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_guest_count_synchronization(self):
         """TC-04: Sincronización de guest_count when total guests registered exceeds cupo previsto."""
