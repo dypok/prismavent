@@ -14,6 +14,7 @@ class EventItemUpdate(BaseModel):
     quantity: Optional[int] = Field(None, ge=1)
     unit_price: Optional[Decimal] = Field(None, ge=Decimal("0.0"))
     notes: Optional[str] = Field(None, max_length=300)
+    confirmed: Optional[bool] = None
 
 class EventItemResponse(BaseModel):
     id: str

@@ -203,6 +203,26 @@ class TestIntegrationEventItems(unittest.TestCase):
         finally:
             db.close()
 
+    def test_patch_event_item_confirmed_field(self):
+        """PATCH /events/{id}/items/{item_id}: Successfully update confirmed status to True."""
+        self.current_test_user = MockUser(USER_A_ID)
+        payload = {
+            "confirmed": True
+        }
+        response = self.client.patch(f"/events/{self.event_id_1}/items/{self.item_id_1}", json=payload, headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["confirmed"])
+
+        # Verify DB is updated
+        db = SessionLocal()
+        try:
+            db_item = db.execute(text("SELECT confirmed FROM event_items WHERE id = :id"), {"id": self.item_id_1}).fetchone()
+            self.assertIsNotNone(db_item)
+            self.assertTrue(db_item._mapping["confirmed"])
+        finally:
+            db.close()
+
     def test_patch_event_item_invalid_quantity(self):
         """PATCH /events/{id}/items/{item_id}: Should return 422 if quantity < 1."""
         self.current_test_user = MockUser(USER_A_ID)
