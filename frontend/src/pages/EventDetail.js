@@ -44,10 +44,10 @@ export async function EventDetail(eventId) {
                 </button>
                 <div>
                   <div class="flex items-center gap-3">
-                    <h1 class="text-3xl font-bold text-[#1E1B15]" id="detail-title">${eventName}</h1>
+                    <h1 class="text-3xl font-bold text-[#1E1B15]" id="detail-title">${event?.name}</h1>
                     <span class="px-3 py-1 text-xs font-semibold bg-[#FEF3C7] text-[#755B00] rounded-full">${event?.status || "Borrador"}</span>
                   </div>
-                  <p class="text-[#9E8E6E] mt-1" id="detail-date-display">${eventDate}</p>
+                  <p class="text-[#9E8E6E] mt-1" id="detail-date-display">${event?.event_date}</p>
                 </div>
               </div>
               <div class="flex gap-3" id="detail-actions">

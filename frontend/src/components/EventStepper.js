@@ -1,4 +1,4 @@
-export function EventStepper(currentStep = 1) {
+export function EventStepper(status = "borrador") {
   const steps = [
     "Design",
     "Resources",
