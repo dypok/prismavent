@@ -4,6 +4,8 @@ import { EventStepper } from "../components/EventStepper.js";
 import { getEventById, updateEvent, updateEventStatus } from "../service/api.js";
 import { BudgetPanel } from "../components/BudgetPanel.js";
 import { DeleteEventModal } from "../components/DeleteEventModal.js";
+import { GuestsPanel } from "../components/GuestPanel.js";
+import { GuestModal } from "../components/GuestModal.js";
 
 export async function EventDetail(eventId) {
   let event = null;
@@ -138,6 +140,8 @@ export async function EventDetail(eventId) {
                       <span class="text-sm text-[#9E8E6E] block mb-1">Descripción</span>
                       <p class="text-sm text-[#1E1B15]" id="view-description">${event.description}</p>
                     </div>` : ''}
+                    
+                    ${GuestsPanel(event)}
 
                     <div class="flex gap-3" id="detail-actions">
 
@@ -283,6 +287,7 @@ export async function EventDetail(eventId) {
         </div>
 
       </main>
+    ${GuestModal}
     ${DeleteEventModal()}
     </div>
   `;
