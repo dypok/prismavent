@@ -5,6 +5,7 @@ from app.routers.auth import router as auth_router
 from app.routers.events import router as events_router
 from app.routers.templates import router as templates_router
 from app.routers.guests import router as guests_router
+from app.routers.event_items import router as event_items_router
 from app.middlewares.auth_middleware import SupabaseAuthMiddleware
 
 Base.metadata.create_all(bind=engine)
@@ -24,6 +25,7 @@ app.include_router(auth_router)
 app.include_router(events_router)
 app.include_router(templates_router)
 app.include_router(guests_router)
+app.include_router(event_items_router)
 
 @app.get("/")
 def read_root():

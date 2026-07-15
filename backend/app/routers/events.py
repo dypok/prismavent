@@ -360,4 +360,3 @@ def delete_event(
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=400, detail=f"Error deleting event: {str(e)}")
-        raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")
