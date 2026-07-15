@@ -496,3 +496,55 @@ def update_event_item(
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=400, detail=f"Error updating event item: {str(e)}")
+
+@router.delete("/{event_id}/items/{item_id}")
+def delete_event_item(
+    event_id: str,
+    item_id: str,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Deletes an event item after verifying event ownership, event existence, and item existence.
+    """
+    try:
+        # 1. Fetch event details first by id to check existence
+        event_res = db.execute(
+            text("SELECT user_id FROM events WHERE id = :id"),
+            {"id": event_id}
+        ).fetchone()
+        
+        if not event_res:
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
+            
+        event = event_res._mapping
+        if str(event["user_id"]) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
+            
+        # 2. Fetch event item details first by id to check existence
+        item_res = db.execute(
+            text("SELECT event_id FROM event_items WHERE id = :id"),
+            {"id": item_id}
+        ).fetchone()
+        
+        if not item_res:
+            raise HTTPException(status_code=404, detail="Item no encontrado")
+            
+        # 3. Verify item belongs to the event
+        if str(item_res[0]) != str(event_id):
+            raise HTTPException(status_code=403, detail="El item no pertenece a este evento")
+            
+        # 4. Perform deletion
+        db.execute(
+            text("DELETE FROM event_items WHERE id = :id AND event_id = :event_id"),
+            {"id": item_id, "event_id": event_id}
+        )
+        
+        db.commit()
+        return {"message": "Recurso eliminado exitosamente"}
+        
+    except Exception as e:
+        db.rollback()
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=400, detail=f"Error deleting event item: {str(e)}")

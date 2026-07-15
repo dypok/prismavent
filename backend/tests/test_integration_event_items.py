@@ -285,5 +285,80 @@ class TestIntegrationEventItems(unittest.TestCase):
         response = self.client.patch(f"/events/{random_event_uuid}/items/{self.item_id_1}", json=payload, headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 404)
 
+    def test_delete_event_item_success(self):
+        """DELETE /events/{id}/items/{item_id}: Successfully delete event item."""
+        # 1. Insert a temporary item for deletion
+        db = SessionLocal()
+        temp_item_id = str(uuid4())
+        try:
+            db.execute(text("""
+                INSERT INTO event_items (id, event_id, name, quantity, unit_price, notes, confirmed)
+                VALUES (:id, :event_id, 'Temp Item', 1, 10.00, 'Notes', false)
+            """), {"id": temp_item_id, "event_id": self.event_id_1})
+            db.commit()
+        finally:
+            db.close()
+
+        self.current_test_user = MockUser(USER_A_ID)
+        response = self.client.delete(f"/events/{self.event_id_1}/items/{temp_item_id}", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["message"], "Recurso eliminado exitosamente")
+
+        # Verify DB doesn't have it
+        db = SessionLocal()
+        try:
+            db_item = db.execute(text("SELECT * FROM event_items WHERE id = :id"), {"id": temp_item_id}).fetchone()
+            self.assertIsNone(db_item)
+        finally:
+            db.close()
+
+    def test_delete_event_item_unauthorized(self):
+        """DELETE /events/{id}/items/{item_id}: Should return 403 if USER B attempts to delete USER A's event item."""
+        self.current_test_user = MockUser(USER_B_ID)
+        response = self.client.delete(f"/events/{self.event_id_1}/items/{self.item_id_1}", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_event_item_mismatched_event(self):
+        """DELETE /events/{id}/items/{item_id}: Should return 403 if item does not belong to the path event."""
+        # 1. Create a second event owned by USER_A
+        db = SessionLocal()
+        event_id_2 = str(uuid4())
+        try:
+            db.execute(text("""
+                INSERT INTO events (id, user_id, name, event_date, guest_count, max_budget, status, visibility_status)
+                VALUES (:id, :user_id, 'Event A - Items Test 3', '2026-10-10', 50, 1000.00, 'borrador', 'active')
+            """), {"id": event_id_2, "user_id": USER_A_ID})
+            db.commit()
+        finally:
+            db.close()
+
+        # 2. Try to delete item_id_1 (under event_id_1) using event_id_2 in path
+        self.current_test_user = MockUser(USER_A_ID)
+        try:
+            response = self.client.delete(f"/events/{event_id_2}/items/{self.item_id_1}", headers={"Authorization": "Bearer test-token"})
+            self.assertEqual(response.status_code, 403)
+        finally:
+            # Clean up event_id_2
+            db = SessionLocal()
+            try:
+                db.execute(text("DELETE FROM events WHERE id = :id"), {"id": event_id_2})
+                db.commit()
+            finally:
+                db.close()
+
+    def test_delete_event_item_not_found_item(self):
+        """DELETE /events/{id}/items/{item_id}: Should return 404 if item id does not exist."""
+        self.current_test_user = MockUser(USER_A_ID)
+        random_item_uuid = str(uuid4())
+        response = self.client.delete(f"/events/{self.event_id_1}/items/{random_item_uuid}", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_event_item_not_found_event(self):
+        """DELETE /events/{id}/items/{item_id}: Should return 404 if event id does not exist."""
+        self.current_test_user = MockUser(USER_A_ID)
+        random_event_uuid = str(uuid4())
+        response = self.client.delete(f"/events/{random_event_uuid}/items/{self.item_id_1}", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 404)
+
 if __name__ == "__main__":
     unittest.main()
