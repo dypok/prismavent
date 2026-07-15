@@ -79,6 +79,8 @@ Crea el archivo del router en plural. Este archivo debe definir los endpoints ne
 ### 6. Registro en el Entry Point ([app/main.py](../backend/app/main.py))
 Una vez completadas tus capas, importa y registra tu router en el archivo principal utilizando `app.include_router(tu_router)`.
 
+---
+
 ## 4. Estrategia de Consultas a Base de Datos: SQL Directo vs ORM
 
 En **Prismavent**, decidimos implementar un enfoque híbrido en el acceso a datos. Aunque usamos **SQLAlchemy** como infraestructura, los routers ejecutan consultas **SQL directas/nativas** mediante `db.execute(text(...))` en lugar de utilizar métodos puros del ORM (como `db.query(Model)` o `db.add()`).
@@ -137,6 +139,9 @@ Al escribir pruebas de integración para endpoints protegidos, se debe usar `fas
 1. **Mockear el Middleware**: Sobrescribe la función `get_supabase_client` del middleware de autenticación (`app.middlewares.auth_middleware.get_supabase_client`) para que retorne un cliente de prueba mockeado.
 2. **Controlar el Usuario Autenticado**: Haz que la llamada mockeada retorne un objeto de usuario simulado con el ID necesario para las pruebas de propiedad.
 3. **Enviar Cabeceras de Autorización**: En cada petición del cliente de pruebas, envía un Bearer Token en los headers (ej. `headers={"Authorization": "Bearer test-token"}`) para habilitar el paso exitoso del middleware.
+
+---
+
 ## 6. Estándar de Arquitectura Frontend: Patrón de Componentes y Rutas
 
 A raíz del desarrollo del flujo de creación de eventos (plantilla vs. personalizado), surgieron dos patrones distintos e incompatibles para construir pantallas en el frontend. El equipo definió cuál es el estándar oficial de ahora en adelante.

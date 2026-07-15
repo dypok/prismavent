@@ -41,7 +41,7 @@ async function renderPage() {
       <div class="flex h-screen">
         ${Sidebar("dashboard")}
         <div class="flex-1 flex flex-col">
-          ${Topbar("Carlos")}
+          ${Topbar()}
           <main class="flex-1 p-8 bg-[#FFF8F1] overflow-auto">
             <h1 class="text-4xl font-bold text-gray-900">Dashboard</h1>
             <p class="text-gray-600 mt-2">Bienvenido de vuelta</p>

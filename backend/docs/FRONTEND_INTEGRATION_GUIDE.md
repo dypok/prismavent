@@ -254,24 +254,88 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
   }
   ```
 
-### 5.3 Actualizar Evento (Edición Parcial)
+### 5.3 Actualizar Evento (Edición Parcial - PATCH)
 * **Endpoint:** `PATCH /events/{event_id}`
 * **Seguridad:** Requiere Token (`Authorization: Bearer <token>`).
-* **Descripción:** Realiza una edición parcial de los datos de un evento. Únicamente permite actualizar 9 campos editables. Cualquier otro campo es ignorado de forma silenciosa.
-* **Campos permitidos:** `name`, `description`, `event_date`, `guest_count`, `max_budget`, `city_id`, `city_custom`, `location`, `visibility_status` (todos opcionales).
-* **Reglas de negocio aplicadas:**
-  * No se puede modificar un evento que ya esté en estado `"finalizado"` (Retorna `HTTP 400 Bad Request`).
-  * El nuevo valor de `event_date` no puede ser en el pasado (Retorna `HTTP 400 Bad Request`).
-  * El campo `updated_at` se actualiza de forma automática en la base de datos a `NOW()`.
-* **Cuerpo de la Petición (Request Body):**
+* **Descripción:** Permite actualizar de forma parcial la información de un evento existente (por ejemplo, cambiar el nombre, presupuesto máximo, fecha, etc.). Sólo se actualizarán los campos que sean enviados en el cuerpo de la petición (hasta 9 campos editables).
+* **Campos Editables en el Body:**
+  * `name` (String, Opcional): Nuevo nombre del evento.
+  * `description` (String, Opcional): Nueva descripción.
+  * `event_date` (String YYYY-MM-DD, Opcional): Nueva fecha. **Debe ser una fecha futura (posterior a hoy)**; de lo contrario, responderá con HTTP 400.
+  * `guest_count` (Integer, Opcional): Cantidad manual de invitados. **Sólo es editable cuando el modo de tracking de invitados por nombre está desactivado**; si el modo de tracking está activo, este campo no se acepta y la petición responderá con HTTP 400.
+  * `max_budget` (Decimal, Opcional): Nuevo presupuesto máximo.
+  * `city_id` (String UUID, Opcional): ID de la ciudad del evento.
+  * `city_custom` (String, Opcional): Nombre de ciudad personalizada.
+  * `location` (String, Opcional): Dirección o ubicación del evento.
+  * `visibility_status` (String, Opcional): Estado de visibilidad (ej. `"active"`).
+  
+  > [!IMPORTANT]
+  > Campos como `id`, `user_id`, `status`, `template_id`, `user_template_id`, `created_at` y `updated_at` **no son editables** y se ignoran silenciosamente si son enviados en la petición. El campo `updated_at` se actualiza de forma automática por el backend a `NOW()` en cada edición exitosa.
+
+  > [!CAUTION]
+  > Si el estado actual del evento es `"finalizado"`, el evento es inmutable. Cualquier intento de actualizarlo retornará un error `HTTP 400 Bad Request`.
+
+* **Cuerpo de la Petición (Request Body) - Ejemplo:**
   ```json
   {
-    "name": "Boda de Ana y Luis (Actualizado)",
+    "name": "Boda de Ana y Luis - Nueva Fecha",
+    "event_date": "2026-10-15",
     "max_budget": 6000.00
   }
   ```
 * **Respuesta Exitosa (HTTP 200 OK):**
-  * Retorna la misma estructura detallada que `GET /events/{event_id}` (con la lista de ítems, invitados y contadores recalculados).
+  Retorna el detalle completo del evento actualizado (con el mismo formato que `GET /events/{event_id}`), recalculando también las métricas de presupuesto:
+  ```json
+  {
+    "id": "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44",
+    "user_id": "9f716fd2-e147-4211-a5c0-98e0f5143e19",
+    "name": "Boda de Ana y Luis - Nueva Fecha",
+    "description": "Celebración en salón campestre.",
+    "event_date": "2026-10-15",
+    "guest_count": 80,
+    "max_budget": "6000.00",
+    "template_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "user_template_id": null,
+    "city_id": "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
+    "city_custom": null,
+    "event_type_id": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+    "location": "Salón Eventos Green Meadows",
+    "status": "borrador",
+    "visibility_status": "active",
+    "created_at": "2026-07-09T14:30:00.000Z",
+    "updated_at": "2026-07-09T15:10:00.000Z",
+    "event_items": [
+      {
+        "id": "d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55",
+        "name": "Catering / Comida",
+        "quantity": 80,
+        "unit_price": "45.00",
+        "confirmed": false,
+        "notes": null
+      }
+    ],
+    "guests": [],
+    "registered_guests_count": 0,
+    "confirmed_guests_count": 0,
+    "unconfirmed_guests_count": 0,
+    "total_estimated": "3600.00",
+    "budget_alert": false
+  }
+  ```
+
+### 5.4 Eliminar Evento (DELETE)
+* **Endpoint:** `DELETE /events/{event_id}`
+* **Seguridad:** Requiere Token (`Authorization: Bearer <token>`).
+* **Descripción:** Elimina un evento existente junto con todos sus recursos e invitados asociados (eliminación en cascada).
+* **Reglas de negocio aplicadas:**
+  * El evento debe pertenecer al usuario autenticado (de lo contrario retorna `HTTP 404 Not Found`).
+  * El evento únicamente se puede eliminar si se encuentra en estado `"borrador"`. Si se encuentra en cualquier otro estado (ej. `"planificando"`, `"confirmado"`, `"finalizado"`), la petición será rechazada con `HTTP 400 Bad Request`.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "message": "Evento eliminado exitosamente"
+  }
+  ```
 
 ---
 

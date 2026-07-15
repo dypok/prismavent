@@ -28,11 +28,11 @@ De manera homóloga a la **Sección 2** de [TESTING_DOC.md](./TESTING_DOC.md), s
 | **TC-08** | Fecha en el pasado (PATCH) | PATCH `/events/{id}` con `event_date` anterior a hoy | HTTP 400 Bad Request, fecha rechazada | Integración | **PASSED** |
 | **TC-09** | Modificar evento finalizado | PATCH `/events/{id}` en evento con `status = "finalizado"` | HTTP 400 Bad Request, inmutable | Integración | **PASSED** |
 | **TC-10** | Ignorar campos no editables | PATCH `/events/{id}` enviando `status` o `template_id` | HTTP 200, campos ignorados silenciosamente en base de datos | Integración | **PASSED** |
-| **TC-11** | Control de propiedad PATCH (404) | Usuario B intenta modificar el evento de Usuario A | HTTP 404 Not Found | Integración | **PASSED** |
+| **TC-11** | Control de propiedad PATCH (403) | Usuario B intenta modificar el evento de Usuario A | HTTP 403 Forbidden | Integración | **PASSED** |
 | **TC-12** | Validaciones unitarias del servicio | Validaciones de fecha y estado en aislamiento | Comportamiento correcto de excepciones HTTPException (400) | Unitario | **PASSED** |
 | **TC-13** | CRUD de invitados y contadores | Flujo completo de agregar, listar, editar y eliminar invitados | HTTP 200, contadores `registered`, `confirmed` y `unconfirmed` cambian en vivo | Integración | **PASSED** |
 | **TC-14** | CRUD en evento finalizado | Intentar operar sobre invitados cuando el evento está `"finalizado"` | HTTP 400 Bad Request, inmutabilidad de invitados | Integración | **PASSED** |
-| **TC-15** | Propiedad de invitados (404) | Usuario B intenta leer o crear invitados en evento del Usuario A | HTTP 404 Not Found (Bloqueo de acceso) | Integración | **PASSED** |
+| **TC-15** | Propiedad de invitados (403) | Usuario B intenta leer o crear invitados en evento del Usuario A | HTTP 403 Forbidden (Bloqueo de acceso) | Integración | **PASSED** |
 | **TC-16** | Sincronización automática cupo | Registrar invitados superando el cupo `guest_count` original | El backend actualiza `guest_count` del evento dinámicamente | Integración | **PASSED** |
 | **TC-17** | Compatibilidad PATCH con cupo | PATCH `/events/{id}` editando `guest_count` manualmente | HTTP 200, permite editar libremente el cupo previsto | Integración | **PASSED** |
 

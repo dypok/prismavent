@@ -1,8 +1,8 @@
 import notificationIcon from "../assets/icons/notification_icon.svg";
-import avatarIcon from "../assets/icons/avatar_icon.svg";
+import { getUserName } from "../utils/authUtils.js";
 
-
-export function Topbar(userName = "Carlos") {
+export function Topbar() {
+  const userName = getUserName();
   return `
     <header class="flex justify-end items-center h-20 px-12 bg-[#FFF8F1]">
 
@@ -17,12 +17,6 @@ export function Topbar(userName = "Carlos") {
           class="w-5 h-5"
         />
       </button>
-
-      <img
-        src="${avatarIcon}"
-        alt="Avatar"
-        class="w-9 h-9 rounded-full object-cover"
-      />
 
     </header>
   `;

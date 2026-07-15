@@ -1,5 +1,6 @@
 import api from '../service/api.js';
 import { Sidebar } from '../components/Sidebar.js';
+import { EditEventModal } from '../components/EditEventModal.js';
 
 export default class MyEvents {
     constructor() {
@@ -25,28 +26,58 @@ export default class MyEvents {
                         </div>
                     </div>
 
-                    <!-- Estadísticas -->
                     <div class="px-8 py-4 bg-white border-b border-[#E9E1D7]">
-                        <div class="grid grid-cols-4 gap-3" id="stats-grid"></div>
+                        <div class="grid grid-cols-4 gap-3" id="stats-grid">${this.renderStatsSkeleton()}</div>
                     </div>
 
-                    <!-- Grid de Eventos -->
                     <main class="flex-1 p-6 overflow-auto">
                         <div id="events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                            ${this.renderGridSkeleton()}
                         </div>
                     </main>
                 </div>
             </div>
         `;
 
-        await this.loadEvents();
+        this.loadEvents();
+
+        window.addEventListener('events-updated', () => this.loadEvents());
+    }
+
+    renderStatsSkeleton() {
+        return Array(4).fill(0).map(() => `
+            <div class="bg-white p-4 rounded-2xl border border-[#E9E1D7] animate-pulse">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-[#E9E1D7] rounded-xl"></div>
+                    <div class="flex-1">
+                        <div class="h-3 bg-[#E9E1D7] rounded w-3/4 mb-2"></div>
+                        <div class="h-6 bg-[#E9E1D7] rounded w-1/3"></div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderGridSkeleton() {
+        return Array(6).fill(0).map(() => `
+            <div class="bg-white rounded-3xl overflow-hidden border border-[#E9E1D7] animate-pulse">
+                <div class="h-32 bg-[#F5EDE0]"></div>
+                <div class="p-4 space-y-3">
+                    <div class="h-5 bg-[#E9E1D7] rounded w-3/4"></div>
+                    <div class="h-3 bg-[#E9E1D7] rounded w-full"></div>
+                    <div class="h-3 bg-[#E9E1D7] rounded w-1/2"></div>
+                    <div class="flex gap-2 pt-2">
+                        <div class="h-8 bg-[#E9E1D7] rounded-xl flex-1"></div>
+                        <div class="h-8 bg-[#E9E1D7] rounded-xl flex-1"></div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
     async loadEvents() {
         const grid = document.getElementById('events-grid');
         const statsGrid = document.getElementById('stats-grid');
-
-        grid.innerHTML = '<p class="col-span-full text-center py-12 text-[#9E8E6E]">Cargando eventos...</p>';
 
         try {
             const events = await api.getEvents();
@@ -163,5 +194,5 @@ window.viewEvent = (id) => {
 };
 
 window.editEvent = (id) => {
-    window.location.href = `/events/new?edit=${id}`;
+    EditEventModal(id);
 };

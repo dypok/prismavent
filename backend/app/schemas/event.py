@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 from typing import Optional
 from decimal import Decimal
 from datetime import date, datetime
@@ -84,8 +84,8 @@ class EventUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     event_date: Optional[date] = None
-    guest_count: Optional[int] = None
-    max_budget: Optional[Decimal] = None
+    guest_count: Optional[int] = Field(default=None, ge=0)
+    max_budget: Optional[Decimal] = Field(default=None, ge=0)
     city_id: Optional[UUID] = None
     city_custom: Optional[str] = None
     location: Optional[str] = None

@@ -22,28 +22,6 @@ def create_event(payload: EventCreate, request: Request, db: Session = Depends(g
         raise HTTPException(status_code=401, detail="Unauthorized: User not found in request state")
     
     user_id = user.id
-    # supabase_client = get_supabase_client_for_user(request.state.token)
-    
-    # # 1. Prepare event data
-    # event_data = {
-    #     "user_id": user_id,
-    #     "name": payload.name,
-    #     "description": payload.description,
-    #     "event_date": payload.event_date.isoformat(), #para que antes de mandarlo se haga string de nuevo :P
-    #     "guest_count": payload.guest_count,
-    #     "max_budget": float(payload.max_budget) if payload.max_budget is not None else None,
-    #     "template_id": payload.template_id,
-    #     "user_template_id": payload.user_template_id,
-    #     "city_id": payload.city_id,
-    #     "city_custom": payload.city_custom,
-    #     "event_type_id": payload.event_type_id,
-    #     "location": payload.location,
-    #     "status": "borrador",# fijamos borrador aqui :p
-    #     "visibility_status": payload.visibility_status,
-    # }
-    
-    # # Remove None values so database defaults apply
-    # event_data = {k: v for k, v in event_data.items() if v is not None}
     
     try:
         # 1. Fetch template items if template_id or user_template_id is provided
@@ -89,7 +67,7 @@ def create_event(payload: EventCreate, request: Request, db: Session = Depends(g
             "city_custom": payload.city_custom,
             "event_type_id": payload.event_type_id,
             "location": payload.location,
-            "status": "borrador", #Esto dejenlo como borrador >:(
+            "status": "borrador", # Esto dejenlo como borrador >:(
             "visibility_status": payload.visibility_status
         }
         
@@ -144,16 +122,20 @@ def create_event(payload: EventCreate, request: Request, db: Session = Depends(g
 @router.get("/{event_id}", response_model=EventDetailOut)
 def get_event(event_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     try:
-        # Fetch event details validating user ownership
+        # Fetch event details first by id
         event_res = db.execute(
-            text("SELECT * FROM events WHERE id = :id AND user_id = :user_id"),
-            {"id": event_id, "user_id": current_user.id}
+            text("SELECT * FROM events WHERE id = :id"),
+            {"id": event_id}
         ).fetchone()
         
         if not event_res:
-            raise HTTPException(status_code=404, detail="Event not found")
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
             
-        return map_event_to_detail(event_res._mapping, db)
+        event = event_res._mapping
+        if str(event["user_id"]) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
+            
+        return map_event_to_detail(event, db)
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
@@ -209,18 +191,21 @@ def update_event(
     db: Session = Depends(get_db),
 ):
     try:
-        # Fetch event details validating user ownership
+        # Fetch event details first by id
         event_res = db.execute(
-            text("SELECT * FROM events WHERE id = :id AND user_id = :user_id"),
-            {"id": event_id, "user_id": current_user.id}
+            text("SELECT * FROM events WHERE id = :id"),
+            {"id": event_id}
         ).fetchone()
 
         if event_res is None:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
 
         event = event_res._mapping
+        if str(event["user_id"]) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
         validate_event_not_finalized(event["status"])
         validate_event_date_not_past(payload.event_date)
+        validate_guest_count_editable(payload.guest_count, event.get("guest_tracking_enabled", False))
 
         updated = db.execute(
             text("""
@@ -326,4 +311,43 @@ def get_events(current_user = Depends(get_current_user), db: Session = Depends(g
         return [dict(event._mapping) for event in events]
         
     except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")
+
+@router.delete("/{event_id}")
+def delete_event(
+    event_id: str,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Deletes an event if its status is 'borrador' and the event belongs to the authenticated user.
+    """
+    try:
+        # Fetch event details validating user ownership and status
+        event_res = db.execute(
+            text("SELECT status, user_id FROM events WHERE id = :id"),
+            {"id": event_id}
+        ).fetchone()
+        
+        if not event_res:
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
+            
+        event = event_res._mapping
+        if str(event["user_id"]) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
+            
+        validate_event_is_draft(event["status"])
+        
+        db.execute(
+            text("DELETE FROM events WHERE id = :id AND user_id = :user_id"),
+            {"id": event_id, "user_id": current_user.id}
+        )
+        db.commit()
+        
+        return {"message": "Evento eliminado exitosamente"}
+    except Exception as e:
+        db.rollback()
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=400, detail=f"Error deleting event: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")

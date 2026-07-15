@@ -1,3 +1,5 @@
+import { setUserName } from "../utils/authUtils.js";
+
 const BASE_URL = "http://localhost:8000";
 const TOKEN_KEY = "prismavent_access_token";
 
@@ -33,6 +35,8 @@ export async function login(email, password) {
   }
 
   setAccessToken(data.session.access_token);
+  const userName = data.user?.user_metadata?.name || data.user?.name;
+  if (userName) setUserName(userName);
   return data;
 }
 
@@ -119,6 +123,14 @@ export async function createGuest(eventId, guestData) {
   });
 }
 
+// Actualizar un evento
+export async function updateEvent(eventId, eventData) {
+  return await apiFetch(`/events/${eventId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(eventData)
+  });
+}
+
 // Actualizar invitado
 export async function updateGuest(eventId, guestId, guestData) {
   return await apiFetch(`/events/${eventId}/guests/${guestId}`, {
@@ -144,6 +156,7 @@ export default {
   createGuest,
   updateGuest,
   deleteGuest,
+  updateEvent,
   setAccessToken,
   getAccessToken,
   clearAccessToken,

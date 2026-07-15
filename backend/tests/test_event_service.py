@@ -22,10 +22,11 @@ class TestEventService(unittest.TestCase):
         self.assertIn("No se puede modificar un evento finalizado", ctx.exception.detail)
 
     def test_validate_event_not_finalized_active(self):
-        """Should not raise error if status is not 'finalizado'."""
+        """Should not raise error if status is not 'finalizado' (e.g. 'borrador', 'planificando')."""
         try:
             validate_event_not_finalized("borrador")
             validate_event_not_finalized("planificando")
+            validate_event_not_finalized("confirmado")
         except HTTPException:
             self.fail("validate_event_not_finalized raised HTTPException unexpectedly")
 

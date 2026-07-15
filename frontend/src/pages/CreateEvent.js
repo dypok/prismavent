@@ -20,7 +20,7 @@ export function CreateEvent() {
 
       <div class="flex-1 flex flex-col">
 
-        ${Topbar("Carlos")}
+        ${Topbar()}
 
         <main class="flex-1 bg-[#FFF8F1] flex items-center justify-center p-8 overflow-auto">
           <div class="w-full max-w-5xl">

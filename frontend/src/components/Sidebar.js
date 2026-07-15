@@ -71,15 +71,8 @@ export function Sidebar(active = "new-event") {
         </ul>
       </nav>
 
-      <!-- Perfil + Cerrar Sesión -->
+      <!-- Solo Cerrar Sesión -->
       <div class="mt-auto p-6 border-t border-[#E9E1D7]">
-        <div class="flex items-center gap-3 mb-4 px-3">
-          <div class="w-10 h-10 bg-[#C9A84C] text-[#1C1A17] rounded-full flex items-center justify-center font-bold text-xl">C</div>
-          <div>
-            <p class="font-medium text-[#1E1B15]">Carlos</p>
-            <p class="text-xs text-[#9E8E6E]">Event Director</p>
-          </div>
-        </div>
         <button onclick="window.handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] rounded-xl transition text-sm font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
           Cerrar Sesión

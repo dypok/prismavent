@@ -32,12 +32,15 @@ def get_guests_by_event(event_id: str, user_id: str, db: Session) -> list:
     Fetches the list of guests associated with the event after verifying ownership.
     """
     event_res = db.execute(
-        text("SELECT id FROM events WHERE id = :id AND user_id = :user_id"),
-        {"id": event_id, "user_id": user_id}
+        text("SELECT user_id FROM events WHERE id = :id"),
+        {"id": event_id}
     ).fetchone()
     
     if not event_res:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
+        
+    if str(event_res[0]) != str(user_id):
+        raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
         
     guests_res = db.execute(
         text("SELECT * FROM guests WHERE event_id = :event_id ORDER BY created_at ASC"),
@@ -52,12 +55,15 @@ def create_guest(event_id: str, user_id: str, payload: GuestCreate, db: Session)
     Auto-syncs guest_count if it exceeds the planned limit.
     """
     event_res = db.execute(
-        text("SELECT status, guest_count FROM events WHERE id = :id AND user_id = :user_id"),
-        {"id": event_id, "user_id": user_id}
+        text("SELECT status, guest_count, user_id FROM events WHERE id = :id"),
+        {"id": event_id}
     ).fetchone()
     
     if not event_res:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
+        
+    if str(event_res.user_id) != str(user_id):
+        raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
         
     validate_event_not_finalized(event_res.status)
     
@@ -91,12 +97,15 @@ def update_guest(event_id: str, guest_id: str, user_id: str, payload: GuestUpdat
     Updates an existing guest record after verifying event ownership, event status, and guest existence.
     """
     event_res = db.execute(
-        text("SELECT status FROM events WHERE id = :id AND user_id = :user_id"),
-        {"id": event_id, "user_id": user_id}
+        text("SELECT status, user_id FROM events WHERE id = :id"),
+        {"id": event_id}
     ).fetchone()
     
     if not event_res:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
+        
+    if str(event_res.user_id) != str(user_id):
+        raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
         
     validate_event_not_finalized(event_res.status)
     
@@ -139,12 +148,15 @@ def delete_guest(event_id: str, guest_id: str, user_id: str, db: Session) -> Non
     Deletes a guest from the event after verifying ownership, status, and guest existence.
     """
     event_res = db.execute(
-        text("SELECT status FROM events WHERE id = :id AND user_id = :user_id"),
-        {"id": event_id, "user_id": user_id}
+        text("SELECT status, user_id FROM events WHERE id = :id"),
+        {"id": event_id}
     ).fetchone()
     
     if not event_res:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
+        
+    if str(event_res.user_id) != str(user_id):
+        raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
         
     validate_event_not_finalized(event_res.status)
     
