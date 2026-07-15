@@ -9,6 +9,12 @@ class EventItemCreate(BaseModel):
     unit_price: Decimal = Field(..., ge=Decimal("0.0"))
     notes: Optional[str] = Field(None, max_length=300)
 
+class EventItemUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1)
+    quantity: Optional[int] = Field(None, ge=1)
+    unit_price: Optional[Decimal] = Field(None, ge=Decimal("0.0"))
+    notes: Optional[str] = Field(None, max_length=300)
+
 class EventItemResponse(BaseModel):
     id: str
     event_id: str
