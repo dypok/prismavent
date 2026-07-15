@@ -105,6 +105,13 @@ export async function getEventById(eventId) {
   return await apiFetch(`/events/${eventId}`);
 }
 
+// Eliminar un evento
+export async function deleteEvent(eventId) {
+  return await apiFetch(`/events/${eventId}`, {
+    method: "DELETE"
+  });
+}
+
 // Obtener templates (útil para crear evento)
 export async function getTemplates() {
   return await apiFetch('/templates');
@@ -146,6 +153,14 @@ export async function deleteGuest(eventId, guestId) {
   });
 }
 
+// Actualizar estado de un evento
+export async function updateEventStatus(eventId, status) {
+  return await apiFetch(`/events/${eventId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status })
+  });
+}
+
 export default {
   login,
   register,
@@ -157,8 +172,10 @@ export default {
   updateGuest,
   deleteGuest,
   updateEvent,
+  updateEventStatus,
   setAccessToken,
   getAccessToken,
   clearAccessToken,
-  apiFetch
+  apiFetch,
+  deleteEvent
 };

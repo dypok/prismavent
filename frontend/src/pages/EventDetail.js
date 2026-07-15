@@ -3,6 +3,7 @@ import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
 import { getEventById, updateEvent } from "../service/api.js";
 import { BudgetPanel } from "../components/BudgetPanel.js";
+import { DeleteEventModal } from "../components/DeleteEventModal.js";
 
 export async function EventDetail(eventId) {
   let event = null;
@@ -11,7 +12,7 @@ export async function EventDetail(eventId) {
     if (eventId) {
       try {
         event = await getEventById(eventId);
-
+    
       } catch (error) {
         console.error(error);
       }
@@ -21,6 +22,8 @@ export async function EventDetail(eventId) {
 
   const confirmedResources =
     event?.event_items?.filter(item => item.confirmed).length || 0;
+
+  const isFinalized = event?.status === 'finalizado';
 
   return `
     <div class="flex min-h-screen bg-[#F8F5F0]">
@@ -53,17 +56,20 @@ export async function EventDetail(eventId) {
               </div>
             </div>
 
-            <span class="text-sm text-gray-500">
-              ${confirmedResources} of ${totalResources} confirmed
-            </span>
-          </div>
-
             <section class="flex gap-6">
 
               <div class="flex-1 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                ${EventStepper(1)}
+
+                ${isFinalized ? `
+                <div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-3 text-blue-800 text-sm">
+                  Este evento esta finalizado. No se permiten modificaciones.
+                </div>
+                ` : ''}
+
                 <div class="flex justify-between items-center mb-6">
                   <h2 class="text-xl font-bold text-[#1E1B15] flex items-center gap-2">🎯 Recursos del Evento</h2>
-                  <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">0 de 0 confirmados</span>
+                  <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmedResources} de ${totalResources} confirmados</span>
                 </div>
                 <div class="h-[500px] rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-[#9E8E6E] bg-[#F8F5F0]/50">
                   <span class="text-5xl mb-4 opacity-50">🎨</span>
@@ -172,11 +178,68 @@ export async function EventDetail(eventId) {
 
             </section>
 
+            ${
+                event?.status === "borrador"
+                  ? `
+                    <div class="rounded-2xl border border-red-200 bg-red-50/40 p-5">
+
+                      <div class="flex items-center gap-2 mb-2">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="#DC2626"
+                            stroke-width="2">
+                          <path stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        </svg>
+
+                        <h3 class="text-sm font-semibold text-red-700">
+                          Delete Event
+                        </h3>
+
+                      </div>
+
+                      <p class="text-sm text-gray-600 mb-4">
+                        This action permanently deletes this event and cannot be undone.
+                      </p>
+
+                      <button
+                        id="open-delete-modal"
+                        class="w-full py-3 rounded-xl border border-red-300 bg-white text-red-600 font-medium hover:bg-red-100 hover:border-red-500 transition flex items-center justify-center gap-2"
+                      >
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2">
+
+                          <path stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M19 7L18.133 19.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"/>
+
+                        </svg>
+
+                        Delete Event
+
+                      </button>
+
+                    </div>
+                  `
+                  : ""
+              }
+
           </div>
         </div>
 
       </main>
-
+    ${DeleteEventModal()}
     </div>
   `;
 

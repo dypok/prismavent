@@ -3,7 +3,7 @@ from typing import Optional
 from decimal import Decimal
 from datetime import date, datetime
 from uuid import UUID
-from app.schemas.event_item import EventItemResponse, EventItemOut
+from app.schemas.event_item import EventItemOut
 from app.schemas.guest import GuestResponse
 
 class EventCreate(BaseModel):
@@ -43,15 +43,10 @@ class EventResponse(BaseModel):
     location: Optional[str] = None
     status: str
     visibility_status: str
+    confirmed_guests_count: int = 0
+    total_estimated: Decimal = Decimal("0.0")
     created_at: datetime
     updated_at: datetime
-
-class EventDetailResponse(EventResponse):
-    items: list[EventItemResponse] = []
-
-class EventWithStatsResponse(EventResponse):
-    progreso: float = 0.0
-    total_estimated: Decimal = Decimal("0.0")
 
 class EventDetailOut(BaseModel):
     id: UUID

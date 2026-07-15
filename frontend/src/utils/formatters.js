@@ -20,7 +20,6 @@ export function formatCurrency(amount) {
 export function getStatusColor(status) {
     const lower = (status || '').toLowerCase();
     if (lower.includes('borrador')) return 'bg-gray-400';
-    if (lower.includes('planificando')) return 'bg-violet-500';
     if (lower.includes('confirmado')) return 'bg-green-500';
     if (lower.includes('finalizado')) return 'bg-blue-500';
     return 'bg-gray-400';

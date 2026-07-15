@@ -8,6 +8,8 @@ import { EventDetail } from "./pages/EventDetail.js";
 import { CustomEventFlow } from "./pages/CustomEventFlow.js";
 import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
 import { prefillCustomEventForm } from "./components/CustomEventForm.js";
+import { deleteEvent } from "./service/api.js";
+import { showToast } from "./components/Toast.js";
 
 // === NUEVA IMPORTACIÓN ===
 import MyEvents from "./pages/MyEvents.js";
@@ -78,6 +80,46 @@ async function renderPage() {
     }
     const eventId = new URLSearchParams(window.location.search).get("id");
     document.querySelector("#app").innerHTML = await EventDetail(eventId);
+
+    // Abrir modal
+    const openDeleteModal = document.getElementById("open-delete-modal");
+    const deleteModal = document.getElementById("delete-modal");
+    const cancelDelete = document.getElementById("cancel-delete");
+
+    if (openDeleteModal && deleteModal) {
+      openDeleteModal.addEventListener("click", () => {
+        deleteModal.classList.remove("hidden");
+        deleteModal.classList.add("flex");
+      });
+    }
+
+    if (cancelDelete && deleteModal) {
+      cancelDelete.addEventListener("click", () => {
+        deleteModal.classList.add("hidden");
+        deleteModal.classList.remove("flex");
+      });
+    }
+
+    const confirmDelete = document.getElementById("confirm-delete");
+    if (confirmDelete && deleteModal) {
+      confirmDelete.addEventListener("click", async () => {
+        try {
+          await deleteEvent(eventId);
+
+          deleteModal.classList.add("hidden");
+          deleteModal.classList.remove("flex");
+
+          window.history.pushState({}, "", "/events");
+          window.dispatchEvent(new PopStateEvent("popstate"));
+
+          showToast("Event deleted successfully.");
+
+        } catch (error) {
+          showToast(error.message, "error");
+          console.error(error);
+        }
+      });
+    }
 
   // Flujo: evento personalizado
   } else if (path === "/events/new/custom") {

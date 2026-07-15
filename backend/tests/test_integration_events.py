@@ -222,5 +222,69 @@ class TestIntegrationEvents(unittest.TestCase):
         response = self.client.delete(f"/events/{self.event_id_1}", headers={"Authorization": "Bearer test-token"})
         self.assertEqual(response.status_code, 403)
 
+    def test_patch_status_on_finalized_event(self):
+        """PATCH /status: Should return 400 if trying to change status of a finalized event."""
+        payload = {"status": "borrador"}
+        response = self.client.patch(
+            f"/events/{self.event_id_finalized}/status",
+            json=payload,
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("No se puede modificar un evento finalizado", response.json()["detail"])
+
+    def test_create_guest_on_finalized_event(self):
+        """POST /guests: Should return 400 if trying to add a guest to a finalized event."""
+        payload = {"full_name": "Test Guest"}
+        response = self.client.post(
+            f"/events/{self.event_id_finalized}/guests",
+            json=payload,
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("No se puede modificar un evento finalizado", response.json()["detail"])
+
+    def test_update_guest_on_finalized_event(self):
+        """PATCH /guests/{id}: Should return 400 if trying to update a guest on a finalized event."""
+        guest_id = str(uuid4())
+        db = SessionLocal()
+        try:
+            db.execute(
+                text("INSERT INTO guests (id, event_id, full_name, confirmed) VALUES (:id, :event_id, 'Guest', false)"),
+                {"id": guest_id, "event_id": self.event_id_finalized}
+            )
+            db.commit()
+        finally:
+            db.close()
+
+        payload = {"full_name": "Updated Guest"}
+        response = self.client.patch(
+            f"/events/{self.event_id_finalized}/guests/{guest_id}",
+            json=payload,
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("No se puede modificar un evento finalizado", response.json()["detail"])
+
+    def test_delete_guest_on_finalized_event(self):
+        """DELETE /guests/{id}: Should return 400 if trying to delete a guest on a finalized event."""
+        guest_id = str(uuid4())
+        db = SessionLocal()
+        try:
+            db.execute(
+                text("INSERT INTO guests (id, event_id, full_name, confirmed) VALUES (:id, :event_id, 'Guest', false)"),
+                {"id": guest_id, "event_id": self.event_id_finalized}
+            )
+            db.commit()
+        finally:
+            db.close()
+
+        response = self.client.delete(
+            f"/events/{self.event_id_finalized}/guests/{guest_id}",
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("No se puede modificar un evento finalizado", response.json()["detail"])
+
 if __name__ == "__main__":
     unittest.main()

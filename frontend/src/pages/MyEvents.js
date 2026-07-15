@@ -143,11 +143,19 @@ export default class MyEvents {
                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
                 });
 
-                const statusClass = event.status === 'borrador' 
-                    ? 'bg-yellow-100 text-yellow-700' 
-                    : 'bg-emerald-100 text-emerald-700';
+                const isFinalized = event.status === 'finalizado';
 
-                const statusText = event.status === 'borrador' ? 'Borrador' : 'Activo';
+                const statusClass = event.status === 'borrador'
+                    ? 'bg-yellow-100 text-yellow-700'
+                    : isFinalized
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-emerald-100 text-emerald-700';
+
+                const statusText = event.status === 'borrador'
+                    ? 'Borrador'
+                    : isFinalized
+                        ? 'Finalizado'
+                        : 'Activo';
 
                 html += `
                 <div class="bg-white rounded-3xl overflow-hidden border border-[#E9E1D7] hover:shadow-xl transition-all">
@@ -171,10 +179,13 @@ export default class MyEvents {
                                     class="flex-1 py-2 text-xs font-medium border border-[#E9E1D7] hover:bg-[#FEF3C7] rounded-xl transition">
                                 Ver Detalles
                             </button>
-                            <button onclick="editEvent('${event.id}')" 
+                            ${isFinalized
+                                ? `<button disabled class="flex-1 py-2 text-xs font-medium bg-gray-200 text-gray-400 rounded-xl cursor-not-allowed">Finalizado</button>`
+                                : `<button onclick="editEvent('${event.id}')" 
                                     class="flex-1 py-2 text-xs font-medium bg-[#755B00] text-white hover:bg-[#5C4600] rounded-xl transition">
                                 Editar
-                            </button>
+                            </button>`
+                            }
                         </div>
                     </div>
                 </div>`;

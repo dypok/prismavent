@@ -1,7 +1,7 @@
 import { formatDate, formatCurrency, getStatusColor } from '../utils/formatters.js';
 
 export function createEventCard(event, onClick) {
-    const progress = event.event_items?.length > 0 
+    const progress = event.guest_count > 0 
         ? Math.round((event.confirmed_guests_count || 0) / Math.max(event.guest_count || 1, 1) * 100) 
         : 0;
 
