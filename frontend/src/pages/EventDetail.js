@@ -1,18 +1,16 @@
 import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
-import { getEventById, updateEvent } from "../service/api.js";
+import { getEventById, updateEvent, updateEventStatus } from "../service/api.js";
 import { BudgetPanel } from "../components/BudgetPanel.js";
 import { DeleteEventModal } from "../components/DeleteEventModal.js";
 
 export async function EventDetail(eventId) {
   let event = null;
-  let original = null;
 
     if (eventId) {
       try {
         event = await getEventById(eventId);
-    
       } catch (error) {
         console.error(error);
       }
@@ -152,13 +150,12 @@ export async function EventDetail(eventId) {
                     </div>
                     <div>
                       <label class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1">ESTADO</label>
-                      <select id="edit-status"
-                        class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm">
-                        <option value="borrador" ${event?.status === "borrador" || !event?.status ? "selected" : ""}>Borrador</option>
-                        <option value="planificando" ${event?.status === "planificando" ? "selected" : ""}>Planificando</option>
-                        <option value="confirmado" ${event?.status === "confirmado" ? "selected" : ""}>Confirmado</option>
-                        <option value="finalizado" ${event?.status === "finalizado" ? "selected" : ""}>Finalizado</option>
-                      </select>
+                        <select id="edit-status"
+                          class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm">
+                          <option value="borrador" ${event?.status === "borrador" || !event?.status ? "selected" : ""}>Borrador</option>
+                          <option value="confirmado" ${event?.status === "confirmado" ? "selected" : ""}>Confirmado</option>
+                          <option value="finalizado" ${event?.status === "finalizado" ? "selected" : ""}>Finalizado</option>
+                        </select>
                     </div>
                     <div>
                       <label class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1">DESCRIPCIÓN</label>
@@ -243,12 +240,21 @@ export async function EventDetail(eventId) {
     </div>
   `;
 
-  // ── Guardar referencia al evento original ──
-  window.__eventData = { event, original, eventId };
+  // ── Guardar referencia al evento ──
+  window.__eventData = { event, eventId };
 }
 
-// ── Alternar entre vista y edición ──
 window.toggleEdit = function () {
+  const ev = window.__eventData.event;
+  document.getElementById("edit-name").value = ev?.name || "";
+  document.getElementById("edit-date").value = ev?.event_date || "";
+  document.getElementById("edit-location").value = ev?.location || "";
+  document.getElementById("edit-guests").value = ev?.guest_count ?? "";
+  document.getElementById("edit-budget").value = ev?.max_budget ?? "";
+  document.getElementById("edit-description").value = ev?.description || "";
+  const statusSel = document.getElementById("edit-status");
+  if (statusSel) statusSel.value = ev?.status || "borrador";
+
   document.getElementById("detail-view").classList.add("hidden");
   document.getElementById("detail-edit").classList.remove("hidden");
   document.getElementById("btn-edit").classList.add("hidden");
@@ -256,7 +262,6 @@ window.toggleEdit = function () {
 };
 
 window.cancelEdit = function () {
-  const { original } = window.__eventData;
   document.getElementById("detail-view").classList.remove("hidden");
   document.getElementById("detail-edit").classList.add("hidden");
   document.getElementById("btn-edit").classList.remove("hidden");
@@ -279,9 +284,10 @@ document.addEventListener("submit", async (e) => {
     location: document.getElementById("edit-location").value || null,
     guest_count: parseInt(document.getElementById("edit-guests").value, 10) || null,
     max_budget: parseFloat(document.getElementById("edit-budget").value) || null,
-    visibility_status: document.getElementById("edit-status").value,
     description: document.getElementById("edit-description").value || null,
   };
+
+  const newStatus = document.getElementById("edit-status").value;
 
   Object.keys(payload).forEach((k) => { if (payload[k] === null) delete payload[k]; });
 
@@ -291,11 +297,13 @@ document.addEventListener("submit", async (e) => {
 
   try {
     await updateEvent(eventId, payload);
+    if (newStatus && newStatus !== window.__eventData.event?.status) {
+      await updateEventStatus(eventId, newStatus);
+    }
 
     const updated = await getEventById(eventId);
 
     window.__eventData.event = updated;
-    window.__eventData.original = { ...updated };
 
     document.getElementById("detail-title").textContent = updated.name;
     document.getElementById("detail-date-display").textContent = updated.event_date
@@ -308,7 +316,13 @@ document.addEventListener("submit", async (e) => {
     document.getElementById("view-budget").textContent = updated.max_budget ? "$" + parseFloat(updated.max_budget).toLocaleString() : "—";
 
     const statusBadge = document.getElementById("view-status");
-    statusBadge.textContent = updated.status || "Borrador";
+    const currentStatus = updated.status || "Borrador";
+    statusBadge.textContent = currentStatus;
+    const statusColors = { borrador: 'bg-[#FEF3C7] text-[#755B00]', confirmado: 'bg-green-100 text-green-700', finalizado: 'bg-blue-100 text-blue-700' };
+    statusBadge.className = `text-sm font-medium px-3 py-0.5 rounded-full ${statusColors[updated.status] || 'bg-[#FEF3C7] text-[#755B00]'}`;
+
+    const headerStatus = document.querySelector('.flex.items-center.gap-3 .px-3.py-1');
+    if (headerStatus) { headerStatus.textContent = currentStatus; headerStatus.className = `px-3 py-1 text-xs font-semibold rounded-full ${statusColors[updated.status] || 'bg-[#FEF3C7] text-[#755B00]'}`; }
 
     const descEl = document.getElementById("view-description");
     if (descEl) descEl.textContent = updated.description || "";

@@ -1,6 +1,14 @@
-import api from '../service/api.js';
+import api, { updateEventStatus } from '../service/api.js';
 import { Sidebar } from '../components/Sidebar.js';
-import { EditEventModal } from '../components/EditEventModal.js';
+
+function esc(str) {
+  return String(str).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return 'Sin fecha';
+  return new Date(dateStr).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
 
 export default class MyEvents {
     constructor() {
@@ -81,11 +89,11 @@ export default class MyEvents {
 
         try {
             const events = await api.getEvents();
-
-            // Estadísticas
             const total = events.length;
+            const confirmados = events.filter(e => e.status === 'confirmado').length;
             const borradores = events.filter(e => e.status === 'borrador' || !e.status).length;
-            const activos = total - borradores;
+            const finalizados = events.filter(e => e.status === 'finalizado').length;
+            const enProceso = total - finalizados;
 
             statsGrid.innerHTML = `
                 <div class="bg-white p-4 rounded-2xl border border-[#E9E1D7]">
@@ -102,7 +110,7 @@ export default class MyEvents {
                         <div class="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center text-lg">✅</div>
                         <div>
                             <p class="text-[10px] uppercase tracking-widest text-[#9E8E6E]">CONFIRMADOS</p>
-                            <p class="text-2xl font-bold">0</p>
+                            <p class="text-2xl font-bold">${confirmados}</p>
                         </div>
                     </div>
                 </div>
@@ -111,7 +119,7 @@ export default class MyEvents {
                         <div class="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center text-lg">⏳</div>
                         <div>
                             <p class="text-[10px] uppercase tracking-widest text-[#9E8E6E]">EN PROCESO</p>
-                            <p class="text-2xl font-bold">${activos}</p>
+                            <p class="text-2xl font-bold">${enProceso}</p>
                         </div>
                     </div>
                 </div>
@@ -138,50 +146,47 @@ export default class MyEvents {
             `;
 
             events.forEach(event => {
-                const date = new Date(event.event_date);
-                const formattedDate = date.toLocaleDateString('es-ES', { 
-                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
-                });
-
-                const isFinalized = event.status === 'finalizado';
-
+                const formattedDate = formatDate(event.event_date);
                 const statusClass = event.status === 'borrador'
                     ? 'bg-yellow-100 text-yellow-700'
-                    : isFinalized
+                    : event.status === 'finalizado'
                         ? 'bg-blue-100 text-blue-700'
-                        : 'bg-emerald-100 text-emerald-700';
+                        : 'bg-green-100 text-green-700';
 
                 const statusText = event.status === 'borrador'
                     ? 'Borrador'
-                    : isFinalized
+                    : event.status === 'finalizado'
                         ? 'Finalizado'
-                        : 'Activo';
+                        : 'Confirmado';
+
+                const budgetDisplay = event.max_budget
+                    ? `💰 $${parseFloat(event.max_budget).toLocaleString()}`
+                    : '';
 
                 html += `
-                <div class="bg-white rounded-3xl overflow-hidden border border-[#E9E1D7] hover:shadow-xl transition-all">
+                <div data-event-id="${esc(event.id)}" class="bg-white rounded-3xl overflow-hidden border border-[#E9E1D7] hover:shadow-xl transition-all card-view">
                     <div class="h-32 bg-gradient-to-br from-[#FEF3C7] to-[#FDE68A] flex items-center justify-center text-4xl relative">
-                        
-                        <span class="absolute top-3 right-3 px-3 py-0.5 text-[10px] font-medium rounded-full ${statusClass}">${statusText}</span>
+                        <span class="absolute top-3 right-3 px-3 py-0.5 text-[10px] font-medium rounded-full ${statusClass} card-status">${statusText}</span>
                     </div>
-                    <div class="p-4">
-                        <h3 class="font-semibold text-base text-[#1E1B15] mb-0.5 line-clamp-1">${event.name}</h3>
-                        <p class="text-[#9E8E6E] text-xs line-clamp-2 mb-3">${event.description || 'Sin descripción'}</p>
-                        
-                        <div class="space-y-1 text-xs mb-4">
-                            <div>📅 ${formattedDate}</div>
-                            <div>📍 ${event.location || 'Sin ubicación'}</div>
-                            <div>👥 ${event.guest_count} invitados</div>
-                            ${event.max_budget ? `<div>💰 Presupuesto: $${parseFloat(event.max_budget).toLocaleString()}</div>` : ''}
+                    <div class="p-4 card-body">
+                        <h3 class="font-semibold text-base text-[#1E1B15] mb-0.5 line-clamp-1 card-name">${esc(event.name)}</h3>
+                        <p class="text-[#9E8E6E] text-xs line-clamp-2 mb-3 card-desc">${esc(event.description || 'Sin descripción')}</p>
+
+                        <div class="space-y-1 text-xs mb-4 card-meta">
+                            <div class="card-date">📅 ${formattedDate}</div>
+                            <div class="card-location">📍 ${esc(event.location || 'Sin ubicación')}</div>
+                            <div class="card-guests">👥 ${event.guest_count} invitados</div>
+                            ${budgetDisplay ? `<div class="card-budget">${budgetDisplay}</div>` : ''}
                         </div>
 
-                        <div class="flex gap-2">
-                            <button onclick="viewEvent('${event.id}')" 
+                        <div class="flex gap-2 card-actions">
+                            <button onclick="viewEvent('${esc(event.id)}')" 
                                     class="flex-1 py-2 text-xs font-medium border border-[#E9E1D7] hover:bg-[#FEF3C7] rounded-xl transition">
                                 Ver Detalles
                             </button>
-                            ${isFinalized
+                            ${event.status === 'finalizado'
                                 ? `<button disabled class="flex-1 py-2 text-xs font-medium bg-gray-200 text-gray-400 rounded-xl cursor-not-allowed">Finalizado</button>`
-                                : `<button onclick="editEvent('${event.id}')" 
+                                : `<button onclick="editEvent('${esc(event.id)}')" 
                                     class="flex-1 py-2 text-xs font-medium bg-[#755B00] text-white hover:bg-[#5C4600] rounded-xl transition">
                                 Editar
                             </button>`
@@ -204,6 +209,199 @@ window.viewEvent = (id) => {
     window.location.href = `/events/detail?id=${id}`;
 };
 
-window.editEvent = (id) => {
-    EditEventModal(id);
+window.editEvent = function (id) {
+    const card = document.querySelector(`[data-event-id="${CSS.escape(id)}"]`);
+    if (!card) return;
+
+    const editing = document.querySelector('.card-editing');
+    if (editing) window.cancelEdit(editing.dataset.eventId);
+
+    const body = card.querySelector('.card-body');
+    const name = card.querySelector('.card-name')?.textContent || '';
+    const desc = card.querySelector('.card-desc')?.textContent || '';
+    const dateRaw = card.querySelector('.card-date')?.textContent?.replace('📅 ', '') || '';
+    const locationRaw = card.querySelector('.card-location')?.textContent?.replace('📍 ', '') || '';
+    const guestsRaw = card.querySelector('.card-guests')?.textContent?.replace(/👥\s*/, '').replace(' invitados', '') || '0';
+    const budgetRaw = card.querySelector('.card-budget')?.textContent?.replace(/💰\s*\$?/, '').replace(/,/g, '') || '';
+    const statusRaw = card.querySelector('.card-status')?.textContent || 'borrador';
+
+    const statusMap = { 'Borrador': 'borrador', 'Activo': 'borrador', 'Confirmado': 'confirmado', 'Finalizado': 'finalizado' };
+    const status = statusMap[statusRaw] || 'borrador';
+    const budget = budgetRaw && !isNaN(parseFloat(budgetRaw)) ? parseFloat(budgetRaw) : '';
+
+    card.dataset.origName = name;
+    card.dataset.origDesc = desc;
+    card.dataset.origDate = dateRaw;
+    card.dataset.origLocation = locationRaw;
+    card.dataset.origGuests = guestsRaw;
+    card.dataset.origBudget = budget;
+    card.dataset.origStatus = status;
+
+    card.classList.add('card-editing');
+    card.style.transform = 'scale(1.02)';
+    card.style.boxShadow = '0 20px 60px -15px rgba(117, 91, 0, 0.15)';
+    card.style.borderColor = '#C9A84C';
+
+    body.innerHTML = `
+        <div class="space-y-3">
+            <input type="text" id="edit-name-${id}" value="${esc(name)}"
+                class="w-full px-3 py-2 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm"
+                placeholder="Nombre del evento">
+            <input type="date" id="edit-date-${id}" value="${esc(dateRaw)}"
+                class="w-full px-3 py-2 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm">
+            <input type="text" id="edit-location-${id}" value="${esc(locationRaw)}"
+                class="w-full px-3 py-2 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm"
+                placeholder="Ubicación">
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-[10px] font-semibold tracking-widest text-[#4D4637]">INVITADOS</label>
+                    <input type="number" id="edit-guests-${id}" min="0" value="${esc(guestsRaw)}"
+                        class="w-full px-3 py-2 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm mt-1">
+                </div>
+                <div>
+                    <label class="text-[10px] font-semibold tracking-widest text-[#4D4637]">PRESUPUESTO</label>
+                    <input type="number" id="edit-budget-${id}" min="0" value="${esc(budget)}"
+                        class="w-full px-3 py-2 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm mt-1">
+                </div>
+            </div>
+            <div>
+                <label class="text-[10px] font-semibold tracking-widest text-[#4D4637]">ESTADO</label>
+                <select id="edit-status-${id}"
+                    class="w-full px-3 py-2 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm mt-1">
+                    <option value="borrador" ${status === 'borrador' ? 'selected' : ''}>Borrador</option>
+                    <option value="confirmado" ${status === 'confirmado' ? 'selected' : ''}>Confirmado</option>
+                    <option value="finalizado" ${status === 'finalizado' ? 'selected' : ''}>Finalizado</option>
+                </select>
+            </div>
+            <textarea id="edit-desc-${id}" rows="2"
+                class="w-full px-3 py-2 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm resize-none"
+                placeholder="Descripción">${esc(desc)}</textarea>
+            <div class="flex gap-2 pt-1">
+                <button onclick="cancelEdit('${esc(id)}')"
+                    class="flex-1 py-2 text-xs font-medium border-2 border-[#D0C5B2] text-[#4D4637] hover:bg-[#F8F5F0] rounded-xl transition">Cancelar</button>
+                <button onclick="saveEdit('${esc(id)}')"
+                    class="flex-1 py-2 text-xs font-medium bg-[#755B00] text-white hover:bg-[#5C4600] rounded-xl transition shadow-sm">Guardar</button>
+            </div>
+            <p id="edit-error-${id}" class="hidden text-xs text-red-600 text-center"></p>
+        </div>
+    `;
+};
+
+window.cancelEdit = function (id) {
+    const card = document.querySelector(`[data-event-id="${CSS.escape(id)}"]`);
+    if (!card) return;
+
+    card.classList.remove('card-editing');
+    card.style.transform = '';
+    card.style.boxShadow = '';
+    card.style.borderColor = '';
+
+    const body = card.querySelector('.card-body');
+    const name = card.dataset.origName || '';
+    const desc = card.dataset.origDesc || '';
+    const guestsRaw = card.dataset.origGuests || '0';
+    const budgetRaw = card.dataset.origBudget || '';
+    const dateRaw = card.dataset.origDate || '';
+    const locationRaw = card.dataset.origLocation || '';
+    const status = card.dataset.origStatus || 'borrador';
+
+    const budgetDisplay = budgetRaw ? `💰 $${parseFloat(budgetRaw).toLocaleString()}` : '';
+    const formattedDate = dateRaw ? formatDate(dateRaw) : 'Sin fecha';
+    const locationDisplay = locationRaw || 'Sin ubicación';
+
+    const statusClass = status === 'borrador' ? 'bg-yellow-100 text-yellow-700' : status === 'confirmado' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
+    const statusText = status === 'borrador' ? 'Borrador' : status === 'confirmado' ? 'Confirmado' : 'Finalizado';
+    const headerBadge = card.querySelector('.h-32 span');
+    if (headerBadge) { headerBadge.className = `absolute top-3 right-3 px-3 py-0.5 text-[10px] font-medium rounded-full ${statusClass}`; headerBadge.textContent = statusText; }
+
+    body.innerHTML = `
+        <h3 class="font-semibold text-base text-[#1E1B15] mb-0.5 line-clamp-1 card-name">${esc(name)}</h3>
+        <p class="text-[#9E8E6E] text-xs line-clamp-2 mb-3 card-desc">${esc(desc || 'Sin descripción')}</p>
+        <div class="space-y-1 text-xs mb-4 card-meta">
+            <div class="card-date">📅 ${formattedDate}</div>
+            <div class="card-location">📍 ${esc(locationDisplay)}</div>
+            <div class="card-guests">👥 ${guestsRaw} invitados</div>
+            ${budgetDisplay ? `<div class="card-budget">${budgetDisplay}</div>` : ''}
+        </div>
+        <div class="flex gap-2 card-actions">
+            <button onclick="viewEvent('${esc(id)}')" class="flex-1 py-2 text-xs font-medium border border-[#E9E1D7] hover:bg-[#FEF3C7] rounded-xl transition">Ver Detalles</button>
+            <button onclick="editEvent('${esc(id)}')" class="flex-1 py-2 text-xs font-medium bg-[#755B00] text-white hover:bg-[#5C4600] rounded-xl transition">Editar</button>
+        </div>
+    `;
+};
+
+window.saveEdit = async function (id) {
+    const card = document.querySelector(`[data-event-id="${CSS.escape(id)}"]`);
+    if (!card) return;
+
+    const errorEl = document.getElementById(`edit-error-${id}`);
+    const saveBtn = card.querySelector('.card-body button:last-of-type');
+
+    const name = document.getElementById(`edit-name-${id}`)?.value.trim();
+    const eventDate = document.getElementById(`edit-date-${id}`)?.value || null;
+    const location = document.getElementById(`edit-location-${id}`)?.value.trim() || null;
+    const guestCount = parseInt(document.getElementById(`edit-guests-${id}`)?.value, 10) || null;
+    const maxBudget = parseFloat(document.getElementById(`edit-budget-${id}`)?.value) || null;
+    const status = document.getElementById(`edit-status-${id}`)?.value || null;
+    const description = document.getElementById(`edit-desc-${id}`)?.value.trim() || null;
+
+    if (!name) {
+        if (errorEl) { errorEl.textContent = 'El nombre es obligatorio.'; errorEl.classList.remove('hidden'); }
+        return;
+    }
+
+    if (errorEl) errorEl.classList.add('hidden');
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Guardando...'; }
+
+    const payload = { name };
+    if (eventDate) payload.event_date = eventDate;
+    if (location) payload.location = location;
+    if (guestCount !== null) payload.guest_count = guestCount;
+    if (maxBudget !== null) payload.max_budget = maxBudget;
+    if (description) payload.description = description;
+
+    try {
+        await api.updateEvent(id, payload);
+        if (status && status !== card.dataset.origStatus) {
+            await updateEventStatus(id, status);
+        }
+
+        const newStatusText = status === 'borrador' ? 'Borrador' : status === 'confirmado' ? 'Confirmado' : 'Finalizado';
+        const newStatusClass = status === 'borrador' ? 'bg-yellow-100 text-yellow-700' : status === 'confirmado' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
+        const headerBadge = card.querySelector('.h-32 span');
+        if (headerBadge) { headerBadge.className = `absolute top-3 right-3 px-3 py-0.5 text-[10px] font-medium rounded-full ${newStatusClass}`; headerBadge.textContent = newStatusText; }
+
+        const formattedDate = eventDate ? formatDate(eventDate) : card.dataset.origDate || 'Sin fecha';
+        const locationDisplay = location || 'Sin ubicación';
+        const budgetDisplay = maxBudget ? `💰 $${maxBudget.toLocaleString()}` : '';
+
+        card.style.transform = '';
+        card.style.boxShadow = '';
+        card.style.borderColor = '';
+        card.classList.remove('card-editing');
+
+        const body = card.querySelector('.card-body');
+        body.innerHTML = `
+            <h3 class="font-semibold text-base text-[#1E1B15] mb-0.5 line-clamp-1 card-name">${esc(name)}</h3>
+            <p class="text-[#9E8E6E] text-xs line-clamp-2 mb-3 card-desc">${esc(description || 'Sin descripción')}</p>
+            <div class="space-y-1 text-xs mb-4 card-meta">
+                <div class="card-date">📅 ${formattedDate}</div>
+                <div class="card-location">📍 ${esc(locationDisplay)}</div>
+                <div class="card-guests">👥 ${guestCount || 0} invitados</div>
+                ${budgetDisplay ? `<div class="card-budget">${budgetDisplay}</div>` : ''}
+            </div>
+            <div class="flex gap-2 card-actions">
+                <button onclick="viewEvent('${esc(id)}')" class="flex-1 py-2 text-xs font-medium border border-[#E9E1D7] hover:bg-[#FEF3C7] rounded-xl transition">Ver Detalles</button>
+                <button onclick="editEvent('${esc(id)}')" class="flex-1 py-2 text-xs font-medium bg-[#755B00] text-white hover:bg-[#5C4600] rounded-xl transition">Editar</button>
+            </div>
+        `;
+
+        window.dispatchEvent(new CustomEvent('events-updated'));
+    } catch (err) {
+        if (errorEl) {
+            errorEl.textContent = err.message || 'No se pudo actualizar.';
+            errorEl.classList.remove('hidden');
+        }
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Guardar'; }
+    }
 };

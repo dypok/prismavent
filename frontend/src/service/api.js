@@ -138,6 +138,14 @@ export async function updateEvent(eventId, eventData) {
   });
 }
 
+// Actualizar solo el estado de un evento
+export async function updateEventStatus(eventId, status) {
+  return await apiFetch(`/events/${eventId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status })
+  });
+}
+
 // Actualizar invitado
 export async function updateGuest(eventId, guestId, guestData) {
   return await apiFetch(`/events/${eventId}/guests/${guestId}`, {
@@ -150,14 +158,6 @@ export async function updateGuest(eventId, guestId, guestData) {
 export async function deleteGuest(eventId, guestId) {
   return await apiFetch(`/events/${eventId}/guests/${guestId}`, {
     method: 'DELETE'
-  });
-}
-
-// Actualizar estado de un evento
-export async function updateEventStatus(eventId, status) {
-  return await apiFetch(`/events/${eventId}/status`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status })
   });
 }
 
