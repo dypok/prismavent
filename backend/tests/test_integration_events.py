@@ -358,7 +358,7 @@ class TestIntegrationEvents(unittest.TestCase):
         self.assertIn("Item no encontrado", response.json()["detail"])
 
     def test_delete_event_item_wrong_event(self):
-        """DELETE /items/{id}: Should return 404 if item belongs to a different event."""
+        """DELETE /items/{id}: Should return 403 if item belongs to a different event."""
         item_id = str(uuid4())
         db = SessionLocal()
         try:
@@ -374,8 +374,8 @@ class TestIntegrationEvents(unittest.TestCase):
             f"/events/{self.event_id_2}/items/{item_id}",
             headers={"Authorization": "Bearer test-token"}
         )
-        self.assertEqual(response.status_code, 404)
-        self.assertIn("Item no encontrado", response.json()["detail"])
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("El item no pertenece a este evento", response.json()["detail"])
 
         db = SessionLocal()
         try:

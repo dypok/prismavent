@@ -314,6 +314,14 @@ def delete_event_item(
         ).fetchone()
 
         if not item_check:
+            item_exists = db.execute(
+                text("SELECT id FROM event_items WHERE id = :id"),
+                {"id": item_id}
+            ).fetchone()
+
+            if item_exists:
+                raise HTTPException(status_code=403, detail="El item no pertenece a este evento")
+
             raise HTTPException(status_code=404, detail="Item no encontrado")
 
         db.execute(
