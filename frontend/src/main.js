@@ -10,6 +10,11 @@ import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
 import { prefillCustomEventForm } from "./components/CustomEventForm.js";
 import { deleteEvent } from "./service/api.js";
 import { showToast } from "./components/Toast.js";
+import { 
+  getEventById,
+  updateEvent,
+  updateEventStatus
+ } from "./service/api.js";
 
 // === NUEVA IMPORTACIÓN ===
 import MyEvents from "./pages/MyEvents.js";
@@ -101,25 +106,54 @@ async function renderPage() {
     }
 
     const confirmDelete = document.getElementById("confirm-delete");
-    if (confirmDelete && deleteModal) {
-      confirmDelete.addEventListener("click", async () => {
-        try {
-          await deleteEvent(eventId);
+      if (confirmDelete && deleteModal) {
+        confirmDelete.addEventListener("click", async () => {
+          try {
+            await deleteEvent(eventId);
 
-          deleteModal.classList.add("hidden");
-          deleteModal.classList.remove("flex");
+            deleteModal.classList.add("hidden");
+            deleteModal.classList.remove("flex");
 
-          window.history.pushState({}, "", "/events");
-          window.dispatchEvent(new PopStateEvent("popstate"));
+            window.history.pushState({}, "", "/events");
+            window.dispatchEvent(new PopStateEvent("popstate"));
 
-          showToast("Event deleted successfully.");
+            showToast("Event deleted successfully.");
 
-        } catch (error) {
-          showToast(error.message, "error");
-          console.error(error);
-        }
-      });
-    }
+          } catch (error) {
+            showToast(error.message, "error");
+            console.error(error);
+          }
+        });
+      }
+    
+    const nextButton = document.getElementById("btn-next-status");
+
+      if (nextButton) {
+        nextButton.addEventListener("click", async () => {
+          try {
+            const currentStatus = nextButton.dataset.currentStatus;
+
+            const nextStatusMap = {
+              borrador: "confirmado",
+              confirmado: "finalizado",
+            };
+
+            const updated = await updateEventStatus(
+              eventId,
+              nextStatusMap[currentStatus]
+            );
+
+            // Volver a cargar la página de detalle
+            window.history.replaceState({}, "", `/events/detail?id=${eventId}`);
+            window.dispatchEvent(new PopStateEvent("popstate"));
+
+          } catch (error) {
+            console.error(error);
+            console.log(error.message);
+          }
+        });
+      }
+
 
   // Flujo: evento personalizado
   } else if (path === "/events/new/custom") {

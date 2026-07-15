@@ -1,18 +1,20 @@
-export function EventStepper(status = "borrador") {
+export function EventStepper(currentStep = 1) {
+
+
   const steps = [
-    "Design",
-    "Resources",
-    "Logistics",
-    "Confirmed"
+    "Draft",
+    "confirmed",
+    "finished"
   ];
+
 
   return `
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
 
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-center gap-12">
 
         ${steps.map((step, index) => `
-          <div class="flex items-center flex-1">
+          <div class="flex items-center">
 
             <div class="flex flex-col items-center">
 
@@ -38,7 +40,7 @@ export function EventStepper(status = "borrador") {
 
             ${
               index < steps.length - 1
-                ? `<div class="flex-1 h-[2px] bg-gray-200 mx-4"></div>`
+                ? `<div class="w-20 h-[2px] bg-gray-200 mx-3"></div>`
                 : ""
             }
 
