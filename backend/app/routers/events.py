@@ -290,7 +290,45 @@ def update_event_status(
             raise e
         raise HTTPException(status_code=400, detail=f"Error updating event status: {str(e)}")
 
-@router.get("", response_model=List[EventResponse])  # ← Agrega esto
+@router.delete("/{event_id}/items/{item_id}")
+def delete_event_item(
+    event_id: str,
+    item_id: str,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        event_res = db.execute(
+            text("SELECT status FROM events WHERE id = :id AND user_id = :user_id"),
+            {"id": event_id, "user_id": current_user.id}
+        ).fetchone()
+
+        if event_res is None:
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
+
+        validate_event_not_finalized(event_res.status)
+
+        item_check = db.execute(
+            text("SELECT id FROM event_items WHERE id = :id AND event_id = :event_id"),
+            {"id": item_id, "event_id": event_id}
+        ).fetchone()
+
+        if not item_check:
+            raise HTTPException(status_code=404, detail="Item no encontrado")
+
+        db.execute(
+            text("DELETE FROM event_items WHERE id = :id AND event_id = :event_id"),
+            {"id": item_id, "event_id": event_id}
+        )
+        db.commit()
+        return {"message": "Item eliminado exitosamente"}
+    except Exception as e:
+        db.rollback()
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=400, detail=f"Error deleting event item: {str(e)}")
+
+@router.get("", response_model=List[EventResponse])
 def get_events(current_user = Depends(get_current_user), db: Session = Depends(get_db)):
     """Obtener todos los eventos del usuario actual"""
     try:

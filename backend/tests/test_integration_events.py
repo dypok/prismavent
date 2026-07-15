@@ -317,3 +317,89 @@ class TestIntegrationEvents(unittest.TestCase):
             self.assertEqual(rows[1].new_status, "finalizado")
         finally:
             db.close()
+
+    def test_delete_event_item_success(self):
+        """DELETE /items/{id}: Should delete the item and return 200."""
+        item_id = str(uuid4())
+        db = SessionLocal()
+        try:
+            db.execute(
+                text("INSERT INTO event_items (id, event_id, name, quantity, unit_price, confirmed) VALUES (:id, :event_id, 'ToDelete', 1, 10.00, false)"),
+                {"id": item_id, "event_id": self.event_id_2}
+            )
+            db.commit()
+        finally:
+            db.close()
+
+        response = self.client.delete(
+            f"/events/{self.event_id_2}/items/{item_id}",
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Item eliminado exitosamente", response.json()["message"])
+
+        db = SessionLocal()
+        try:
+            row = db.execute(
+                text("SELECT id FROM event_items WHERE id = :id"),
+                {"id": item_id}
+            ).fetchone()
+            self.assertIsNone(row)
+        finally:
+            db.close()
+
+    def test_delete_event_item_not_found(self):
+        """DELETE /items/{id}: Should return 404 if item does not exist."""
+        response = self.client.delete(
+            f"/events/{self.event_id_2}/items/{str(uuid4())}",
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("Item no encontrado", response.json()["detail"])
+
+    def test_delete_event_item_wrong_event(self):
+        """DELETE /items/{id}: Should return 404 if item belongs to a different event."""
+        item_id = str(uuid4())
+        db = SessionLocal()
+        try:
+            db.execute(
+                text("INSERT INTO event_items (id, event_id, name, quantity, unit_price, confirmed) VALUES (:id, :event_id, 'WrongEvent', 1, 10.00, false)"),
+                {"id": item_id, "event_id": self.event_id_1}
+            )
+            db.commit()
+        finally:
+            db.close()
+
+        response = self.client.delete(
+            f"/events/{self.event_id_2}/items/{item_id}",
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("Item no encontrado", response.json()["detail"])
+
+        db = SessionLocal()
+        try:
+            db.execute(text("DELETE FROM event_items WHERE id = :id"), {"id": item_id})
+            db.commit()
+        finally:
+            db.close()
+
+    def test_delete_event_item_finalized_event(self):
+        """DELETE /items/{id}: Should return 400 if event is finalized."""
+        item_id = str(uuid4())
+        db = SessionLocal()
+        try:
+            db.execute(
+                text("INSERT INTO event_items (id, event_id, name, quantity, unit_price, confirmed) VALUES (:id, :event_id, 'Finalized', 1, 10.00, false)"),
+                {"id": item_id, "event_id": self.event_id_finalized}
+            )
+            db.commit()
+        finally:
+            db.close()
+
+        response = self.client.delete(
+            f"/events/{self.event_id_finalized}/items/{item_id}",
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("No se puede modificar un evento finalizado", response.json()["detail"])
