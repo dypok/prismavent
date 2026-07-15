@@ -14,7 +14,9 @@ import {
   getEventById,
   updateEvent,
   updateEventStatus,
-  createGuest
+  createGuest,
+  deleteGuest,
+  updateGuest
  } from "./service/api.js";
 
 // === NUEVA IMPORTACIÓN ===
@@ -176,45 +178,109 @@ async function renderPage() {
 
     const guestForm = document.getElementById("guest-form");
 
-    if (guestForm) {
-      guestForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+        if (guestForm) {
+          guestForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-        const event = await getEventById(eventId);
+            const guestData = {
+              full_name: document.getElementById("guest-name").value,
+              confirmed: document.getElementById("guest-confirmed").checked,
+              notes: document.getElementById("guest-notes").value,
+            };
 
-        // Validar si supera el cupo
-        if ((event.guests.length + 1) > event.guest_count) {
+            try {
 
-          const confirmAdd = confirm(
-            "Este invitado supera el número previsto de asistentes. ¿Desea continuar?"
-          );
+              const guestId = guestForm.dataset.editing;
 
-          if (!confirmAdd) return;
+              if (guestId) {
+
+                await updateGuest(
+                  eventId,
+                  guestId,
+                  guestData
+                );
+
+                delete guestForm.dataset.editing;
+
+                showToast("Guest updated successfully.");
+
+              } else {
+
+                const event = await getEventById(eventId);
+
+                if ((event.guests.length + 1) > event.guest_count) {
+
+                  const confirmAdd = confirm(
+                    "Este invitado supera el número previsto de asistentes. ¿Desea continuar?"
+                  );
+
+                  if (!confirmAdd) return;
+                }
+
+                await createGuest(
+                  eventId,
+                  guestData
+                );
+
+                showToast("Guest created successfully.");
+              }
+
+              guestModal.classList.add("hidden");
+              guestModal.classList.remove("flex");
+
+              window.history.replaceState({}, "", `/events/detail?id=${eventId}`);
+              window.dispatchEvent(new PopStateEvent("popstate"));
+
+            } catch (error) {
+              console.error(error);
+              showToast(error.message, "error");
+            }
+          });
         }
 
+    document.querySelectorAll(".delete-guest").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const guestId = button.dataset.id;
+
+        if (!confirm("Delete this guest?")) return;
+
         try {
+          await deleteGuest(eventId, guestId);
 
-          await createGuest(eventId, {
-            full_name: document.getElementById("guest-name").value,
-            confirmed: document.getElementById("guest-confirmed").checked,
-            notes: document.getElementById("guest-notes").value
-          });
-
-          guestModal.classList.add("hidden");
-          guestModal.classList.remove("flex");
-
-          // Recargar el detalle
           window.history.replaceState({}, "", `/events/detail?id=${eventId}`);
           window.dispatchEvent(new PopStateEvent("popstate"));
 
-          showToast("Guest created successfully.");
-
+          showToast("Guest deleted successfully.");
         } catch (error) {
           console.error(error);
           showToast(error.message, "error");
         }
       });
-    }
+    });
+
+    document.querySelectorAll(".edit-guest").forEach((button) => {
+
+      button.addEventListener("click", () => {
+
+        guestModal.classList.remove("hidden");
+        guestModal.classList.add("flex");
+
+        document.getElementById("guest-name").value =
+          button.dataset.name;
+
+        document.getElementById("guest-notes").value =
+          button.dataset.notes;
+
+        document.getElementById("guest-confirmed").checked =
+          button.dataset.confirmed === "true";
+
+        guestForm.dataset.editing = button.dataset.id;
+
+      });
+
+    });
+
+
 
 
   // Flujo: evento personalizado

@@ -287,7 +287,7 @@ export async function EventDetail(eventId) {
         </div>
 
       </main>
-    ${GuestModal}
+    ${GuestModal()}
     ${DeleteEventModal()}
     </div>
   `;

@@ -26,15 +26,11 @@ export function GuestsPanel(event) {
       <table class="w-full text-sm">
 
         <thead>
-
           <tr class="border-b">
-
             <th class="text-left py-2">Nombre</th>
             <th>Estado</th>
             <th>Acciones</th>
-
           </tr>
-
         </thead>
 
         <tbody>
@@ -54,17 +50,20 @@ export function GuestsPanel(event) {
                 <td class="text-center">
 
                   <button
-                    class="edit-guest"
+                    class="edit-guest text-[#755B00] font-medium hover:underline"
                     data-id="${guest.id}"
+                    data-name="${guest.full_name}"
+                    data-notes="${guest.notes || ""}"
+                    data-confirmed="${guest.confirmed}"
                   >
-                    Editar
+                    Edit
                   </button>
 
                   <button
-                    class="delete-guest ml-3 text-red-600"
+                    class="delete-guest ml-4 text-red-600 font-medium hover:underline"
                     data-id="${guest.id}"
                   >
-                    Eliminar
+                    Delete
                   </button>
 
                 </td>
