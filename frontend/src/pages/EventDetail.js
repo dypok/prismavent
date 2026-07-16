@@ -1,7 +1,27 @@
 import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
-import { getEventById, updateEvent, updateEventStatus } from "../service/api.js";
+import { getEventById, updateEvent, updateEventStatus, createEventItem, updateEventItem, deleteEventItem } from "../service/api.js";
+
+const _fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
+
+function buildResourceCardHTML(item) {
+  return `
+    <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between shadow-sm" data-item-id="${item.id}">
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-[#1E1B15] truncate">${item.name}</p>
+        <p class="text-sm text-[#9E8E6E]">${item.quantity} x ${_fmt(item.unit_price)}</p>
+        ${item.notes ? `<p class="text-xs text-[#9E8E6E] truncate mt-1">📝 ${item.notes}</p>` : ''}
+      </div>
+      <div class="flex items-center gap-2 ml-3">
+        <span class="text-sm font-bold text-[#755B00] whitespace-nowrap">${_fmt(item.quantity * item.unit_price)}</span>
+        <span class="px-2 py-0.5 text-xs rounded-full ${item.confirmed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${item.confirmed ? '✅' : '⏳'}</span>
+        <button class="edit-resource p-1.5 rounded-lg hover:bg-[#FEF3C7] transition-colors cursor-pointer" data-id="${item.id}" data-name="${item.name.replace(/"/g, '&quot;')}" data-quantity="${item.quantity}" data-price="${item.unit_price}" data-notes="${(item.notes || '').replace(/"/g, '&quot;')}" title="Editar">✏️</button>
+        <button class="delete-resource p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" data-id="${item.id}" title="Eliminar">🗑️</button>
+      </div>
+    </div>
+  `;
+}
 import { BudgetPanel } from "../components/BudgetPanel.js";
 import { DeleteEventModal } from "../components/DeleteEventModal.js";
 import { GuestsPanel } from "../components/GuestPanel.js";
@@ -112,11 +132,44 @@ export async function EventDetail(eventId) {
                   <h2 class="text-xl font-bold text-[#1E1B15] flex items-center gap-2">🎯 Recursos del Evento</h2>
                   <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmedResources} de ${totalResources} confirmados</span>
                 </div>
-                <div class="h-[500px] rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-[#9E8E6E] bg-[#F8F5F0]/50">
-                  <span class="text-5xl mb-4 opacity-50">🎨</span>
-                  <p class="text-lg font-medium">Lienzo de Recursos</p>
-                  <p class="text-sm mt-1">Arrastra y organiza tus recursos aquí</p>
-                  <button class="mt-6 px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-[#4D4637] hover:border-[#755B00] hover:text-[#755B00] transition-all shadow-sm">+ Añadir Recurso</button>
+                <div id="resources-canvas" class="rounded-xl border-2 border-dashed border-gray-300 bg-[#F8F5F0]/50">
+                  <div class="p-4 space-y-3 max-h-[380px] overflow-y-auto" id="resources-list">
+                    ${event.event_items && event.event_items.length > 0
+                      ? event.event_items.map(item => buildResourceCardHTML(item)).join('')
+                      : `
+                        <div class="flex flex-col items-center justify-center py-12 text-[#9E8E6E]">
+                          <span class="text-5xl mb-4 opacity-50">🎨</span>
+                          <p class="text-lg font-medium">Lienzo de Recursos</p>
+                          <p class="text-sm mt-1">Agrega recursos a tu evento</p>
+                        </div>
+                      `
+                    }
+                  </div>
+
+                  <form id="add-resource-form" class="hidden border-t border-dashed border-gray-300 p-4 bg-white/80 space-y-3">
+                    <div class="grid grid-cols-3 gap-3">
+                      <input type="text" id="res-name" placeholder="Nombre del recurso" required
+                        class="col-span-3 w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none">
+                      <input type="number" id="res-quantity" placeholder="Cantidad" min="1" required
+                        class="w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none">
+                      <input type="number" id="res-price" placeholder="Precio unitario" min="0" step="0.01" required
+                        class="w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none">
+                      <input type="text" id="res-notes" placeholder="Notas (opcional)"
+                        class="w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none">
+                    </div>
+                    <p id="res-error" class="hidden text-sm text-red-600 text-center"></p>
+                    <div class="flex gap-2 justify-end">
+                      <button type="button" id="cancel-add-resource"
+                        class="px-4 py-2 border border-[#D0C5B2] rounded-xl text-sm text-[#4D4637] hover:bg-gray-50">Cancelar</button>
+                      <button type="submit"
+                        class="px-4 py-2 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00]">Guardar Recurso</button>
+                    </div>
+                  </form>
+
+                  <div class="border-t border-dashed border-gray-300 p-3 flex justify-center">
+                    <button id="btn-add-resource"
+                      class="px-5 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-[#4D4637] hover:border-[#755B00] hover:text-[#755B00] transition-all shadow-sm">+ Añadir Recurso</button>
+                  </div>
                 </div>
               </div>
 
@@ -423,5 +476,164 @@ document.addEventListener("submit", async (e) => {
     errorEl.classList.remove("hidden");
     submitBtn.disabled = false;
     submitBtn.textContent = "Guardar Cambios";
+  }
+});
+
+// ── Toggle formulario de agregar/editar recurso ──
+document.addEventListener("click", (e) => {
+  const form = document.getElementById("add-resource-form");
+  const btnAdd = document.getElementById("btn-add-resource");
+  const btnCancel = document.getElementById("cancel-add-resource");
+  const errorEl = document.getElementById("res-error");
+
+  if (btnAdd && e.target.closest("#btn-add-resource")) {
+    delete form.dataset.editing;
+    form.querySelector('button[type="submit"]').textContent = "Guardar Recurso";
+    form.classList.remove("hidden");
+    btnAdd.classList.add("hidden");
+    errorEl.classList.add("hidden");
+    document.getElementById("res-name").focus();
+  }
+
+  if (btnCancel && e.target.closest("#cancel-add-resource")) {
+    form.classList.add("hidden");
+    btnAdd.classList.remove("hidden");
+    form.reset();
+    errorEl.classList.add("hidden");
+    delete form.dataset.editing;
+    form.querySelector('button[type="submit"]').textContent = "Guardar Recurso";
+  }
+
+  const editBtn = e.target.closest(".edit-resource");
+  if (editBtn && form) {
+    form.dataset.editing = editBtn.dataset.id;
+    document.getElementById("res-name").value = editBtn.dataset.name;
+    document.getElementById("res-quantity").value = editBtn.dataset.quantity;
+    document.getElementById("res-price").value = editBtn.dataset.price;
+    document.getElementById("res-notes").value = editBtn.dataset.notes;
+    form.classList.remove("hidden");
+    btnAdd.classList.add("hidden");
+    errorEl.classList.add("hidden");
+    form.querySelector('button[type="submit"]').textContent = "Actualizar Recurso";
+    document.getElementById("res-name").focus();
+  }
+
+  const delBtn = e.target.closest(".delete-resource");
+  if (delBtn && confirm("¿Eliminar este recurso?")) {
+    const itemId = delBtn.dataset.id;
+    const card = delBtn.closest('[data-item-id]');
+    (async () => {
+      try {
+        const { eventId } = window.__eventData;
+        const updated = await deleteEventItem(eventId, itemId);
+        window.__eventData.event = updated;
+        window.__eventData.original = { ...updated };
+        if (card) card.remove();
+
+        const list = document.getElementById("resources-list");
+        if (!list.hasChildNodes() || list.children.length === 0) {
+          list.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-12 text-[#9E8E6E]">
+              <span class="text-5xl mb-4 opacity-50">🎨</span>
+              <p class="text-lg font-medium">Lienzo de Recursos</p>
+              <p class="text-sm mt-1">Agrega recursos a tu evento</p>
+            </div>
+          `;
+        }
+
+        const panel = document.getElementById("budget-panel");
+        if (panel) {
+          const { BudgetPanel } = await import("../components/BudgetPanel.js");
+          panel.outerHTML = BudgetPanel(updated);
+        }
+
+        const confirmedResources = updated.event_items.filter(i => i.confirmed).length;
+        const totalResources = updated.event_items.length;
+        const counterEl = document.querySelector(".flex.justify-between.items-center.mb-6 span");
+        if (counterEl) {
+          counterEl.textContent = totalResources > 0 ? `${confirmedResources} de ${totalResources} confirmados` : "Sin recursos";
+        }
+      } catch (err) {
+        alert(err.message || "Error al eliminar el recurso.");
+      }
+    })();
+  }
+});
+
+// ── Submit del formulario de agregar/editar recurso ──
+document.addEventListener("submit", async (e) => {
+  if (e.target.id !== "add-resource-form") return;
+  e.preventDefault();
+
+  const form = e.target;
+  const { eventId } = window.__eventData;
+  const errorEl = document.getElementById("res-error");
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const name = document.getElementById("res-name").value.trim();
+  const quantity = parseInt(document.getElementById("res-quantity").value, 10);
+  const unit_price = parseFloat(document.getElementById("res-price").value);
+  const notes = document.getElementById("res-notes").value.trim();
+
+  if (!name || !quantity || isNaN(unit_price)) {
+    errorEl.textContent = "Todos los campos son obligatorios.";
+    errorEl.classList.remove("hidden");
+    return;
+  }
+
+  errorEl.classList.add("hidden");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Guardando...";
+
+  const editingId = form.dataset.editing;
+
+  try {
+    const payload = { name, quantity, unit_price, notes: notes || null };
+    const updated = editingId
+      ? await updateEventItem(eventId, editingId, payload)
+      : await createEventItem(eventId, payload);
+
+    window.__eventData.event = updated;
+    window.__eventData.original = { ...updated };
+
+    const list = document.getElementById("resources-list");
+    const emptyState = list.querySelector(".flex.flex-col.items-center.justify-center");
+    if (emptyState) {
+      list.innerHTML = "";
+    }
+
+    if (editingId) {
+      const existingCard = list.querySelector(`[data-item-id="${editingId}"]`);
+      if (existingCard) {
+        existingCard.outerHTML = buildResourceCardHTML(updated.event_items.find(i => i.id === editingId));
+      }
+      delete form.dataset.editing;
+    } else {
+      const newItem = updated.event_items[updated.event_items.length - 1];
+      list.innerHTML += buildResourceCardHTML(newItem);
+    }
+
+    form.classList.add("hidden");
+    document.getElementById("btn-add-resource").classList.remove("hidden");
+    form.reset();
+
+    const panel = document.getElementById("budget-panel");
+    if (panel) {
+      const { BudgetPanel } = await import("../components/BudgetPanel.js");
+      panel.outerHTML = BudgetPanel(updated);
+    }
+
+    const confirmedResources = updated.event_items.filter(i => i.confirmed).length;
+    const totalResources = updated.event_items.length;
+    const counterEl = document.querySelector(".flex.justify-between.items-center.mb-6 span");
+    if (counterEl) {
+      counterEl.textContent = totalResources > 0 ? `${confirmedResources} de ${totalResources} confirmados` : "Sin recursos";
+    }
+
+  } catch (err) {
+    errorEl.textContent = err.message || "Error al guardar el recurso.";
+    errorEl.classList.remove("hidden");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = form.dataset.editing ? "Actualizar Recurso" : "Guardar Recurso";
   }
 });

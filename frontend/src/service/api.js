@@ -161,6 +161,28 @@ export async function updateEventStatus(eventId, status) {
   });
 }
 
+// Crear un recurso/item del evento
+export async function createEventItem(eventId, itemData) {
+  return await apiFetch(`/events/${eventId}/items`, {
+    method: 'POST',
+    body: JSON.stringify(itemData)
+  });
+}
+
+// Actualizar un recurso/item del evento
+export async function updateEventItem(eventId, itemId, itemData) {
+  return await apiFetch(`/events/${eventId}/items/${itemId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(itemData)
+  });
+}
+
+// Eliminar un recurso/item del evento
+export async function deleteEventItem(eventId, itemId) {
+  return await apiFetch(`/events/${eventId}/items/${itemId}`, {
+    method: 'DELETE'
+  });
+}
 
 export default {
   login,
@@ -172,6 +194,9 @@ export default {
   createGuest,
   updateGuest,
   deleteGuest,
+  createEventItem,
+  updateEventItem,
+  deleteEventItem,
   updateEvent,
   updateEventStatus,
   setAccessToken,
