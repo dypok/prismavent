@@ -23,59 +23,62 @@ export function Sidebar(active = "new-event") {
   };
 
   return `
-    <aside class="w-72 min-h-screen bg-[#FFF8F1] border-r border-[#E9E1D7] flex flex-col">
+    <aside class="w-16 hover:w-64 min-h-screen bg-[#FFF8F1] border-r border-[#E9E1D7] flex flex-col transition-all duration-300 group overflow-hidden shrink-0 z-30">
       
-      <!-- Logo -->
-      <div class="px-8 pt-10 pb-8">
-        <h1 class="font-display text-3xl tracking-tight text-[#755B00]">Prismavent</h1>
-        <p class="text-[#9E8E6E] text-sm mt-1 tracking-widest">Event Planning</p>
+      <!-- Logo / Sigla -->
+      <div class="px-5 group-hover:px-6 pt-10 pb-8 flex items-center gap-3 overflow-hidden shrink-0 transition-all duration-300">
+        <span class="font-display text-3xl font-bold tracking-tight text-[#755B00] shrink-0 w-5 text-center leading-none">P</span>
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+          <h1 class="font-display text-2xl tracking-tight text-[#755B00] leading-none">rismavent</h1>
+          <p class="text-[#9E8E6E] text-xs mt-1 tracking-widest leading-none">Event Planning</p>
+        </div>
       </div>
 
-      <!-- Menú -->
-      <nav class="flex-1 px-3">
+      <!-- Menú de Navegación -->
+      <nav class="flex-1">
         <ul class="space-y-1">
           <li onclick="navigateTo('/dashboard')" 
-              class="flex items-center gap-3 px-6 py-3.5 rounded-xl hover:bg-white transition-all duration-300 cursor-pointer
-              ${isActive('/dashboard') ? 'bg-[#FEF3C7] border-l-4 border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
-            <img src="${dashboardIcon}" class="w-5 h-5" alt="Dashboard">
-            <span class="font-medium">Dashboard</span>
+              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white transition-all duration-300 cursor-pointer border-l-4
+              ${isActive('/dashboard') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
+            <img src="${dashboardIcon}" class="w-5 h-5 shrink-0" alt="Dashboard">
+            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Dashboard</span>
           </li>
 
           <li onclick="navigateTo('/events')" 
-              class="flex items-center gap-3 px-6 py-3.5 rounded-xl hover:bg-white transition-all duration-300 cursor-pointer
-              ${isActive('/events') ? 'bg-[#FEF3C7] border-l-4 border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
-            <img src="${eventsIcon}" class="w-5 h-5" alt="My Events">
-            <span class="font-medium">Mis Eventos</span>
+              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white transition-all duration-300 cursor-pointer border-l-4
+              ${isActive('/events') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
+            <img src="${eventsIcon}" class="w-5 h-5 shrink-0" alt="My Events">
+            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Mis Eventos</span>
           </li>
 
           <li onclick="navigateTo('/events/new')" 
-              class="flex items-center gap-3 px-6 py-3.5 rounded-xl hover:bg-white transition-all duration-300 cursor-pointer
-              ${isActive('/events/new') ? 'bg-[#FEF3C7] border-l-4 border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
-            <span class="text-xl">✚</span>
-            <span class="font-display">New Event</span>
+              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white transition-all duration-300 cursor-pointer border-l-4
+              ${isActive('/events/new') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
+            <span class="text-xl shrink-0 w-5 text-center leading-none">✚</span>
+            <span class="font-display opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">New Event</span>
           </li>
 
           <li onclick="navigateTo('/providers')" 
-              class="flex items-center gap-3 px-6 py-3.5 rounded-xl hover:bg-white transition-all duration-300 cursor-pointer
-              ${isActive('/providers') ? 'bg-[#FEF3C7] border-l-4 border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
-            <img src="${providersIcon}" class="w-5 h-5" alt="Providers">
-            <span class="font-medium">Providers</span>
+              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white transition-all duration-300 cursor-pointer border-l-4
+              ${isActive('/providers') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
+            <img src="${providersIcon}" class="w-5 h-5 shrink-0" alt="Providers">
+            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Providers</span>
           </li>
 
           <li onclick="navigateTo('/history')" 
-              class="flex items-center gap-3 px-6 py-3.5 rounded-xl hover:bg-white transition-all duration-300 cursor-pointer
-              ${isActive('/history') ? 'bg-[#FEF3C7] border-l-4 border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
-            <img src="${historyIcon}" class="w-5 h-5" alt="History">
-            <span class="font-medium">History</span>
+              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white transition-all duration-300 cursor-pointer border-l-4
+              ${isActive('/history') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
+            <img src="${historyIcon}" class="w-5 h-5 shrink-0" alt="History">
+            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">History</span>
           </li>
         </ul>
       </nav>
 
-      <!-- Solo Cerrar Sesión -->
-      <div class="mt-auto p-6 border-t border-[#E9E1D7]">
-        <button onclick="window.handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] rounded-xl transition text-sm font-medium cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-          Cerrar Sesión
+      <!-- Botón de Cerrar Sesión -->
+      <div class="mt-auto p-2 group-hover:p-4 border-t border-[#E9E1D7] overflow-hidden shrink-0 transition-all duration-300">
+        <button onclick="window.handleLogout()" class="w-full flex items-center justify-start gap-4 px-3 group-hover:px-4 py-2.5 text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] rounded-xl transition text-sm font-medium cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Cerrar Sesión</span>
         </button>
       </div>
     </aside>
