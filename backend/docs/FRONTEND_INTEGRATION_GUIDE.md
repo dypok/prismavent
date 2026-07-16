@@ -481,3 +481,47 @@ Para simplificar el estado en el frontend y evitar llamadas HTTP adicionales par
 * **Descripción:** Elimina un recurso del evento.
 * **Respuesta Exitosa (HTTP 200 OK):**
   Retorna el objeto detallado del evento (`EventDetailOut`), reflejando la eliminación del recurso y la disminución del presupuesto estimado.
+
+---
+
+## 9. Endpoint de Pronóstico del Clima (`/events/{event_id}/weather`)
+
+Permite obtener el pronóstico del clima para el día y la ciudad del evento. Este endpoint interactúa con la API de OpenWeatherMap.
+
+### 9.1 Obtener Clima del Evento
+* **Endpoint:** `GET /events/{event_id}/weather`
+* **Seguridad:** Requiere Token (`Authorization: Bearer <token>`). Solo el dueño del evento puede realizar la consulta.
+* **Descripción:** Consulta el pronóstico para la fecha y ciudad del evento. Si la ciudad del evento está vacía, se asume `"Barranquilla"` por defecto.
+* **Reglas de Negocio:**
+  * Si la fecha del evento es mayor a 7 días en el futuro (o es en el pasado), retorna una respuesta exitosa (HTTP 200 OK) con los campos climáticos en `null` y un mensaje informativo.
+  * Si la fecha está dentro de los próximos 7 días, realiza la consulta y devuelve la temperatura, condición, descripción e ícono del clima correspondiente.
+  * Si el servicio meteorológico externo falla o no está configurado, responde con un error HTTP 502 Bad Gateway y un detalle de error amigable.
+
+* **Respuesta Exitosa - Clima Disponible (HTTP 200 OK):**
+  ```json
+  {
+    "temp": 30.2,
+    "condition": "Clear",
+    "description": "clear sky",
+    "icon": "01d",
+    "message": "Forecast available"
+  }
+  ```
+
+* **Respuesta Exitosa - Restricción de Fecha (HTTP 200 OK):**
+  ```json
+  {
+    "temp": null,
+    "condition": null,
+    "description": null,
+    "icon": null,
+    "message": "Weather forecast is only available up to 7 days before the event. 8 days remaining."
+  }
+  ```
+
+* **Respuesta de Error de Conexión / Externa (HTTP 502 Bad Gateway):**
+  ```json
+  {
+    "detail": "Failed to connect to the external weather service."
+  }
+  ```

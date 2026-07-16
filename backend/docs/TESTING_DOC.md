@@ -70,6 +70,17 @@ La siguiente tabla resume los casos de prueba ejecutados y el comportamiento esp
 | **TC-14** | Bloquear eliminación de evento no borrador | DELETE `/events/{id}` en evento con status != `"borrador"` | HTTP 400 Bad Request | Integración | **PASSED** |
 | **TC-15** | Control de propiedad DELETE (403) | Usuario B intenta eliminar el evento de Usuario A | HTTP 403 Forbidden (Protección de datos) | Integración | **PASSED** |
 | **TC-16** | Validar estado borrador (Unitario) | `validate_event_is_draft` con status diferente a `"borrador"` | HTTPException (400) | Unitario | **PASSED** |
+| **TC-17** | Resolver ciudad del evento (custom) | Evento con `city_custom = "Medellín"` | Retorna "Medellín" | Unitario | **PASSED** |
+| **TC-18** | Resolver ciudad del evento (DB) | Evento con `city_id` apuntando a Barranquilla | Retorna "Barranquilla" | Unitario | **PASSED** |
+| **TC-19** | Resolver ciudad del evento (default) | Evento sin ciudad ni city_id | Retorna "Barranquilla" (default) | Unitario | **PASSED** |
+| **TC-20** | Clima fecha pasada | Fecha anterior a hoy | HTTP 200, campos en null, mensaje "not available for past dates" | Unitario | **PASSED** |
+| **TC-21** | Clima fecha > 7 días | Fecha en 8+ días | HTTP 200, campos en null, mensaje "only available up to 7 days" | Unitario | **PASSED** |
+| **TC-22** | Clima exitoso (mock) | Mock OpenWeatherMap 200 OK | HTTP 200, temp/condition/description/icon poblados | Unitario | **PASSED** |
+| **TC-23** | Clima ciudad no encontrada | Mock OpenWeatherMap 404 | HTTPException 404 "No weather information found" | Unitario | **PASSED** |
+| **TC-24** | Clima API key inválida | Mock OpenWeatherMap 401 | HTTPException 502 "Authentication error with weather provider" | Unitario | **PASSED** |
+| **TC-25** | GET weather no encontrado | Evento inexistente | HTTP 404 "Event not found" | Integración | **PASSED** |
+| **TC-26** | GET weather prohibido (403) | Usuario B consulta evento de Usuario A | HTTP 403 "You do not have permission" | Integración | **PASSED** |
+| **TC-27** | GET weather exitoso | Mock OpenWeatherMap 200 OK, usuario dueño | HTTP 200, respuesta completa con forecast | Integración | **PASSED** |
 
 ---
 
