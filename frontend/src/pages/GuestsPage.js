@@ -25,30 +25,30 @@ export async function GuestsPage(eventId) {
       ${Sidebar("events")}
 
       <main class="flex-1 flex flex-col overflow-hidden">
-        ${Topbar()}
+        ${Topbar(`
+          <div class="flex items-center gap-6 lg:gap-8 animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="flex items-center gap-4">
+              <button onclick="window.history.back()" class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#9E8E6E] hover:text-[#1E1B15] hover:shadow-sm transition-all border border-[#E9E1D7]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <div>
+                <h1 class="text-2xl font-bold text-[#1E1B15]">Invitados</h1>
+                <p class="text-[#9E8E6E] text-xs mt-0.5">${event?.name || "Evento"}</p>
+              </div>
+            </div>
+            <button
+              id="btn-add-guest-page"
+              class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              Agregar Invitado
+            </button>
+          </div>
+        `)}
 
         <div class="flex-1 overflow-auto custom-scrollbar">
           <div class="p-8 max-w-7xl mx-auto">
             
-            <div class="flex items-center justify-between mb-8 animate-fade-in" style="animation-delay: 0.1s;">
-              <div class="flex items-center gap-4">
-                <button onclick="window.history.back()" class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#9E8E6E] hover:text-[#1E1B15] hover:shadow-sm transition-all border border-[#E9E1D7]">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                </button>
-                <div>
-                  <h1 class="text-3xl font-bold text-[#1E1B15]">Invitados</h1>
-                  <p class="text-[#9E8E6E] mt-1">${event?.name || "Evento"}</p>
-                </div>
-              </div>
-              <button
-                id="btn-add-guest-page"
-                class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm flex items-center gap-2"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                Agregar Invitado
-              </button>
-            </div>
-
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 animate-fade-in-up" style="animation-delay: 0.2s;">
               <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
                 <p class="text-sm text-[#9E8E6E]">Total invitados</p>

@@ -49,13 +49,17 @@ async function renderPage() {
       return;
     }
     document.querySelector("#app").innerHTML = `
-      <div class="flex h-screen">
+      <div class="flex h-screen animate-fade-in">
         ${Sidebar("dashboard")}
         <div class="flex-1 flex flex-col">
-          ${Topbar()}
+          ${Topbar(`
+            <div class="animate-fade-in">
+              <h1 class="text-2xl font-bold text-[#1E1B15]">Dashboard</h1>
+              <p class="text-[#9E8E6E] text-xs mt-0.5">Bienvenido de vuelta a tu espacio</p>
+            </div>
+          `)}
           <main class="flex-1 p-8 bg-[#FFF8F1] overflow-auto">
-            <h1 class="text-4xl font-bold text-gray-900">Dashboard</h1>
-            <p class="text-gray-600 mt-2">Bienvenido de vuelta</p>
+            <!-- Contenido del Dashboard -->
           </main>
         </div>
       </div>

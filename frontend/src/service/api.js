@@ -96,6 +96,24 @@ export async function apiFetch(path, options = {}) {
 // ========================
 
 // Obtener todos los eventos del usuario (para el grid)
+
+export async function updateProfile(name, password) {
+  const body = {};
+  if (name) body.name = name;
+  if (password) body.password = password;
+
+  const data = await apiFetch("/auth/profile", {
+    method: "PUT",
+    body: JSON.stringify(body)
+  });
+
+  if (name) {
+    setUserName(name);
+  }
+
+  return data;
+}
+
 export async function getEvents() {
   return await apiFetch('/events');   // ← CORREGIDO
 }
@@ -185,6 +203,7 @@ export async function deleteEventItem(eventId, itemId) {
 }
 
 export default {
+  updateProfile,
   login,
   register,
   getEvents,
