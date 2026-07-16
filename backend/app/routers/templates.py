@@ -16,7 +16,7 @@ def get_templates(request: Request, db: Session = Depends(get_db)):
     try:
         # Fetch templates from database
         result = db.execute(
-            text("SELECT id, event_type_id, name, description, default_items FROM templates")
+            text("SELECT id, event_type_id, name, description, icon_url, default_items FROM templates")
         ).fetchall()
         
         templates_list = []
