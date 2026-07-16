@@ -234,3 +234,29 @@ class TestIntegrationProviders(unittest.TestCase):
             self.assertIsNone(check)
         finally:
             db.close()
+
+    def test_minimum_5_providers_per_category(self):
+        """Seed data: each category must have at least 5 providers."""
+        MIN_PROVIDERS = 5
+        CATEGORIES = [
+            ("c1000000-0000-0000-0000-000000000001", "Catering"),
+            ("c1000000-0000-0000-0000-000000000002", "Sonido & DJ"),
+            ("c1000000-0000-0000-0000-000000000003", "Decoracion"),
+            ("c1000000-0000-0000-0000-000000000004", "Fotografia"),
+            ("c1000000-0000-0000-0000-000000000005", "Salones"),
+            ("c1000000-0000-0000-0000-000000000006", "Personal"),
+        ]
+        db = SessionLocal()
+        try:
+            for cat_id, cat_name in CATEGORIES:
+                result = db.execute(
+                    text("SELECT COUNT(*) FROM providers WHERE category_id = :cat_id"),
+                    {"cat_id": cat_id}
+                )
+                count = result.scalar()
+                self.assertGreaterEqual(
+                    count, MIN_PROVIDERS,
+                    f"Category '{cat_name}' has {count} providers, expected at least {MIN_PROVIDERS}"
+                )
+        finally:
+            db.close()
