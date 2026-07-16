@@ -116,7 +116,7 @@ def get_event_detail(event_id: str, db: Session) -> dict:
     event["confirmed_guests_count"] = confirmed_guests_count
     event["unconfirmed_guests_count"] = unconfirmed_guests_count
     event["total_estimated"] = total_estimated
-    event["budget_alert"] = budget_alert
-    event["amount_over_budget"] = amount_over_budget
+    event["over_budget"] = budget_alert
+    event["budget_exceeded_by"] = amount_over_budget
     
     return event
