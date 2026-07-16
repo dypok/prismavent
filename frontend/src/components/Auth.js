@@ -1,5 +1,5 @@
 import { login, register } from "../service/api.js";
-import logoIcon from "../assets/icons/prismavent_logo_transparent.png";
+import logoIcon from "../assets/icons/logo.png";
 
 export function Auth() {
     return `
