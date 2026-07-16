@@ -14,9 +14,14 @@ def get_templates(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Unauthorized: User not found in request state")
         
     try:
-        # Fetch templates from database
+        # Fetch templates from database joining with event_types for colors
         result = db.execute(
-            text("SELECT id, event_type_id, name, description, icon_url, default_items FROM templates")
+            text("""
+            SELECT t.id, t.event_type_id, t.name, t.description, t.icon_url, t.default_items,
+                   et.color_bg, et.color_icon
+            FROM templates t
+            LEFT JOIN event_types et ON t.event_type_id = et.id
+            """)
         ).fetchall()
         
         templates_list = []
