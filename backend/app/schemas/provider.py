@@ -28,6 +28,10 @@ class ProviderUpdate(BaseModel):
     price_unit: Optional[str] = Field(None, max_length=30)
     rating: Optional[Decimal] = Field(None, ge=Decimal("0.0"), le=Decimal("5.0"))
 
+class ProviderCategoryResponse(BaseModel):
+    id: UUID
+    name: str
+
 class ProviderResponse(BaseModel):
     id: UUID
     category_id: UUID

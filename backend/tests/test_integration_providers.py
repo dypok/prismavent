@@ -260,3 +260,18 @@ class TestIntegrationProviders(unittest.TestCase):
                 )
         finally:
             db.close()
+
+    def test_list_provider_categories(self):
+        """GET /provider-categories: Returns all categories with correct structure."""
+        response = self.client.get("/provider-categories", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertGreaterEqual(len(data), 6)
+        for cat in data:
+            self.assertIn("id", cat)
+            self.assertIn("name", cat)
+
+    def test_list_provider_categories_unauthenticated(self):
+        """GET /provider-categories: Returns 401 without auth token."""
+        response = self.client.get("/provider-categories")
+        self.assertEqual(response.status_code, 401)
