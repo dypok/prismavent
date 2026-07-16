@@ -106,8 +106,8 @@ class TestIntegrationEvents(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(float(data["total_estimated"]), 110.0)
-        self.assertTrue(data["budget_alert"])
-        self.assertEqual(float(data["amount_over_budget"]), 10.0)
+        self.assertTrue(data["over_budget"])
+        self.assertEqual(float(data["budget_exceeded_by"]), 10.0)
 
     def test_get_event_under_budget(self):
         """TC-02: Event is under budget limit, alert should be False."""
@@ -115,8 +115,8 @@ class TestIntegrationEvents(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(float(data["total_estimated"]), 300.0)
-        self.assertFalse(data["budget_alert"])
-        self.assertEqual(float(data["amount_over_budget"]), 0.0)
+        self.assertFalse(data["over_budget"])
+        self.assertEqual(float(data["budget_exceeded_by"]), 0.0)
 
     def test_get_event_no_budget_limit(self):
         """TC-03: Event has no budget limit (max_budget is None), alert should be False."""
@@ -124,8 +124,8 @@ class TestIntegrationEvents(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(float(data["total_estimated"]), 50.0)
-        self.assertFalse(data["budget_alert"])
-        self.assertEqual(float(data["amount_over_budget"]), 0.0)
+        self.assertFalse(data["over_budget"])
+        self.assertEqual(float(data["budget_exceeded_by"]), 0.0)
 
     def test_get_event_unauthorized_access(self):
         """TC-04: Unauthorized user trying to access other user's event should get 403."""
