@@ -11,13 +11,33 @@ export async function EventDetail(eventId) {
   let event = null;
   let original = null;
 
-    if (eventId) {
-      try {
-        event = await getEventById(eventId);
-    
-      } catch (error) {
-        console.error(error);
-      }
+  if (eventId) {
+    try {
+      event = await getEventById(eventId);
+      original = event ? { ...event } : null;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  
+  if (!event) {
+    return `
+      <div class="flex min-h-screen bg-[#F8F5F0]">
+        ${Sidebar("events")}
+        <main class="flex-1 flex flex-col overflow-hidden">
+          ${Topbar()}
+          <div class="flex-1 flex items-center justify-center p-8">
+            <div class="text-center">
+              <h2 class="text-2xl font-bold text-[#1E1B15] mb-4">Evento no encontrado</h2>
+              <p class="text-[#9E8E6E] mb-6">No se pudo cargar la información del evento.</p>
+              <button onclick="window.history.back()" class="px-6 py-3 bg-[#755B00] text-white rounded-xl hover:bg-[#5F4A00] transition">
+                Volver
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    `;
   }
   
   const totalResources = event?.event_items?.length || 0;
@@ -44,7 +64,10 @@ export async function EventDetail(eventId) {
     borrador: "planificando",
     confirmado: "finalizado",
   };
-  
+
+  // ── Guardar referencia al evento original (ANTES del return) ──
+  window.__eventData = { event, original, eventId };
+
   return `
     <div class="flex min-h-screen bg-[#F8F5F0]">
 
@@ -71,8 +94,6 @@ export async function EventDetail(eventId) {
                 </div>
               </div>
               <div class="flex gap-3" id="detail-actions">
-                <button id="btn-edit" onclick="toggleEdit()"
-                  class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm">Editar</button>
               </div>
             </div>
 
@@ -292,12 +313,25 @@ export async function EventDetail(eventId) {
     </div>
   `;
 
-  // ── Guardar referencia al evento original ──
+  // ── Guardar referencia al evento original (ANTES del return) ──
   window.__eventData = { event, original, eventId };
+  
+  return template;
 }
 
 // ── Alternar entre vista y edición ──
 window.toggleEdit = function () {
+  const { event, original } = window.__eventData;
+  
+  // Populate form with current data
+  document.getElementById("edit-name").value = event?.name || "";
+  document.getElementById("edit-date").value = event?.event_date || "";
+  document.getElementById("edit-location").value = event?.location || "";
+  document.getElementById("edit-guests").value = event?.guest_count ?? "";
+  document.getElementById("edit-budget").value = event?.max_budget ?? "";
+  document.getElementById("edit-description").value = event?.description || "";
+  document.getElementById("edit-status").value = event?.status || "borrador";
+
   document.getElementById("detail-view").classList.add("hidden");
   document.getElementById("detail-edit").classList.remove("hidden");
   document.getElementById("btn-edit").classList.add("hidden");
@@ -306,6 +340,18 @@ window.toggleEdit = function () {
 
 window.cancelEdit = function () {
   const { original } = window.__eventData;
+  
+  // Restore form to original values
+  if (original) {
+    document.getElementById("edit-name").value = original.name || "";
+    document.getElementById("edit-date").value = original.event_date || "";
+    document.getElementById("edit-location").value = original.location || "";
+    document.getElementById("edit-guests").value = original.guest_count ?? "";
+    document.getElementById("edit-budget").value = original.max_budget ?? "";
+    document.getElementById("edit-description").value = original.description || "";
+    document.getElementById("edit-status").value = original.status || "borrador";
+  }
+  
   document.getElementById("detail-view").classList.remove("hidden");
   document.getElementById("detail-edit").classList.add("hidden");
   document.getElementById("btn-edit").classList.remove("hidden");
@@ -318,17 +364,17 @@ document.addEventListener("submit", async (e) => {
   if (e.target.id !== "detail-edit") return;
   e.preventDefault();
 
-  const { eventId } = window.__eventData;
+  const { eventId, original } = window.__eventData;
   const errorEl = document.getElementById("edit-error");
   const submitBtn = e.target.querySelector('button[type="submit"]');
 
+  const newStatus = document.getElementById("edit-status").value;
   const payload = {
     name: document.getElementById("edit-name").value,
     event_date: document.getElementById("edit-date").value || null,
     location: document.getElementById("edit-location").value || null,
     guest_count: parseInt(document.getElementById("edit-guests").value, 10) || null,
     max_budget: parseFloat(document.getElementById("edit-budget").value) || null,
-    visibility_status: document.getElementById("edit-status").value,
     description: document.getElementById("edit-description").value || null,
   };
 
@@ -340,10 +386,16 @@ document.addEventListener("submit", async (e) => {
 
   try {
     await updateEvent(eventId, payload);
+    
+    // Update status if changed
+    if (newStatus && newStatus !== original?.status) {
+      await updateEventStatus(eventId, newStatus);
+    }
 
     const updated = await getEventById(eventId);
 
     window.__eventData.event = updated;
+    window.__eventData.original = { ...updated };
     window.__eventData.original = { ...updated };
 
     document.getElementById("detail-title").textContent = updated.name;

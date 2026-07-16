@@ -5,6 +5,7 @@ import { Sidebar } from "./components/Sidebar.js";
 import { Topbar } from "./components/Topbar.js";
 import { CreateEvent } from "./pages/CreateEvent.js";
 import { EventDetail } from "./pages/EventDetail.js";
+import { GuestsPage, initGuestsPage } from "./pages/GuestsPage.js";
 import { CustomEventFlow } from "./pages/CustomEventFlow.js";
 import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
 import { prefillCustomEventForm } from "./components/CustomEventForm.js";
@@ -157,7 +158,7 @@ async function renderPage() {
         });
       }
 
-    //modal de agregar invitados 
+//modal de agregar invitados 
     const addGuestButton = document.getElementById("btn-add-guest");
     const guestModal = document.getElementById("guest-modal");
     const cancelGuest = document.getElementById("cancel-guest");
@@ -173,6 +174,18 @@ async function renderPage() {
       cancelGuest.addEventListener("click", () => {
         guestModal.classList.add("hidden");
         guestModal.classList.remove("flex");
+      });
+    }
+
+    // Handler para botón "Ver todos" en GuestPanel
+    const viewAllBtn = document.getElementById("btn-view-all-guests");
+    if (viewAllBtn) {
+      viewAllBtn.addEventListener("click", (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        window.__genieTriggerRect = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+        const eventId = e.currentTarget.dataset.eventId;
+        window.history.pushState({}, "", `/events/${eventId}/guests`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
       });
     }
 
@@ -281,9 +294,18 @@ async function renderPage() {
     });
 
 
-
-
-  // Flujo: evento personalizado
+  // Ruta: Lista de invitados del evento
+  } else if (path.startsWith("/events/") && path.endsWith("/guests")) {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    const eventId = path.split("/events/")[1].split("/guests")[0];
+    const triggerRect = window.__genieTriggerRect || null;
+    document.querySelector("#app").innerHTML = await GuestsPage(eventId, triggerRect);
+    if (triggerRect) delete window.__genieTriggerRect;
+    initGuestsPage(eventId);
   } else if (path === "/events/new/custom") {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
