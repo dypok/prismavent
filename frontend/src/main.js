@@ -22,6 +22,7 @@ import {
 
 // === NUEVA IMPORTACIÓN ===
 import MyEvents from "./pages/MyEvents.js";
+import { ProvidersPage, initProvidersPage } from "./pages/Providers.js";
 
 console.log("Main.js cargado - Ruta:", window.location.pathname);
 
@@ -338,6 +339,16 @@ async function renderPage() {
       return;
     }
     document.querySelector("#app").innerHTML = TemplateEventFlow();
+
+  // Ruta Proveedores
+  } else if (path === '/providers') {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    document.querySelector("#app").innerHTML = await ProvidersPage();
+    initProvidersPage();
 
   // 404
   } else {

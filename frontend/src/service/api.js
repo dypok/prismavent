@@ -135,6 +135,22 @@ export async function getTemplates() {
   return await apiFetch('/templates');
 }
 
+// Categorías de proveedores
+export async function getCategories() {
+  return await apiFetch('/categories');
+}
+
+// Proveedores (con filtros opcionales)
+export async function getProviders(params = {}) {
+  const query = new URLSearchParams();
+  if (params.category_id) query.set('category_id', params.category_id);
+  if (params.search) query.set('search', params.search);
+  if (params.page != null) query.set('page', params.page);
+  if (params.limit) query.set('limit', params.limit);
+  const qs = query.toString();
+  return await apiFetch(`/providers${qs ? `?${qs}` : ''}`);
+}
+
 // Obtener invitados de un evento
 export async function getEventGuests(eventId) {
   return await apiFetch(`/events/${eventId}/guests`);
@@ -209,6 +225,8 @@ export default {
   getEvents,
   getEventById,
   getTemplates,
+  getCategories,
+  getProviders,
   getEventGuests,
   createGuest,
   updateGuest,
