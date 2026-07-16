@@ -10,7 +10,8 @@ from app.services.event_service import (
     validate_event_date_not_past,
     validate_status_transition,
     validate_guest_count_editable,
-    validate_event_is_draft
+    validate_event_is_draft,
+    get_event_detail
 )
 from typing import List
 
@@ -140,44 +141,7 @@ def get_event(event_id: str, db: Session = Depends(get_db), current_user = Depen
 
 
 def map_event_to_detail(event_data: dict, db: Session) -> dict:
-    event = dict(event_data)
-    event_id = str(event["id"])
-    
-    # 1. Fetch associated event items
-    items_res = db.execute(
-        text("SELECT * FROM event_items WHERE event_id = :event_id"),
-        {"event_id": event_id}
-    ).fetchall()
-    
-    event_items = [dict(item._mapping) for item in items_res] if items_res else []
-    
-    # 2. Fetch associated guests
-    guests_res = db.execute(
-        text("SELECT * FROM guests WHERE event_id = :event_id ORDER BY created_at ASC"),
-        {"event_id": event_id}
-    ).fetchall()
-    
-    guests = [dict(g._mapping) for g in guests_res] if guests_res else []
-    
-    # 3. Calculate budget metrics
-    total_estimated = budget_service.calculate_total_estimated(event_items)
-    budget_alert = budget_service.check_budget_alert(total_estimated, event.get("max_budget"))
-    
-    # 4. Calculate guest counters
-    registered_guests_count = len(guests)
-    confirmed_guests_count = sum(1 for g in guests if g["confirmed"])
-    unconfirmed_guests_count = registered_guests_count - confirmed_guests_count
-    
-    # 5. Populate response dictionary
-    event["event_items"] = event_items
-    event["guests"] = guests
-    event["registered_guests_count"] = registered_guests_count
-    event["confirmed_guests_count"] = confirmed_guests_count
-    event["unconfirmed_guests_count"] = unconfirmed_guests_count
-    event["total_estimated"] = total_estimated
-    event["budget_alert"] = budget_alert
-    
-    return event
+    return get_event_detail(str(event_data["id"]), db)
 
 
 @router.patch("/{event_id}", response_model=EventDetailOut)
@@ -360,4 +324,3 @@ def delete_event(
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=400, detail=f"Error deleting event: {str(e)}")
-        raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")
