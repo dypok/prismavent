@@ -1,0 +1,44 @@
+from pydantic import BaseModel, Field
+from typing import Optional
+from decimal import Decimal
+from uuid import UUID
+from datetime import datetime
+
+class ProviderCreate(BaseModel):
+    category_id: UUID
+    city_id: UUID
+    name: str = Field(..., min_length=1)
+    description: Optional[str] = None
+    phone: Optional[str] = Field(None, max_length=20)
+    website: Optional[str] = None
+    address: Optional[str] = None
+    reference_price: Optional[Decimal] = Field(None, ge=Decimal("0.0"))
+    price_unit: Optional[str] = Field(None, max_length=30)
+    rating: Optional[Decimal] = Field(None, ge=Decimal("0.0"), le=Decimal("5.0"))
+
+class ProviderUpdate(BaseModel):
+    category_id: Optional[UUID] = None
+    city_id: Optional[UUID] = None
+    name: Optional[str] = Field(None, min_length=1)
+    description: Optional[str] = None
+    phone: Optional[str] = Field(None, max_length=20)
+    website: Optional[str] = None
+    address: Optional[str] = None
+    reference_price: Optional[Decimal] = Field(None, ge=Decimal("0.0"))
+    price_unit: Optional[str] = Field(None, max_length=30)
+    rating: Optional[Decimal] = Field(None, ge=Decimal("0.0"), le=Decimal("5.0"))
+
+class ProviderResponse(BaseModel):
+    id: UUID
+    category_id: UUID
+    city_id: UUID
+    name: str
+    description: Optional[str] = None
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    address: Optional[str] = None
+    reference_price: Optional[Decimal] = None
+    price_unit: Optional[str] = None
+    rating: Optional[Decimal] = None
+    created_at: datetime
+    can_edit: bool
