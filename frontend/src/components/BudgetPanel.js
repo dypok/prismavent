@@ -29,10 +29,6 @@ export function BudgetPanel(event) {
         <div class="mb-4 rounded-lg border border-red-300 bg-red-100 p-3 text-red-800">
           ⚠️ You have exceeded your maximum budget.
         </div>
-      ` : maxBudget !== null && remaining >= 0 ? `
-        <div class="mb-4 rounded-lg border border-green-300 bg-green-100 p-3 text-green-800">
-          ✅ Within budget
-        </div>
       ` : ''}
 
       <div id="budget-items" class="space-y-3">
