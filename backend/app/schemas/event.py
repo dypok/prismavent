@@ -40,11 +40,13 @@ class EventResponse(BaseModel):
     city_id: Optional[UUID] = None
     city_custom: Optional[str] = None
     event_type_id: Optional[UUID] = None
+    event_type_name: Optional[str] = None
     location: Optional[str] = None
     status: str
     visibility_status: str
     confirmed_guests_count: int = 0
     total_estimated: Decimal = Decimal("0.0")
+    total_gastado: Decimal = Decimal("0.0")
     created_at: datetime
     updated_at: datetime
 
@@ -61,6 +63,7 @@ class EventDetailOut(BaseModel):
     city_id: Optional[UUID] = None
     city_custom: Optional[str] = None
     event_type_id: Optional[UUID] = None
+    event_type_name: Optional[str] = None
     location: Optional[str] = None
     status: str
     visibility_status: str
@@ -70,6 +73,7 @@ class EventDetailOut(BaseModel):
     confirmed_guests_count: int = 0
     unconfirmed_guests_count: int = 0
     total_estimated: Decimal
+    total_gastado: Decimal = Decimal("0.0")
     over_budget: bool
     budget_exceeded_by: Decimal
     created_at: datetime

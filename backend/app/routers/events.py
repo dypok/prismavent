@@ -268,11 +268,14 @@ def get_events(
         query = """
                 SELECT e.id, e.user_id, e.name, e.description, e.event_date,
                     e.guest_count, e.max_budget, e.template_id, e.user_template_id,
-                    e.city_id, e.city_custom, e.event_type_id, e.location,
+                    e.city_id, e.city_custom, e.event_type_id, et.name AS event_type_name,
+                    e.location,
                     e.status, e.visibility_status, e.created_at, e.updated_at,
                     COALESCE(g.confirmed_count, 0) AS confirmed_guests_count,
-                    COALESCE(b.total, 0) AS total_estimated
+                    COALESCE(b.total, 0) AS total_estimated,
+                    COALESCE(bg.total, 0) AS total_gastado
                 FROM events e
+                LEFT JOIN event_types et ON et.id = e.event_type_id
                 LEFT JOIN (
                     SELECT event_id, COUNT(*) AS confirmed_count
                     FROM guests
@@ -284,6 +287,12 @@ def get_events(
                     FROM event_items
                     GROUP BY event_id
                 ) b ON b.event_id = e.id
+                LEFT JOIN (
+                    SELECT event_id, SUM(quantity * unit_price) AS total
+                    FROM event_items
+                    WHERE confirmed = true
+                    GROUP BY event_id
+                ) bg ON bg.event_id = e.id
                 WHERE e.user_id = :user_id
             """
         params = {"user_id": current_user.id}
