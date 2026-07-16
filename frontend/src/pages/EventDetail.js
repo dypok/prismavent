@@ -17,13 +17,18 @@ function buildResourceCardHTML(item) {
         <span class="text-sm font-bold text-[#755B00] whitespace-nowrap">${_fmt(item.quantity * item.unit_price)}</span>
         <span class="px-2 py-0.5 text-xs rounded-full ${item.confirmed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${item.confirmed ? '✅' : '⏳'}</span>
         <button class="edit-resource p-1.5 rounded-lg hover:bg-[#FEF3C7] transition-colors cursor-pointer" data-id="${item.id}" data-name="${item.name.replace(/"/g, '&quot;')}" data-quantity="${item.quantity}" data-price="${item.unit_price}" data-notes="${(item.notes || '').replace(/"/g, '&quot;')}" title="Editar">✏️</button>
-        <button class="delete-resource p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" data-id="${item.id}" title="Eliminar">🗑️</button>
+        <button class="delete-resource p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" data-id="${item.id}" title="Eliminar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 7L18.133 19.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"/>
+          </svg>
+        </button>
       </div>
     </div>
   `;
 }
 import { BudgetPanel } from "../components/BudgetPanel.js";
 import { DeleteEventModal } from "../components/DeleteEventModal.js";
+import { DeleteResourceModal } from "../components/DeleteResourceModal.js";
 import { GuestsPanel } from "../components/GuestPanel.js";
 import { GuestModal } from "../components/GuestModal.js";
 
@@ -362,6 +367,7 @@ export async function EventDetail(eventId) {
       </main>
     ${GuestModal()}
     ${DeleteEventModal()}
+    ${DeleteResourceModal()}
     </div>
   `;
 
@@ -518,44 +524,14 @@ document.addEventListener("click", (e) => {
   }
 
   const delBtn = e.target.closest(".delete-resource");
-  if (delBtn && confirm("¿Eliminar este recurso?")) {
-    const itemId = delBtn.dataset.id;
-    const card = delBtn.closest('[data-item-id]');
-    (async () => {
-      try {
-        const { eventId } = window.__eventData;
-        const updated = await deleteEventItem(eventId, itemId);
-        window.__eventData.event = updated;
-        window.__eventData.original = { ...updated };
-        if (card) card.remove();
-
-        const list = document.getElementById("resources-list");
-        if (!list.hasChildNodes() || list.children.length === 0) {
-          list.innerHTML = `
-            <div class="flex flex-col items-center justify-center py-12 text-[#9E8E6E]">
-              <span class="text-5xl mb-4 opacity-50">🎨</span>
-              <p class="text-lg font-medium">Lienzo de Recursos</p>
-              <p class="text-sm mt-1">Agrega recursos a tu evento</p>
-            </div>
-          `;
-        }
-
-        const panel = document.getElementById("budget-panel");
-        if (panel) {
-          const { BudgetPanel } = await import("../components/BudgetPanel.js");
-          panel.outerHTML = BudgetPanel(updated);
-        }
-
-        const confirmedResources = updated.event_items.filter(i => i.confirmed).length;
-        const totalResources = updated.event_items.length;
-        const counterEl = document.querySelector(".flex.justify-between.items-center.mb-6 span");
-        if (counterEl) {
-          counterEl.textContent = totalResources > 0 ? `${confirmedResources} de ${totalResources} confirmados` : "Sin recursos";
-        }
-      } catch (err) {
-        alert(err.message || "Error al eliminar el recurso.");
-      }
-    })();
+  if (delBtn) {
+    const modal = document.getElementById("resource-delete-modal");
+    if (modal) {
+      modal.dataset.pendingDeleteId = delBtn.dataset.id;
+      modal.dataset.pendingDeleteCard = delBtn.closest('[data-item-id]')?.dataset.itemId || "";
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
   }
 });
 
@@ -634,5 +610,77 @@ document.addEventListener("submit", async (e) => {
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = form.dataset.editing ? "Actualizar Recurso" : "Guardar Recurso";
+  }
+});
+
+// ── Modal de confirmación para eliminar recurso ──
+document.addEventListener("click", async (e) => {
+  const modal = document.getElementById("resource-delete-modal");
+  if (!modal) return;
+
+  if (e.target.closest("#cancel-resource-delete")) {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    delete modal.dataset.pendingDeleteId;
+    delete modal.dataset.pendingDeleteCard;
+    return;
+  }
+
+  if (e.target.closest("#confirm-resource-delete")) {
+    const itemId = modal.dataset.pendingDeleteId;
+    const cardItemId = modal.dataset.pendingDeleteCard;
+    if (!itemId) return;
+
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+
+    const card = cardItemId
+      ? document.querySelector(`[data-item-id="${cardItemId}"]`)
+      : null;
+
+    try {
+      const { eventId } = window.__eventData;
+      const updated = await deleteEventItem(eventId, itemId);
+      window.__eventData.event = updated;
+      window.__eventData.original = { ...updated };
+      if (card) card.remove();
+
+      const list = document.getElementById("resources-list");
+      if (!list.hasChildNodes() || list.children.length === 0) {
+        list.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-12 text-[#9E8E6E]">
+            <span class="text-5xl mb-4 opacity-50">🎨</span>
+            <p class="text-lg font-medium">Lienzo de Recursos</p>
+            <p class="text-sm mt-1">Agrega recursos a tu evento</p>
+          </div>
+        `;
+      }
+
+      const panel = document.getElementById("budget-panel");
+      if (panel) {
+        const { BudgetPanel } = await import("../components/BudgetPanel.js");
+        panel.outerHTML = BudgetPanel(updated);
+      }
+
+      const confirmedResources = updated.event_items.filter(i => i.confirmed).length;
+      const totalResources = updated.event_items.length;
+      const counterEl = document.querySelector(".flex.justify-between.items-center.mb-6 span");
+      if (counterEl) {
+        counterEl.textContent = totalResources > 0 ? `${confirmedResources} de ${totalResources} confirmados` : "Sin recursos";
+      }
+    } catch (err) {
+      alert(err.message || "Error al eliminar el recurso.");
+    } finally {
+      delete modal.dataset.pendingDeleteId;
+      delete modal.dataset.pendingDeleteCard;
+    }
+    return;
+  }
+
+  if (e.target === modal) {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    delete modal.dataset.pendingDeleteId;
+    delete modal.dataset.pendingDeleteCard;
   }
 });
