@@ -181,13 +181,13 @@ export default class MyEvents {
                         : 'Activo';
 
                 html += `
-                <div class="bg-white rounded-3xl overflow-hidden border border-[#E9E1D7] hover:shadow-xl transition-all flex flex-col">
+                <div onclick="viewEvent('${event.id}')" class="bg-white rounded-3xl overflow-hidden border border-[#E9E1D7] hover:shadow-xl transition-all flex flex-col cursor-pointer group hover:-translate-y-1">
                     <div class="h-20 bg-gradient-to-br from-[#FEF3C7] to-[#FDE68A] flex items-center justify-center text-4xl relative">
                         
                         <span class="absolute top-3 right-3 px-3 py-0.5 text-[10px] font-medium rounded-full ${statusClass}">${statusText}</span>
                     </div>
                     <div class="p-4 flex flex-col flex-1">
-                        <h3 class="font-semibold text-base text-[#1E1B15] ${event.description ? 'mb-0.5' : 'mb-3'} line-clamp-1">${event.name}</h3>
+                        <h3 class="font-semibold text-base text-[#1E1B15] ${event.description ? 'mb-0.5' : 'mb-3'} line-clamp-1 group-hover:text-[#755B00] transition-colors">${event.name}</h3>
                         ${event.description ? `<p class="text-[#9E8E6E] text-xs line-clamp-2 mb-3">${event.description}</p>` : ''}
                         
                         <div class="space-y-1 text-[11px] mb-4 flex-1">
@@ -198,13 +198,13 @@ export default class MyEvents {
                         </div>
 
                         <div class="flex gap-2 mt-auto">
-                            <button onclick="viewEvent('${event.id}')" 
+                            <button onclick="event.stopPropagation(); viewEvent('${event.id}')" 
                                     class="flex-1 py-2 text-xs font-medium border border-[#E9E1D7] hover:bg-[#FEF3C7] rounded-xl transition">
                                 Ver Detalles
                             </button>
                             ${isFinalized
-                                ? `<button disabled class="flex-1 py-2 text-xs font-medium bg-gray-200 text-gray-400 rounded-xl cursor-not-allowed">Finalizado</button>`
-                                : `<button onclick="editEvent('${event.id}')" 
+                                ? `<button onclick="event.stopPropagation()" disabled class="flex-1 py-2 text-xs font-medium bg-gray-200 text-gray-400 rounded-xl cursor-not-allowed">Finalizado</button>`
+                                : `<button onclick="event.stopPropagation(); editEvent('${event.id}')" 
                                     class="flex-1 py-2 text-xs font-medium bg-[#755B00] text-white hover:bg-[#5C4600] rounded-xl transition">
                                 Editar
                             </button>`
