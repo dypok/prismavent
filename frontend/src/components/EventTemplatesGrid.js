@@ -22,25 +22,6 @@ window.handleGridBack = function () {
     window.dispatchEvent(new PopStateEvent("popstate"));
 };
 
-// ----------------------------------------------------------------
-// Colour palette — one entry per template slot (cycles if more)
-// Add as many entries as needed; the frontend never hard-codes names.
-// ----------------------------------------------------------------
-const PALETTE = [
-    { color: "bg-rose-50 border-rose-200",    iconBg: "bg-rose-100"    },
-    { color: "bg-pink-50 border-pink-200",    iconBg: "bg-pink-100"    },
-    { color: "bg-blue-50 border-blue-200",    iconBg: "bg-blue-100"    },
-    { color: "bg-fuchsia-50 border-fuchsia-200", iconBg: "bg-fuchsia-100" },
-    { color: "bg-emerald-50 border-emerald-200", iconBg: "bg-emerald-100" },
-    { color: "bg-indigo-50 border-indigo-200",   iconBg: "bg-indigo-100"  },
-    { color: "bg-orange-50 border-orange-200",   iconBg: "bg-orange-100"  },
-    { color: "bg-teal-50 border-teal-200",    iconBg: "bg-teal-100"    },
-    { color: "bg-amber-50 border-amber-200",  iconBg: "bg-amber-100"   },
-    { color: "bg-violet-50 border-violet-200",iconBg: "bg-violet-100"  },
-    { color: "bg-sky-50 border-sky-200",      iconBg: "bg-sky-100"     },
-    { color: "bg-lime-50 border-lime-200",    iconBg: "bg-lime-100"    },
-];
-
 // Fallback emojis when a template has no icon_url
 const FALLBACK_ICONS = ["✨", "🎉", "🏢", "🎓", "💍", "🎂", "💻", "🎈", "🌟", "🎊", "🌿", "🎶"];
 
@@ -111,7 +92,6 @@ async function loadTemplates() {
         const templatesToShow = dbTemplates.filter(t => !t.name.toLowerCase().includes("personalizado"));
 
         fetchedTemplates = templatesToShow.map((t, idx) => {
-            const palette = PALETTE[idx % PALETTE.length];
             const fallback = FALLBACK_ICONS[idx % FALLBACK_ICONS.length];
             const { duration, catering } = inferBadges(t.template_items);
 
@@ -121,8 +101,8 @@ async function loadTemplates() {
                 description: t.description || "Estructura de evento predefinida.",
                 iconUrl: t.icon_url || null,
                 fallbackIcon: fallback,
-                color: palette.color,
-                iconBg: palette.iconBg,
+                colorBg: t.color_bg || '#FEF3C7',
+                colorIcon: t.color_icon || '#755B00',
                 preset: {
                     id: t.id,
                     type: t.name.replace("Plantilla ", ""),
@@ -148,7 +128,7 @@ async function loadTemplates() {
               <div onclick="window.handleGridTemplateSelect('${t.id}')"
                 class="group relative bg-white rounded-2xl border border-[#E9E1D7] p-6 hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1">
                 <div class="flex items-start justify-between mb-4">
-                  <div class="w-14 h-14 ${t.iconBg} rounded-xl flex items-center justify-center">
+                  <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background-color: ${t.colorBg}; color: ${t.colorIcon};">
                     ${renderIcon(t.iconUrl, t.fallbackIcon)}
                   </div>
                   <div class="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -158,8 +138,8 @@ async function loadTemplates() {
                 <h3 class="font-display text-xl text-[#1E1B15] mb-2">${t.title}</h3>
                 <p class="text-[#4D4637] text-sm leading-relaxed mb-4">${t.description}</p>
                 <div class="flex flex-wrap gap-2">
-                  <span class="px-3 py-1 ${t.color} rounded-full text-xs font-medium text-[#4D4637] border">${t.duration} hrs</span>
-                  <span class="px-3 py-1 ${t.color} rounded-full text-xs font-medium text-[#4D4637] border">${t.catering}</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-medium border" style="background-color: ${t.colorBg}; color: ${t.colorIcon}; border-color: ${t.colorIcon}40;">${t.duration} hrs</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-medium border" style="background-color: ${t.colorBg}; color: ${t.colorIcon}; border-color: ${t.colorIcon}40;">${t.catering}</span>
                 </div>
               </div>
             `

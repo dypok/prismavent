@@ -13,4 +13,6 @@ class TemplateResponse(BaseModel):
     name: str
     description: Optional[str] = None
     icon_url: Optional[str] = None
+    color_bg: Optional[str] = None
+    color_icon: Optional[str] = None
     template_items: List[TemplateItemSchema] = []

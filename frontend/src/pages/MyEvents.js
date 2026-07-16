@@ -81,6 +81,30 @@ export default class MyEvents {
         try {
             const events = await api.getEvents();
 
+            if (events.length === 0) {
+                statsGrid.parentElement.classList.add('hidden');
+                grid.className = "flex-1 flex flex-col items-center justify-center min-h-[60vh]";
+                grid.innerHTML = `
+                    <div class="flex flex-col items-center justify-center w-full max-w-2xl py-12 animate-fade-in-up">
+                        <div class="w-24 h-24 bg-[#FEF3C7] rounded-3xl flex items-center justify-center text-[#755B00] mb-6 shadow-sm transform hover:scale-105 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M12 14v4"/><path d="M10 16h4"/></svg>
+                        </div>
+                        <h2 class="font-display text-4xl text-[#1E1B15] mb-4 text-center">Planifica tu primer evento</h2>
+                        <p class="text-[#4D4637] text-center max-w-md mb-8 leading-relaxed text-lg">
+                            Aún no tienes ningún evento en tu agenda. Comienza ahora y dale vida a esa fecha especial.
+                        </p>
+                        <button onclick="window.location.href='/events/new'" class="px-8 py-4 bg-[#755B00] text-white font-semibold rounded-2xl hover:bg-[#5C4600] transition-colors shadow-sm flex items-center gap-3 text-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Crear mi primer evento
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            statsGrid.parentElement.classList.remove('hidden');
+            grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5";
+
             // Estadísticas
             const total = events.length;
             const borradores = events.filter(e => e.status === 'borrador' || !e.status).length;
