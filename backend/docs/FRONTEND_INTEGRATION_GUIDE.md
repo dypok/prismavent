@@ -434,6 +434,10 @@ Cuando consumas el endpoint `GET /events/{event_id}`, verás dos campos de vital
 3. **`budget_exceeded_by` (String conteniendo un Decimal):**
    * Indica la diferencia monetaria exacta por la cual el total estimado excede el presupuesto máximo.
    * Es `0.00` si no se ha excedido el presupuesto o si `max_budget` no está definido.
+4. **Tipados y Validación de `max_budget`:**
+   * Al enviar el valor de `max_budget` (en peticiones `POST /events` o `PATCH /events/{event_id}`), el frontend debe enviarlo como un valor numérico (`number`) o una cadena de texto conteniendo un número válido (ej. `"5000.00"`), o `null` si no hay límite de presupuesto.
+   * **Tipos admitidos en la lógica del backend**: `Decimal`, `float`, `int`, `str` o `None` (`null`).
+   * Enviar tipos de datos no compatibles (como arreglos `[]` o diccionarios `{}`) está prohibido y será rechazado por la capa de validación de esquemas (Pydantic), resultando en un error `HTTP 422 Unprocessable Entity`.
 
 ---
 
