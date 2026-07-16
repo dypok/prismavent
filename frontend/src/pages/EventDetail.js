@@ -95,26 +95,25 @@ export async function EventDetail(eventId) {
 
       <main class="flex-1 flex flex-col overflow-hidden">
 
-        ${Topbar()}
+        ${Topbar(`
+          <div class="flex items-center gap-4 animate-fade-in">
+            <button onclick="window.history.back()" class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#9E8E6E] hover:text-[#1E1B15] hover:shadow-sm transition-all border border-[#E9E1D7]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div>
+              <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-bold text-[#1E1B15]" id="detail-title">${event?.name}</h1>
+                <span class="px-3 py-1 text-[10px] font-semibold bg-[#FEF3C7] text-[#755B00] rounded-full uppercase tracking-wider">${event?.status || "Borrador"}</span>
+              </div>
+              <p class="text-[#9E8E6E] text-xs mt-0.5" id="detail-date-display">${event?.event_date}</p>
+            </div>
+          </div>
+        `)}
 
         <div class="flex-1 overflow-auto custom-scrollbar">
           <div class="p-8 max-w-7xl mx-auto">
 
-            <div class="flex items-center justify-between mb-8 animate-fade-in">
-              <div class="flex items-center gap-4">
-                <button onclick="window.history.back()" class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#9E8E6E] hover:text-[#1E1B15] hover:shadow-sm transition-all border border-[#E9E1D7]">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                </button>
-                <div>
-                  <div class="flex items-center gap-3">
-                    <h1 class="text-3xl font-bold text-[#1E1B15]" id="detail-title">${event?.name}</h1>
-                    <span class="px-3 py-1 text-xs font-semibold bg-[#FEF3C7] text-[#755B00] rounded-full">${event?.status || "Borrador"}</span>
-                  </div>
-                  <p class="text-[#9E8E6E] mt-1" id="detail-date-display">${event?.event_date}</p>
-                </div>
-              </div>
-              <div class="flex gap-3" id="detail-actions">
-              </div>
+            <div class="flex justify-end mb-8 animate-fade-in" id="detail-actions">
             </div>
 
             <section class="flex gap-6">

@@ -17,7 +17,7 @@ window.handleTemplateSelect = function (option) {
 
 export function CreateEvent() {
     return `
-    <div class="flex h-screen animate-fade-in">
+    <div class="flex h-screen">
 
       ${Sidebar()}
 

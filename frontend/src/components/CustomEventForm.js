@@ -14,6 +14,16 @@ import { apiFetch } from "../service/api.js";
 
 const today = new Date().toISOString().split('T')[0];
 
+// Función global para manejar el cierre del modal de forma segura
+window.closeCustomModal = function() {
+    if (localStorage.getItem("selectedEventTemplate")) {
+        window.history.pushState({}, "", "/events/new/template");
+    } else {
+        window.history.pushState({}, "", "/events/new");
+    }
+    window.dispatchEvent(new PopStateEvent("popstate"));
+};
+
 export function CustomEventForm() {
     return `
     <div class="w-full max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl animate-scale-in">
@@ -30,7 +40,7 @@ export function CustomEventForm() {
             <h2 class="font-display text-2xl text-[#1E1B15]">Nuevo Evento</h2>
             <p class="text-sm text-[#4D4637]">Completa la información básica</p>
           </div>
-          <button onclick="window.history.pushState({}, '', '/events/new'); window.dispatchEvent(new PopStateEvent('popstate'))"
+          <button type="button" onclick="window.closeCustomModal()"
             class="text-3xl text-gray-400 hover:text-black">×</button>
         </div>
       </div>
@@ -69,7 +79,7 @@ export function CustomEventForm() {
         </div>
 
         <div class="pt-4 flex gap-4">
-          <button type="button" onclick="window.history.pushState({}, '', '/events/new'); window.dispatchEvent(new PopStateEvent('popstate'))"
+          <button type="button" onclick="window.closeCustomModal()"
             class="flex-1 py-3.5 border border-[#D0C5B2] rounded-2xl font-medium hover:bg-gray-50 text-sm">Cancelar</button>
           <button type="submit" class="flex-1 py-3.5 bg-[#755B00] hover:bg-[#5F4A00] text-white font-semibold rounded-2xl text-sm shadow-sm">Crear Evento →</button>
         </div>

@@ -178,15 +178,6 @@ export function EventTemplatesGrid() {
     return `
     <div class="w-full max-w-6xl mx-auto animate-fade-in">
 
-      <button onclick="window.handleGridBack()"
-        class="flex items-center gap-2 text-[#755B00] hover:text-[#4D3D00] transition-colors mb-6 font-semibold text-lg cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        Volver
-      </button>
-
-      <h1 class="font-display text-4xl md:text-5xl text-[#1E1B15] mb-3">Elige una Plantilla</h1>
-      <p class="text-[#4D4637] text-lg mb-10">Selecciona una estructura predefinida para comenzar tu planificación más rápido.</p>
-
       <div id="templates-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         ${renderSkeleton()}
       </div>
