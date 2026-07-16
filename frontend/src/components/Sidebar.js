@@ -2,6 +2,7 @@ import dashboardIcon from "../assets/icons/dashboard_icon.svg";
 import eventsIcon from "../assets/icons/events_icon.svg";
 import providersIcon from "../assets/icons/providers_icon.svg";
 import historyIcon from "../assets/icons/history_icon.svg";
+import logoIcon from "../assets/icons/prismavent_logo_transparent.png";
 import { logout } from "../utils/authUtils.js";
 
 window.handleLogout = function () {
@@ -25,13 +26,9 @@ export function Sidebar(active = "new-event") {
   return `
     <aside class="w-16 hover:w-64 min-h-screen bg-[#FFF8F1] border-r border-[#E9E1D7] flex flex-col transition-all duration-300 group overflow-hidden shrink-0 z-30">
       
-      <!-- Logo / Sigla -->
-      <div class="px-5 group-hover:px-6 pt-10 pb-8 flex items-center gap-3 overflow-hidden shrink-0 transition-all duration-300">
-        <span class="font-display text-3xl font-bold tracking-tight text-[#755B00] shrink-0 w-5 text-center leading-none">P</span>
-        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-          <h1 class="font-display text-2xl tracking-tight text-[#755B00] leading-none">rismavent</h1>
-          <p class="text-[#9E8E6E] text-xs mt-1 tracking-widest leading-none">Event Planning</p>
-        </div>
+      <!-- Logo -->
+      <div class="h-24 pt-8 pb-4 flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300">
+        <img src="${logoIcon}" alt="Prismavent" class="w-10 h-auto object-contain transition-all duration-300 drop-shadow-sm">
       </div>
 
       <!-- Menú de Navegación -->
