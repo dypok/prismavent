@@ -6,6 +6,7 @@ from app.routers.events import router as events_router
 from app.routers.templates import router as templates_router
 from app.routers.guests import router as guests_router
 from app.routers.event_items import router as event_items_router
+from app.routers.weather import router as weather_router
 from app.routers.providers import router as providers_router
 from app.routers.provider_categories import router as provider_categories_router
 from app.middlewares.auth_middleware import SupabaseAuthMiddleware
@@ -28,6 +29,7 @@ app.include_router(events_router)
 app.include_router(templates_router)
 app.include_router(guests_router)
 app.include_router(event_items_router)
+app.include_router(weather_router)
 app.include_router(providers_router)
 app.include_router(provider_categories_router)
 
