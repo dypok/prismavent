@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
-from app.schemas.event import EventCreate, EventResponse, EventDetailOut, EventUpdate, EventStatusUpdate
+from app.schemas.event import EventCreate, EventResponse, EventDetailOut, EventUpdate, EventStatusUpdate, EventHistoryOut, VALID_EVENT_STATUSES
 from app.dependencies import get_current_user
 from app.services import budget_service
 from app.services.event_service import (
@@ -13,7 +13,7 @@ from app.services.event_service import (
     validate_event_is_draft,
     get_event_detail
 )
-from typing import List
+from typing import List, Optional
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -252,19 +252,30 @@ def update_event_status(
             raise e
         raise HTTPException(status_code=400, detail=f"Error updating event status: {str(e)}")
 
-@router.get("", response_model=List[EventResponse])  # ← Agrega esto
-def get_events(current_user = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Obtener todos los eventos del usuario actual"""
+@router.get("", response_model=List[EventResponse])
+def get_events(
+    status: Optional[str] = None,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtener todos los eventos del usuario actual, opcionalmente filtrados por status"""
+    if status is not None and status not in VALID_EVENT_STATUSES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"status inválido: '{status}'. Debe ser uno de: {', '.join(sorted(VALID_EVENT_STATUSES))}"
+        )
     try:
-        events = db.execute(
-            text("""
+        query = """
                 SELECT e.id, e.user_id, e.name, e.description, e.event_date,
                     e.guest_count, e.max_budget, e.template_id, e.user_template_id,
-                    e.city_id, e.city_custom, e.event_type_id, e.location,
+                    e.city_id, e.city_custom, e.event_type_id, et.name AS event_type_name,
+                    e.location,
                     e.status, e.visibility_status, e.created_at, e.updated_at,
                     COALESCE(g.confirmed_count, 0) AS confirmed_guests_count,
-                    COALESCE(b.total, 0) AS total_estimated
+                    COALESCE(b.total, 0) AS total_estimated,
+                    COALESCE(bg.total, 0) AS total_gastado
                 FROM events e
+                LEFT JOIN event_types et ON et.id = e.event_type_id
                 LEFT JOIN (
                     SELECT event_id, COUNT(*) AS confirmed_count
                     FROM guests
@@ -276,16 +287,59 @@ def get_events(current_user = Depends(get_current_user), db: Session = Depends(g
                     FROM event_items
                     GROUP BY event_id
                 ) b ON b.event_id = e.id
+                LEFT JOIN (
+                    SELECT event_id, SUM(quantity * unit_price) AS total
+                    FROM event_items
+                    WHERE confirmed = true
+                    GROUP BY event_id
+                ) bg ON bg.event_id = e.id
                 WHERE e.user_id = :user_id
-                ORDER BY e.created_at DESC
-            """),
-            {"user_id": current_user.id}
-        ).fetchall()
+            """
+        params = {"user_id": current_user.id}
+
+        if status is not None:
+            query += " AND e.status = :status"
+            params["status"] = status
+
+        query += " ORDER BY e.created_at DESC"
+
+        events = db.execute(text(query), params).fetchall()
 
         return [dict(event._mapping) for event in events]
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")
+
+@router.get("/{event_id}/history", response_model=List[EventHistoryOut])
+def get_event_history(
+    event_id: str,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtener historial de cambios de status de un evento"""
+    try:
+        event = db.execute(
+            text("SELECT user_id FROM events WHERE id = :id"),
+            {"id": event_id}
+        ).fetchone()
+
+        if not event:
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
+
+        if str(event[0]) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="No tienes acceso a este evento")
+
+        rows = db.execute(
+            text("SELECT * FROM event_history WHERE event_id = :event_id ORDER BY changed_at DESC"),
+            {"event_id": event_id}
+        ).fetchall()
+
+        return [dict(row._mapping) for row in rows]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error retrieving event history: {str(e)}")
 
 @router.delete("/{event_id}")
 def delete_event(

@@ -525,3 +525,133 @@ Permite obtener el pronóstico del clima para el día y la ciudad del evento. Es
     "detail": "Failed to connect to the external weather service."
   }
   ```
+## 9. Endpoints de Catálogo de Proveedores (`/providers`)
+
+Todos los endpoints de proveedores requieren que el frontend envíe el token de acceso en las cabeceras HTTP (`Authorization: Bearer <token>`).
+
+### Seguridad y Roles (`can_edit`)
+* **Lectura:** Todos los usuarios autenticados pueden consultar el catálogo de proveedores (`GET /providers` y `GET /providers/{id}`).
+* **Escritura:** Solo los usuarios con rol de administrador (`admin`) pueden crear, modificar o eliminar proveedores (`POST`, `PATCH`, `DELETE`).
+* **Visualización Dinámica (`can_edit`):** Para facilitar que el frontend oculte o muestre los botones de edición y borrado, las respuestas de los proveedores incluyen el campo booleano `can_edit`. Este será `true` si el usuario que realiza la petición es administrador, y `false` en caso contrario.
+
+### 9.1 Obtener Catálogo de Proveedores
+* **Endpoint:** `GET /providers`
+* **Parámetros de Consulta (Query Parameters):**
+  * `category_id` (UUID, opcional): Filtrar proveedores por categoría específica.
+  * `search` (String, opcional): Buscar proveedores por coincidencia parcial de nombre (búsqueda insensible a mayúsculas).
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  [
+    {
+      "id": "a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1",
+      "category_id": "c1000000-0000-0000-0000-000000000001",
+      "city_id": "d1000000-0000-0000-0000-000000000001",
+      "name": "Catering Barranquilla Premium",
+      "description": "El mejor servicio de comida y banquetes para tu boda.",
+      "phone": "3001234567",
+      "website": "https://cateringbaq.com",
+      "address": "Calle 72 # 45-67",
+      "reference_price": "45.00",
+      "price_unit": "por persona",
+      "rating": "4.8",
+      "created_at": "2026-07-09T14:30:00Z",
+      "can_edit": false
+    }
+  ]
+  ```
+
+### 9.2 Obtener Detalle de un Proveedor
+* **Endpoint:** `GET /providers/{provider_id}`
+* **Parámetros de Ruta (Path Parameters):**
+  * `provider_id` (UUID): ID del proveedor a consultar.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "id": "a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1",
+    "category_id": "c1000000-0000-0000-0000-000000000001",
+    "city_id": "d1000000-0000-0000-0000-000000000001",
+    "name": "Catering Barranquilla Premium",
+    "description": "El mejor servicio de comida y banquetes para tu boda.",
+    "phone": "3001234567",
+    "website": "https://cateringbaq.com",
+    "address": "Calle 72 # 45-67",
+    "reference_price": "45.00",
+    "price_unit": "por persona",
+    "rating": "4.8",
+    "created_at": "2026-07-09T14:30:00Z",
+    "can_edit": false
+  }
+  ```
+
+### 9.3 Crear Proveedor (Solo Admin)
+* **Endpoint:** `POST /providers`
+* **Seguridad:** Requiere rol `admin` (`HTTP 403 Forbidden` si no se tienen permisos).
+* **Cuerpo de la Petición (Request Body):**
+  ```json
+  {
+    "category_id": "c1000000-0000-0000-0000-000000000001",
+    "city_id": "d1000000-0000-0000-0000-000000000001",
+    "name": "Sonido Barranquilla",
+    "description": "Servicios de DJs y amplificación profesional.",
+    "phone": "3009876543",
+    "website": "https://sonidobaq.com",
+    "address": "Carrera 43 # 50-20",
+    "reference_price": "1200000.00",
+    "price_unit": "por evento",
+    "rating": "4.5"
+  }
+  ```
+* **Respuesta Exitosa (HTTP 201 Created):**
+  ```json
+  {
+    "id": "b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2",
+    "category_id": "c1000000-0000-0000-0000-000000000001",
+    "city_id": "d1000000-0000-0000-0000-000000000001",
+    "name": "Sonido Barranquilla",
+    "description": "Servicios de DJs y amplificación profesional.",
+    "phone": "3009876543",
+    "website": "https://sonidobaq.com",
+    "address": "Carrera 43 # 50-20",
+    "reference_price": "1200000.00",
+    "price_unit": "por evento",
+    "rating": "4.5",
+    "created_at": "2026-07-16T11:00:00Z",
+    "can_edit": true
+  }
+  ```
+
+### 9.4 Editar Proveedor (Solo Admin)
+* **Endpoint:** `PATCH /providers/{provider_id}`
+* **Seguridad:** Requiere rol `admin` (`HTTP 403 Forbidden` si no se tienen permisos).
+* **Descripción:** Permite actualización parcial de un proveedor.
+* **Cuerpo de la Petición (Request Body):**
+  ```json
+  {
+    "name": "Sonido Barranquilla Pro",
+    "reference_price": "1400000.00"
+  }
+  ```
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "id": "b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2",
+    "category_id": "c1000000-0000-0000-0000-000000000001",
+    "city_id": "d1000000-0000-0000-0000-000000000001",
+    "name": "Sonido Barranquilla Pro",
+    "description": "Servicios de DJs y amplificación profesional.",
+    "phone": "3009876543",
+    "website": "https://sonidobaq.com",
+    "address": "Carrera 43 # 50-20",
+    "reference_price": "1400000.00",
+    "price_unit": "por evento",
+    "rating": "4.5",
+    "created_at": "2026-07-16T11:00:00Z",
+    "can_edit": true
+  }
+  ```
+
+### 9.5 Eliminar Proveedor (Solo Admin)
+* **Endpoint:** `DELETE /providers/{provider_id}`
+* **Seguridad:** Requiere rol `admin` (`HTTP 403 Forbidden` si no se tienen permisos).
+* **Respuesta Exitosa (HTTP 204 No Content):**
+  *(Sin cuerpo en la respuesta)*
