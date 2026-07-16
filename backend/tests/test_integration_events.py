@@ -289,5 +289,122 @@ class TestIntegrationEvents(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("No se puede modificar un evento finalizado", response.json()["detail"])
 
+    def test_get_events_filter_by_status(self):
+        """GET /events?status=finalizado: Should return only finalized events."""
+        response = self.client.get("/events?status=finalizado", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertGreaterEqual(len(data), 1)
+        for event in data:
+            self.assertEqual(event["status"], "finalizado")
+
+    def test_get_events_filter_borrador(self):
+        """GET /events?status=borrador: Should return only draft events."""
+        response = self.client.get("/events?status=borrador", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertGreaterEqual(len(data), 1)
+        for event in data:
+            self.assertEqual(event["status"], "borrador")
+
+    def test_get_events_filter_invalid_status(self):
+        """GET /events?status=invalido: Should return 400."""
+        response = self.client.get("/events?status=invalido", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("status inválido", response.json()["detail"])
+
+    def test_event_response_has_total_gastado(self):
+        """GET /events: Response includes total_gastado (sum of confirmed items only)."""
+        response = self.client.get("/events", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        event = next((e for e in data if e["id"] == self.event_id_1), None)
+        self.assertIsNotNone(event)
+        self.assertIn("total_gastado", event)
+        self.assertEqual(float(event["total_gastado"]), 60.0)
+
+    def test_event_response_has_event_type_name(self):
+        """GET /events: Response includes event_type_name when event has a type."""
+        event_with_type = str(uuid4())
+        db = SessionLocal()
+        try:
+            db.execute(text("""
+                INSERT INTO events (id, user_id, name, event_date, guest_count, event_type_id, status, visibility_status)
+                VALUES (:id, :user_id, :name, '2026-12-01', 10, :type_id, 'borrador', 'active')
+            """), {"id": event_with_type, "user_id": USER_A_ID, "name": "Typed Event", "type_id": "a1000000-0000-0000-0000-000000000001"})
+            db.commit()
+        finally:
+            db.close()
+
+        try:
+            response = self.client.get("/events", headers={"Authorization": "Bearer test-token"})
+            self.assertEqual(response.status_code, 200)
+            event = next((e for e in response.json() if e["id"] == event_with_type), None)
+            self.assertIsNotNone(event)
+            self.assertIn("event_type_name", event)
+            self.assertIsNotNone(event["event_type_name"])
+        finally:
+            db = SessionLocal()
+            try:
+                db.execute(text("DELETE FROM events WHERE id = :id"), {"id": event_with_type})
+                db.commit()
+            finally:
+                db.close()
+
+    def test_event_detail_has_total_gastado(self):
+        """GET /events/{id}: Detail response includes total_gastado."""
+        response = self.client.get(f"/events/{self.event_id_1}", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("total_gastado", data)
+        self.assertEqual(float(data["total_gastado"]), 60.0)
+
+    def test_get_event_history_empty(self):
+        """GET /events/{id}/history: Returns empty list when no history records."""
+        response = self.client.get(f"/events/{self.event_id_finalized}/history", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.json(), list)
+
+    def test_get_event_history_with_records(self):
+        """GET /events/{id}/history: Returns history records for an event."""
+        history_id = str(uuid4())
+        db = SessionLocal()
+        try:
+            db.execute(text("""
+                INSERT INTO event_history (id, event_id, previous_status, new_status, changed_by, changed_at)
+                VALUES (:id, :event_id, 'borrador', 'confirmado', :changed_by, NOW())
+            """), {"id": history_id, "event_id": self.event_id_finalized, "changed_by": USER_A_ID})
+            db.commit()
+        finally:
+            db.close()
+
+        try:
+            response = self.client.get(f"/events/{self.event_id_finalized}/history", headers={"Authorization": "Bearer test-token"})
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            self.assertGreaterEqual(len(data), 1)
+            record = next((r for r in data if r["id"] == history_id), None)
+            self.assertIsNotNone(record)
+            self.assertEqual(record["previous_status"], "borrador")
+            self.assertEqual(record["new_status"], "confirmado")
+        finally:
+            db = SessionLocal()
+            try:
+                db.execute(text("DELETE FROM event_history WHERE id = :id"), {"id": history_id})
+                db.commit()
+            finally:
+                db.close()
+
+    def test_get_event_history_not_found(self):
+        """GET /events/{id}/history: Returns 404 if event does not exist."""
+        response = self.client.get("/events/00000000-0000-0000-0000-000000000000/history", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_event_history_unauthorized(self):
+        """GET /events/{id}/history: Returns 403 if user does not own the event."""
+        self.current_test_user = MockUser(USER_B_ID)
+        response = self.client.get(f"/events/{self.event_id_1}/history", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 403)
+
 if __name__ == "__main__":
     unittest.main()
