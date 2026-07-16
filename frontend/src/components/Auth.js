@@ -21,10 +21,10 @@ export function Auth() {
             </div>
 
             <!-- Flip Card -->
-            <div id="flip-card" class="relative w-full h-[580px] perspective-[1000px]">
+            <div id="flip-card" class="relative w-full h-[580px] perspective-[1000px] transform-style-preserve-3d">
             
             <!-- LOGIN SIDE -->
-            <div id="login-side" class="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-xl overflow-hidden" style="transform: rotateY(0deg);">
+            <div id="login-side" class="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-xl overflow-hidden will-change-transform" style="transform: rotateY(0deg) translateZ(0);">
                 <div class="p-8">
                 <div class="flex border-b border-gray-200 mb-6">
                     <button onclick="switchToLogin()" class="flex-1 pb-3 text-base font-medium border-b-2 border-[#C9A84C] text-gray-900">Login</button>
@@ -34,14 +34,14 @@ export function Auth() {
                 <form id="login-form" class="space-y-6">
                     <div>
                     <label class="block text-xs tracking-widest text-gray-500 mb-1.5">EMAIL ADDRESS</label>
-                    <input type="email" id="login-email" value="carlos@agency.com" 
+                    <input type="email" id="login-email" placeholder="carlos@agency.com" 
                             class="w-full px-5 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#C9A84C] text-base">
                     </div>
 
                     <div>
                     <label class="block text-xs tracking-widest text-gray-500 mb-1.5">PASSWORD</label>
                     <div class="relative">
-                        <input type="password" id="login-password" value="123456"
+                        <input type="password" id="login-password" placeholder="123456"
                             class="w-full px-5 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#C9A84C] text-base">
                         <button type="button" onclick="togglePassword(this)" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xl">𓁺</button>
                     </div>
@@ -57,7 +57,7 @@ export function Auth() {
 
                     <button type="submit" 
                             class="w-full bg-[#C9A84C] hover:bg-[#B8963A] text-white font-semibold py-3.5 rounded-2xl text-base tracking-wider">
-                    ACCESS WORKSPACE →
+                    ACCESS WORKSPACE &rarr;
                     </button>
 
                     <p id="login-error" class="hidden text-sm text-red-600 text-center"></p>
@@ -66,7 +66,7 @@ export function Auth() {
             </div>
 
             <!-- SIGNUP SIDE -->
-            <div id="signup-side" class="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-xl overflow-hidden" style="transform: rotateY(180deg);">
+            <div id="signup-side" class="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-xl overflow-hidden will-change-transform" style="transform: rotateY(180deg) translateZ(0);">
                 <div class="p-8">
                 <div class="flex border-b border-gray-200 mb-6">
                     <button onclick="switchToLogin()" class="flex-1 pb-3 text-base font-medium text-gray-500 hover:text-gray-700">Login</button>
@@ -103,7 +103,7 @@ export function Auth() {
 
                     <button type="submit" 
                             class="w-full bg-[#C9A84C] hover:bg-[#B8963A] text-white font-semibold py-3.5 rounded-2xl text-base tracking-wider mt-3">
-                    CREATE ACCOUNT →
+                    CREATE ACCOUNT &rarr;
                     </button>
 
                     <p id="signup-error" class="hidden text-sm text-red-600 text-center"></p>
@@ -118,8 +118,8 @@ export function Auth() {
         <div id="confirmation-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
         <div class="bg-white rounded-3xl p-8 max-w-sm text-center">
             <div class="text-5xl mb-4"></div>
-            <h3 class="text-xl font-semibold mb-2">¡Registro Exitoso!</h3>
-            <p class="text-gray-600 mb-6">Hemos enviado un correo de confirmación.</p>
+            <h3 class="text-xl font-semibold mb-2">&iexcl;Registro Exitoso!</h3>
+            <p class="text-gray-600 mb-6">Hemos enviado un correo de confirmaci&oacute;n.</p>
             <button onclick="closeModalAndRedirect()" 
                     class="w-full bg-[#C9A84C] text-white py-3.5 rounded-2xl font-semibold">
             IR AL LOGIN
@@ -131,7 +131,7 @@ export function Auth() {
 
 // ====================== FUNCIONES GLOBALES ======================
 
-// Flip functions mejoradas
+// Flip card functions
 window.switchToSignup = function() {
     const loginSide = document.getElementById('login-side');
     const signupSide = document.getElementById('signup-side');
@@ -154,10 +154,10 @@ window.togglePassword = function(btn) {
     const input = btn.previousElementSibling;
     if (input.type === 'password') {
         input.type = 'text';
-        btn.textContent = '×';
+        btn.textContent = '\xd7';
     } else {
         input.type = 'password';
-        btn.textContent = '𓁺';
+        btn.textContent = '\u2c3a';
     }
 };
 

@@ -84,8 +84,5 @@ export function Sidebar(active = "new-event") {
 
 window.navigateTo = function(path) {
   window.history.pushState({}, "", path);
-window.navigateTo = function(path) {
-  window.history.pushState({}, "", path);
   window.dispatchEvent(new PopStateEvent("popstate"));
-};
 };

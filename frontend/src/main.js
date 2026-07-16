@@ -195,11 +195,18 @@ async function renderPage() {
           guestForm.addEventListener("submit", async (e) => {
             e.preventDefault();
 
+            const submitBtn = guestForm.querySelector('button[type="submit"]');
             const guestData = {
               full_name: document.getElementById("guest-name").value,
               confirmed: document.getElementById("guest-confirmed").checked,
               notes: document.getElementById("guest-notes").value,
             };
+
+            // Disable button immediately to prevent double-click
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = "Guardando...";
+            }
 
             try {
 
@@ -247,6 +254,10 @@ async function renderPage() {
             } catch (error) {
               console.error(error);
               showToast(error.message, "error");
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Guardar";
+              }
             }
           });
         }
