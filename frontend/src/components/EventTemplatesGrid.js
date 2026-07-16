@@ -1,299 +1,16 @@
-// Nota: Se corrigio el contenido de plantillas basado en el trabajo original de la
-// (rama feature/event-management), adaptado al patrón de este proyecto:
-// funciones que devuelven un string de HTML + navegación por URL real
-// con pushState, en vez de document.createElement + addEventListener.
+import { getTemplates } from "../service/api.js";
 
-const TEMPLATES = [
-    {
-        id: "b1000000-0000-0000-0000-000000000002",
-        title: "Cumpleaños",
-        description: "Celebración personal con decoración, pastel y música.",
-        icon: "🎂",
-        color: "bg-pink-50 border-pink-200",
-        iconColor: "bg-pink-100 text-pink-600",
-        preset: {
-            type: "Cumpleaños",
-            catering: "Sí - Completo (Comida + Bebida)",
-            duration: 4,
-            streaming: "No",
-            speakers: 0,
-            promotional: "Sí (Roll-ups, brochures, gifts)",
-            notes:
-                "Celebración de cumpleaños con decoración temática, pastel y entretenimiento.",
-        },
-    },
-    {
-        id: "b1000000-0000-0000-0000-000000000001",
-        title: "Boda",
-        description: "Ceremonia elegante con banquete, música y decoración floral.",
-        icon: "💍",
-        color: "bg-rose-50 border-rose-200",
-        iconColor: "bg-rose-100 text-rose-600",
-        preset: {
-            type: "Boda",
-            catering: "Sí - Completo (Comida + Bebida + Barra libre)",
-            duration: 8,
-            streaming: "Sí",
-            speakers: 2,
-            promotional: "Sí (Roll-ups, brochures, gifts)",
-            notes:
-                "Ceremonia nupcial con banquete, música en vivo, decoración floral y fotografía.",
-        },
-    },
-    {
-        id: "conference",
-        title: "Conferencia",
-        description: "Evento corporativo con proyección, sonido y coffee break.",
-        icon: "🎤",
-        color: "bg-blue-50 border-blue-200",
-        iconColor: "bg-blue-100 text-blue-600",
-        preset: {
-            type: "Conferencia",
-            catering: "Sí - Coffee break + Almuerzo",
-            duration: 6,
-            streaming: "Sí",
-            speakers: 3,
-            promotional: "Sí (Roll-ups, brochures, gifts)",
-            notes:
-                "Evento corporativo con presentaciones, networking y material promocional.",
-        },
-    },
-    {
-        id: "corporate",
-        title: "Evento Corporativo",
-        description: "Reunión de empresa con team building y actividades grupales.",
-        icon: "🏢",
-        color: "bg-slate-50 border-slate-200",
-        iconColor: "bg-slate-100 text-slate-600",
-        preset: {
-            type: "Evento Corporativo",
-            catering: "Sí - Completo (Comida + Bebida)",
-            duration: 5,
-            streaming: "No",
-            speakers: 1,
-            promotional: "Sí (Roll-ups, brochures, gifts)",
-            notes:
-                "Reunión empresarial con actividades de team building y presentaciones.",
-        },
-    },
-    {
-        id: "graduation",
-        title: "Graduación",
-        description: "Ceremonia con discursos, entrega de diplomas y celebración.",
-        icon: "🎓",
-        color: "bg-purple-50 border-purple-200",
-        iconColor: "bg-purple-100 text-purple-600",
-        preset: {
-            type: "Graduación",
-            catering: "Sí - Completo (Comida + Bebida)",
-            duration: 4,
-            streaming: "Sí",
-            speakers: 4,
-            promotional: "Sí (Roll-ups, brochures, gifts)",
-            notes:
-                "Ceremonia de graduación con discursos, entrega de diplomas y celebración.",
-        },
-    },
-    {
-        id: "babyshower",
-        title: "Baby Shower",
-        description: "Celebración íntima con juegos, regalos y refrigerios.",
-        icon: "🍼",
-        color: "bg-sky-50 border-sky-200",
-        iconColor: "bg-sky-100 text-sky-600",
-        preset: {
-            type: "Baby Shower",
-            catering: "Sí - Refrigerios + Bebidas",
-            duration: 3,
-            streaming: "No",
-            speakers: 0,
-            promotional: "No",
-            notes:
-                "Celebración íntima con juegos, regalos, decoración temática y refrigerios.",
-        },
-    },
-    {
-        id: "anniversary",
-        title: "Aniversario",
-        description:
-            "Cena romántica o celebración de años juntos con serenata y brindis.",
-        icon: "🥂",
-        color: "bg-red-50 border-red-200",
-        iconColor: "bg-red-100 text-red-600",
-        preset: {
-            type: "Aniversario",
-            catering: "Sí - Cena gourmet + Vinos",
-            duration: 4,
-            streaming: "No",
-            speakers: 1,
-            promotional: "No",
-            notes:
-                "Cena romántica con serenata, brindis especial y decoración elegante.",
-        },
-    },
-    {
-        id: "quinceanera",
-        title: "Quinceañera",
-        description:
-            "Fiesta tradicional con vals, coreografía, corte de torta y fotografía.",
-        icon: "👑",
-        color: "bg-fuchsia-50 border-fuchsia-200",
-        iconColor: "bg-fuchsia-100 text-fuchsia-600",
-        preset: {
-            type: "Quinceañera",
-            catering: "Sí - Completo (Comida + Bebida + Postres)",
-            duration: 6,
-            streaming: "Sí",
-            speakers: 2,
-            promotional: "Sí (Roll-ups, brochures, gifts)",
-            notes:
-                "Fiesta de quinceañera con vals, coreografía, corte de torta y fotografía profesional.",
-        },
-    },
-    {
-        id: "christening",
-        title: "Bautizo",
-        description: "Ceremonia religiosa con celebración familiar y refrigerios.",
-        icon: "⛪",
-        color: "bg-cyan-50 border-cyan-200",
-        iconColor: "bg-cyan-100 text-cyan-600",
-        preset: {
-            type: "Bautizo",
-            catering: "Sí - Refrigerios + Bebidas",
-            duration: 3,
-            streaming: "No",
-            speakers: 1,
-            promotional: "No",
-            notes:
-                "Ceremonia religiosa con celebración familiar, refrigerios y fotografía.",
-        },
-    },
-    {
-        id: "product-launch",
-        title: "Lanzamiento de Producto",
-        description:
-            "Evento de marca con demos, prensa, influencers y catering premium.",
-        icon: "🚀",
-        color: "bg-indigo-50 border-indigo-200",
-        iconColor: "bg-indigo-100 text-indigo-600",
-        preset: {
-            type: "Lanzamiento de Producto",
-            catering: "Sí - Catering premium + Coctelería",
-            duration: 4,
-            streaming: "Sí",
-            speakers: 2,
-            promotional: "Sí (Roll-ups, brochures, gifts)",
-            notes:
-                "Evento de lanzamiento con demostraciones, prensa, influencers y catering premium.",
-        },
-    },
-    {
-        id: "workshop",
-        title: "Taller / Workshop",
-        description:
-            "Sesión educativa interactiva con material didáctico y coffee break.",
-        icon: "🛠️",
-        color: "bg-teal-50 border-teal-200",
-        iconColor: "bg-teal-100 text-teal-600",
-        preset: {
-            type: "Taller / Workshop",
-            catering: "Sí - Coffee break + Almuerzo ligero",
-            duration: 5,
-            streaming: "Sí",
-            speakers: 1,
-            promotional: "Sí (Roll-ups, brochures, gifts)",
-            notes:
-                "Sesión educativa interactiva con material didáctico, coffee break y networking.",
-        },
-    },
-    {
-        id: "christmas",
-        title: "Fiesta Navideña",
-        description:
-            "Cena de fin de año con intercambio de regalos, música y decoración.",
-        icon: "🎄",
-        color: "bg-green-50 border-green-200",
-        iconColor: "bg-green-100 text-green-600",
-        preset: {
-            type: "Fiesta Navideña",
-            catering: "Sí - Cena completa + Barra de postres",
-            duration: 5,
-            streaming: "No",
-            speakers: 1,
-            promotional: "Sí (Roll-ups, brochures, gifts)",
-            notes:
-                "Cena navideña con intercambio de regalos, música en vivo y decoración temática.",
-        },
-    },
-    {
-        id: "farewell",
-        title: "Despedida de Soltero/a",
-        description:
-            "Fiesta divertida con juegos, sorpresas y celebración con amigos.",
-        icon: "🎉",
-        color: "bg-violet-50 border-violet-200",
-        iconColor: "bg-violet-100 text-violet-600",
-        preset: {
-            type: "Despedida de Soltero/a",
-            catering: "Sí - Botanas + Bebidas",
-            duration: 5,
-            streaming: "No",
-            speakers: 0,
-            promotional: "No",
-            notes:
-                "Fiesta de despedida con juegos, sorpresas, botanas y celebración con amigos.",
-        },
-    },
-    {
-        id: "fundraiser",
-        title: "Evento Benéfico",
-        description: "Gala solidaria con subasta, cena y presentación de causa.",
-        icon: "💝",
-        color: "bg-amber-50 border-amber-200",
-        iconColor: "bg-amber-100 text-amber-600",
-        preset: {
-            type: "Evento Benéfico",
-            catering: "Sí - Cena de gala + Barra libre",
-            duration: 5,
-            streaming: "Sí",
-            speakers: 3,
-            promotional: "Sí (Roll-ups, brochures, gifts)",
-            notes:
-                "Gala benéfica con subasta silenciosa, presentación de causa y cena de gala.",
-        },
-    },
-    {
-        id: "reunion",
-        title: "Reunión Familiar",
-        description:
-            "Encuentro íntimo con actividades grupales, comida y recuerdos.",
-        icon: "👨‍👩‍👧‍👦",
-        color: "bg-orange-50 border-orange-200",
-        iconColor: "bg-orange-100 text-orange-600",
-        preset: {
-            type: "Reunión Familiar",
-            catering: "Sí - Parrillada + Bebidas",
-            duration: 6,
-            streaming: "No",
-            speakers: 0,
-            promotional: "No",
-            notes:
-                "Reunión familiar con actividades grupales, parrillada y compartir recuerdos.",
-        },
-    },
-];
+// Cache for fetched templates
+let fetchedTemplates = [];
 
-// Se registra una sola vez: guarda el preset elegido y navega al
-// formulario (que lo pre-rellena). Reemplaza los CustomEvent que usaba
-// la versión original (templateSelected / showCustomEventForm).
 window.handleGridTemplateSelect = function (templateId) {
-  
-    const template = TEMPLATES.find((t) => t.id === templateId);
+    const list = window.__fetchedTemplates || fetchedTemplates || [];
+    const template = list.find((t) => t.id === templateId);
 
     if (template) {
         localStorage.setItem(
             "selectedEventTemplate",
-            JSON.stringify(template),
+            JSON.stringify(template.preset)
         );
     }
     window.history.pushState({}, "", "/events/new/custom");
@@ -305,12 +22,126 @@ window.handleGridBack = function () {
     window.dispatchEvent(new PopStateEvent("popstate"));
 };
 
+function renderSkeleton() {
+    return Array(3).fill(0).map(() => `
+        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-6 animate-pulse">
+            <div class="w-14 h-14 bg-gray-200 rounded-xl mb-4"></div>
+            <div class="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
+            <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+            <div class="h-4 bg-gray-200 rounded w-5/6 mb-4"></div>
+            <div class="flex gap-2">
+                <div class="h-6 bg-gray-200 rounded-full w-16"></div>
+                <div class="h-6 bg-gray-200 rounded-full w-20"></div>
+            </div>
+        </div>
+    `).join("");
+}
+
+async function loadTemplates() {
+    const grid = document.getElementById("templates-grid");
+    if (!grid) return;
+
+    try {
+        const dbTemplates = await getTemplates();
+
+        // Style mapping by template name
+        const configMap = {
+            "Plantilla Boda": { icon: "💍", color: "bg-rose-50 border-rose-200", iconColor: "bg-rose-100 text-rose-600" },
+            "Plantilla Cumpleaños": { icon: "🎂", color: "bg-pink-50 border-pink-200", iconColor: "bg-pink-100 text-pink-600" },
+            "Plantilla Tech": { icon: "💻", color: "bg-blue-50 border-blue-200", iconColor: "bg-blue-100 text-blue-600" }
+        };
+
+        const defaultConfigs = [
+            { icon: "✨", color: "bg-amber-50 border-amber-200", iconColor: "bg-amber-100 text-amber-600" },
+            { icon: "🎉", color: "bg-violet-50 border-violet-200", iconColor: "bg-violet-100 text-violet-600" },
+            { icon: "🏢", color: "bg-slate-50 border-slate-200", iconColor: "bg-slate-100 text-slate-600" },
+            { icon: "🎓", color: "bg-purple-50 border-purple-200", iconColor: "bg-purple-100 text-purple-600" }
+        ];
+
+        // Filter out "Plantilla Personalizado" to only show real predefined templates
+        const templatesToShow = dbTemplates.filter(t => t.name !== "Plantilla Personalizado");
+
+        fetchedTemplates = templatesToShow.map((t, idx) => {
+            const config = configMap[t.name] || defaultConfigs[idx % defaultConfigs.length];
+            
+            // Deduce some characteristics
+            let duration = 4;
+            let catering = "No";
+            if (t.name.includes("Boda")) {
+                duration = 8;
+                catering = "Banquete completo";
+            } else if (t.name.includes("Cumpleaños")) {
+                duration = 4;
+                catering = "Postres y bebidas";
+            } else if (t.name.includes("Tech")) {
+                duration = 6;
+                catering = "Coffee break";
+            }
+
+            return {
+                id: t.id,
+                title: t.name,
+                description: t.description || "Estructura de evento predefinida.",
+                icon: config.icon,
+                color: config.color,
+                iconColor: config.iconColor,
+                preset: {
+                    id: t.id,
+                    type: t.name.replace("Plantilla ", ""),
+                    city: "",
+                    guestCount: 50,
+                    maxBudget: 2000000,
+                    notes: t.description || ""
+                },
+                duration: duration,
+                catering: catering
+            };
+        });
+
+        window.__fetchedTemplates = fetchedTemplates;
+
+        if (fetchedTemplates.length === 0) {
+            grid.innerHTML = `<p class="col-span-full text-center text-[#9E8E6E]">No hay plantillas disponibles en la base de datos.</p>`;
+            return;
+        }
+
+        grid.innerHTML = fetchedTemplates.map(
+            (t) => `
+              <div onclick="window.handleGridTemplateSelect('${t.id}')"
+                class="group relative bg-white rounded-2xl border border-[#E9E1D7] p-6 hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="w-14 h-14 ${t.iconColor} rounded-xl flex items-center justify-center text-2xl">
+                    ${t.icon}
+                  </div>
+                  <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-[#755B00] text-sm font-semibold">Usar plantilla →</span>
+                  </div>
+                </div>
+                <h3 class="font-display text-xl text-[#1E1B15] mb-2">${t.title}</h3>
+                <p class="text-[#4D4637] text-sm leading-relaxed mb-4">${t.description}</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="px-3 py-1 ${t.color} rounded-full text-xs font-medium text-[#4D4637] border">${t.duration} hrs</span>
+                  <span class="px-3 py-1 ${t.color} rounded-full text-xs font-medium text-[#4D4637] border">${t.catering}</span>
+                </div>
+              </div>
+            `
+        ).join("");
+
+    } catch (error) {
+        console.error("Error loading templates:", error);
+        grid.innerHTML = `<p class="col-span-full text-red-600 text-center py-6">Error al cargar las plantillas de la base de datos: ${error.message}</p>`;
+    }
+}
+
 export function EventTemplatesGrid() {
+    // Schedule asynchronous loading of templates
+    setTimeout(loadTemplates, 0);
+
     return `
-    <div class="w-full max-w-6xl mx-auto">
+    <div class="w-full max-w-6xl mx-auto animate-fade-in">
 
       <button onclick="window.handleGridBack()"
-        class="flex items-center gap-2 text-[#755B00] hover:text-[#4D3D00] transition-colors mb-6 font-semibold text-lg">
+        class="flex items-center gap-2 text-[#755B00] hover:text-[#4D3D00] transition-colors mb-6 font-semibold text-lg cursor-pointer">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Volver
       </button>
@@ -318,35 +149,15 @@ export function EventTemplatesGrid() {
       <h1 class="font-display text-4xl md:text-5xl text-[#1E1B15] mb-3">Elige una Plantilla</h1>
       <p class="text-[#4D4637] text-lg mb-10">Selecciona una estructura predefinida para comenzar tu planificación más rápido.</p>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        ${TEMPLATES.map(
-        (t) => `
-          <div onclick="window.handleGridTemplateSelect('${t.id}')"
-            class="group relative bg-white rounded-2xl border border-[#E9E1D7] p-6 hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1">
-            <div class="flex items-start justify-between mb-4">
-              <div class="w-14 h-14 ${t.iconColor} rounded-xl flex items-center justify-center text-2xl">
-                ${t.icon}
-              </div>
-              <div class="opacity-0 group-hover:opacity-100 transition-opacity">
-                <span class="text-[#755B00] text-sm font-semibold">Usar plantilla →</span>
-              </div>
-            </div>
-            <h3 class="font-display text-xl text-[#1E1B15] mb-2">${t.title}</h3>
-            <p class="text-[#4D4637] text-sm leading-relaxed mb-4">${t.description}</p>
-            <div class="flex flex-wrap gap-2">
-              <span class="px-3 py-1 ${t.color} rounded-full text-xs font-medium text-[#4D4637] border">${t.preset.duration} hrs</span>
-              <span class="px-3 py-1 ${t.color} rounded-full text-xs font-medium text-[#4D4637] border">${t.preset.catering.split(" - ")[1] || t.preset.catering}</span>
-            </div>
-          </div>
-        `,
-    ).join("")}
+      <div id="templates-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        ${renderSkeleton()}
       </div>
 
       <div class="mt-12 p-8 bg-[#FEF3C7] rounded-2xl border border-[#FDE68A] text-center">
         <h3 class="font-display text-xl text-[#1E1B15] mb-2">¿Ninguna se adapta a ti?</h3>
         <p class="text-[#4D4637] mb-4">Crea un evento completamente personalizado desde cero.</p>
         <button onclick="window.handleTemplateSelect('custom')"
-          class="inline-flex items-center gap-2 px-6 py-3 bg-[#755B00] text-white rounded-xl font-semibold hover:bg-[#5A4700] transition-colors">
+          class="inline-flex items-center gap-2 px-6 py-3 bg-[#755B00] text-white rounded-xl font-semibold hover:bg-[#5A4700] transition-colors cursor-pointer">
           Crear desde cero
           <span class="text-xl">→</span>
         </button>

@@ -22,6 +22,8 @@ def get_templates(request: Request, db: Session = Depends(get_db)):
         templates_list = []
         for row in result:
             row_dict = dict(row._mapping)
+            row_dict["id"] = str(row_dict["id"])
+            row_dict["event_type_id"] = str(row_dict["event_type_id"])
             # Map default_items (jsonb) column to template_items in the schema response
             row_dict["template_items"] = row_dict.pop("default_items", [])
             templates_list.append(row_dict)
