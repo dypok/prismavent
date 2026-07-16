@@ -7,7 +7,7 @@ export function showToast(message, type = "success") {
     fixed top-6 right-6 z-50
     px-5 py-3 rounded-xl shadow-lg
     text-white font-medium
-    transition-all duration-300
+    animate-fade-in
     ${type === "success"
       ? "bg-green-600"
       : "bg-red-600"}
@@ -15,7 +15,9 @@ export function showToast(message, type = "success") {
 
   document.body.appendChild(toast);
 
+  // Fade out animation before removing
   setTimeout(() => {
-    toast.remove();
-  }, 3000);
+    toast.style.animation = "fadeIn 0.3s ease-out reverse forwards";
+    setTimeout(() => toast.remove(), 300);
+  }, 2700);
 }

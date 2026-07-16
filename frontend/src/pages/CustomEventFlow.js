@@ -4,7 +4,7 @@ import { CustomEventForm } from "../components/CustomEventForm.js";
 
 export function CustomEventFlow() {
   return `
-    <div class="flex h-screen">
+    <div class="flex h-screen animate-fade-in">
       ${Sidebar()}
       <div class="flex-1 flex flex-col">
         ${Topbar()}

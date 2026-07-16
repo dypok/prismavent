@@ -4,7 +4,7 @@ import { EventTemplatesGrid } from "../components/EventTemplatesGrid.js";
 
 export function TemplateEventFlow() {
   return `
-    <div class="flex h-screen">
+    <div class="flex h-screen animate-fade-in">
       ${Sidebar()}
       <div class="flex-1 flex flex-col">
         ${Topbar()}
