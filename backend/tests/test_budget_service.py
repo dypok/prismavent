@@ -104,7 +104,7 @@ class TestBudgetService(unittest.TestCase):
     def test_check_budget_alert_invalid_budget(self):
         """Should return False if max_budget is invalid (e.g. string that cannot be parsed as Decimal)."""
         self.assertFalse(check_budget_alert(Decimal("150.0"), "invalid-budget-value"))
-        self.assertFalse(check_budget_alert(Decimal("150.0"), []))
+        self.assertFalse(check_budget_alert(Decimal("150.0"), []))  # type: ignore
 
 
 if __name__ == "__main__":

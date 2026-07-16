@@ -1,9 +1,15 @@
 from decimal import Decimal, InvalidOperation
-from typing import List, Any
+from typing import List, Union, Optional, Protocol, Dict
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-def calculate_total_estimated(event_items: List[Any]) -> Decimal:
+class EventItemProtocol(Protocol):
+    quantity: Optional[int]
+    unit_price: Optional[Union[Decimal, float, int, str]]
+
+DictEventItem = Dict[str, Union[int, float, Decimal, str, None]]
+
+def calculate_total_estimated(event_items: List[Union[DictEventItem, EventItemProtocol]]) -> Decimal:
     """
     Calculates the total estimated cost of all items in an event.
     total = SUM(quantity * unit_price)
@@ -32,7 +38,7 @@ def calculate_total_estimated(event_items: List[Any]) -> Decimal:
             pass  # Skip items with invalid numeric representations
     return total
 
-def check_budget_alert(total_estimated: Decimal, max_budget: Any) -> bool:
+def check_budget_alert(total_estimated: Decimal, max_budget: Optional[Union[Decimal, float, int, str]]) -> bool:
     """
     Returns True if total_estimated exceeds max_budget.
     If max_budget is None or invalid, returns False.
@@ -59,7 +65,7 @@ def calculate_total(event_id: str, db: Session) -> Decimal:
         return Decimal("0.0")
     return Decimal(str(result[0]))
 
-def get_amount_over_budget(total_estimated: Decimal, max_budget: Any) -> Decimal:
+def get_amount_over_budget(total_estimated: Decimal, max_budget: Optional[Union[Decimal, float, int, str]]) -> Decimal:
     """
     Returns the amount by which total_estimated exceeds max_budget.
     If total_estimated <= max_budget or max_budget is None/invalid, returns Decimal("0.0").
