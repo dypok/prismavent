@@ -289,5 +289,29 @@ class TestIntegrationEvents(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("No se puede modificar un evento finalizado", response.json()["detail"])
 
+    def test_get_events_filter_by_status(self):
+        """GET /events?status=finalizado: Should return only finalized events."""
+        response = self.client.get("/events?status=finalizado", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertGreaterEqual(len(data), 1)
+        for event in data:
+            self.assertEqual(event["status"], "finalizado")
+
+    def test_get_events_filter_borrador(self):
+        """GET /events?status=borrador: Should return only draft events."""
+        response = self.client.get("/events?status=borrador", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertGreaterEqual(len(data), 1)
+        for event in data:
+            self.assertEqual(event["status"], "borrador")
+
+    def test_get_events_filter_invalid_status(self):
+        """GET /events?status=invalido: Should return 400."""
+        response = self.client.get("/events?status=invalido", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("status inválido", response.json()["detail"])
+
 if __name__ == "__main__":
     unittest.main()

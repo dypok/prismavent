@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
-from app.schemas.event import EventCreate, EventResponse, EventDetailOut, EventUpdate, EventStatusUpdate
+from app.schemas.event import EventCreate, EventResponse, EventDetailOut, EventUpdate, EventStatusUpdate, VALID_EVENT_STATUSES
 from app.dependencies import get_current_user
 from app.services import budget_service
 from app.services.event_service import (
@@ -13,7 +13,7 @@ from app.services.event_service import (
     validate_event_is_draft,
     get_event_detail
 )
-from typing import List
+from typing import List, Optional
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -252,12 +252,20 @@ def update_event_status(
             raise e
         raise HTTPException(status_code=400, detail=f"Error updating event status: {str(e)}")
 
-@router.get("", response_model=List[EventResponse])  # ← Agrega esto
-def get_events(current_user = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Obtener todos los eventos del usuario actual"""
+@router.get("", response_model=List[EventResponse])
+def get_events(
+    status: Optional[str] = None,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtener todos los eventos del usuario actual, opcionalmente filtrados por status"""
+    if status is not None and status not in VALID_EVENT_STATUSES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"status inválido: '{status}'. Debe ser uno de: {', '.join(sorted(VALID_EVENT_STATUSES))}"
+        )
     try:
-        events = db.execute(
-            text("""
+        query = """
                 SELECT e.id, e.user_id, e.name, e.description, e.event_date,
                     e.guest_count, e.max_budget, e.template_id, e.user_template_id,
                     e.city_id, e.city_custom, e.event_type_id, e.location,
@@ -277,10 +285,16 @@ def get_events(current_user = Depends(get_current_user), db: Session = Depends(g
                     GROUP BY event_id
                 ) b ON b.event_id = e.id
                 WHERE e.user_id = :user_id
-                ORDER BY e.created_at DESC
-            """),
-            {"user_id": current_user.id}
-        ).fetchall()
+            """
+        params = {"user_id": current_user.id}
+
+        if status is not None:
+            query += " AND e.status = :status"
+            params["status"] = status
+
+        query += " ORDER BY e.created_at DESC"
+
+        events = db.execute(text(query), params).fetchall()
 
         return [dict(event._mapping) for event in events]
         
