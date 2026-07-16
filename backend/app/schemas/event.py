@@ -6,6 +6,15 @@ from uuid import UUID
 from app.schemas.event_item import EventItemOut
 from app.schemas.guest import GuestResponse
 
+class EventHistoryOut(BaseModel):
+    id: UUID
+    event_id: UUID
+    previous_status: Optional[str] = None
+    new_status: str
+    changed_by: Optional[UUID] = None
+    comment: Optional[str] = None
+    changed_at: datetime
+
 class EventCreate(BaseModel):
     name: str
     description: Optional[str] = None

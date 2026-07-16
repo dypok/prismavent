@@ -359,5 +359,52 @@ class TestIntegrationEvents(unittest.TestCase):
         self.assertIn("total_gastado", data)
         self.assertEqual(float(data["total_gastado"]), 60.0)
 
+    def test_get_event_history_empty(self):
+        """GET /events/{id}/history: Returns empty list when no history records."""
+        response = self.client.get(f"/events/{self.event_id_finalized}/history", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.json(), list)
+
+    def test_get_event_history_with_records(self):
+        """GET /events/{id}/history: Returns history records for an event."""
+        history_id = str(uuid4())
+        db = SessionLocal()
+        try:
+            db.execute(text("""
+                INSERT INTO event_history (id, event_id, previous_status, new_status, changed_by, changed_at)
+                VALUES (:id, :event_id, 'borrador', 'confirmado', :changed_by, NOW())
+            """), {"id": history_id, "event_id": self.event_id_finalized, "changed_by": USER_A_ID})
+            db.commit()
+        finally:
+            db.close()
+
+        try:
+            response = self.client.get(f"/events/{self.event_id_finalized}/history", headers={"Authorization": "Bearer test-token"})
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            self.assertGreaterEqual(len(data), 1)
+            record = next((r for r in data if r["id"] == history_id), None)
+            self.assertIsNotNone(record)
+            self.assertEqual(record["previous_status"], "borrador")
+            self.assertEqual(record["new_status"], "confirmado")
+        finally:
+            db = SessionLocal()
+            try:
+                db.execute(text("DELETE FROM event_history WHERE id = :id"), {"id": history_id})
+                db.commit()
+            finally:
+                db.close()
+
+    def test_get_event_history_not_found(self):
+        """GET /events/{id}/history: Returns 404 if event does not exist."""
+        response = self.client.get("/events/00000000-0000-0000-0000-000000000000/history", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_event_history_unauthorized(self):
+        """GET /events/{id}/history: Returns 403 if user does not own the event."""
+        self.current_test_user = MockUser(USER_B_ID)
+        response = self.client.get(f"/events/{self.event_id_1}/history", headers={"Authorization": "Bearer test-token"})
+        self.assertEqual(response.status_code, 403)
+
 if __name__ == "__main__":
     unittest.main()

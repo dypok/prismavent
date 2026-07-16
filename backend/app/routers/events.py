@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db
-from app.schemas.event import EventCreate, EventResponse, EventDetailOut, EventUpdate, EventStatusUpdate, VALID_EVENT_STATUSES
+from app.schemas.event import EventCreate, EventResponse, EventDetailOut, EventUpdate, EventStatusUpdate, EventHistoryOut, VALID_EVENT_STATUSES
 from app.dependencies import get_current_user
 from app.services import budget_service
 from app.services.event_service import (
@@ -309,6 +309,37 @@ def get_events(
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")
+
+@router.get("/{event_id}/history", response_model=List[EventHistoryOut])
+def get_event_history(
+    event_id: str,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtener historial de cambios de status de un evento"""
+    try:
+        event = db.execute(
+            text("SELECT user_id FROM events WHERE id = :id"),
+            {"id": event_id}
+        ).fetchone()
+
+        if not event:
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
+
+        if str(event[0]) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="No tienes acceso a este evento")
+
+        rows = db.execute(
+            text("SELECT * FROM event_history WHERE event_id = :event_id ORDER BY changed_at DESC"),
+            {"event_id": event_id}
+        ).fetchall()
+
+        return [dict(row._mapping) for row in rows]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error retrieving event history: {str(e)}")
 
 @router.delete("/{event_id}")
 def delete_event(
