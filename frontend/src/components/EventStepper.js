@@ -2,9 +2,10 @@ export function EventStepper(currentStep = 1) {
 
 
   const steps = [
-    "Draft",
-    "confirmed",
-    "finished"
+    "Borrador",
+    "Confirmado",
+    "En Progreso",
+    "Realizado"
   ];
 
 

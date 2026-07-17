@@ -174,25 +174,23 @@ export default class MyEvents {
                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
                 });
 
-                const isFinalized = event.status === 'finalizado';
+                const isFinalized = event.status === 'finalizado' || event.status === 'done';
 
-                const statusClass = event.status === 'borrador'
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : isFinalized
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-emerald-100 text-emerald-700';
+                const statusConfig = {
+                    borrador: { cls: 'bg-yellow-100 text-yellow-700', text: 'Borrador', gradient: 'from-[#FEF3C7] to-[#FDE68A]' },
+                    confirmado: { cls: 'bg-emerald-100 text-emerald-700', text: 'Confirmado', gradient: 'from-[#D1FAE5] to-[#A7F3D0]' },
+                    in_progress: { cls: 'bg-blue-100 text-blue-700', text: 'En Progreso', gradient: 'from-[#DBEAFE] to-[#BFDBFE]' },
+                    done: { cls: 'bg-gray-200 text-gray-600', text: 'Realizado', gradient: 'from-[#E5E7EB] to-[#D1D5DB]' },
+                    finalizado: { cls: 'bg-gray-200 text-gray-600', text: 'Finalizado', gradient: 'from-[#E5E7EB] to-[#D1D5DB]' },
+                };
 
-                const statusText = event.status === 'borrador'
-                    ? 'Borrador'
-                    : isFinalized
-                        ? 'Finalizado'
-                        : 'Activo';
+                const cfg = statusConfig[event.status] || statusConfig.borrador;
 
                 html += `
                 <div onclick="viewEvent('${event.id}')" class="bg-white rounded-3xl overflow-hidden border border-[#E9E1D7] hover:shadow-xl transition-all flex flex-col cursor-pointer group hover:-translate-y-1">
-                    <div class="h-20 bg-gradient-to-br from-[#FEF3C7] to-[#FDE68A] flex items-center justify-center text-4xl relative">
+                    <div class="h-20 bg-gradient-to-br ${cfg.gradient} flex items-center justify-center text-4xl relative">
                         
-                        <span class="absolute top-3 right-3 px-3 py-0.5 text-[10px] font-medium rounded-full ${statusClass}">${statusText}</span>
+                        <span class="absolute top-3 right-3 px-3 py-0.5 text-[10px] font-medium rounded-full ${cfg.cls}">${cfg.text}</span>
                     </div>
                     <div class="p-4 flex flex-col flex-1">
                         <h3 class="font-semibold text-base text-[#1E1B15] ${event.description ? 'mb-0.5' : 'mb-3'} line-clamp-1 group-hover:text-[#755B00] transition-colors">${event.name}</h3>

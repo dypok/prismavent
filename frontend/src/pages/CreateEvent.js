@@ -5,12 +5,10 @@ import { Topbar } from "../components/Topbar.js";
 // opción elegida en la pantalla de selección inicial.
 window.handleTemplateSelect = function (option) {
     if (option === "custom") {
-        // Limpiamos cualquier plantilla previamente guardada para asegurar
-        // que este evento sea 100% en blanco.
         localStorage.removeItem("selectedEventTemplate");
-        window.history.pushState({}, "", "/events/new/custom");
+        window.history.replaceState({}, "", "/events/new/custom");
     } else {
-        window.history.pushState({}, "", "/events/new/template");
+        window.history.replaceState({}, "", "/events/new/template");
     }
     window.dispatchEvent(new PopStateEvent("popstate"));
 };

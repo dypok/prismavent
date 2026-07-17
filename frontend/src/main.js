@@ -145,7 +145,6 @@ async function renderPage() {
 
             const nextStatusMap = {
               borrador: "confirmado",
-              confirmado: "finalizado",
             };
 
             const updated = await updateEventStatus(

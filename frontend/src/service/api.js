@@ -148,7 +148,7 @@ export async function getTemplates() {
 
 // Categorías de proveedores
 export async function getCategories() {
-  return await apiFetch('/categories');
+  return await apiFetch('/provider-categories');
 }
 
 // Proveedores (con filtros opcionales)

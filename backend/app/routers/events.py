@@ -11,7 +11,8 @@ from app.services.event_service import (
     validate_status_transition,
     validate_guest_count_editable,
     validate_event_is_draft,
-    get_event_detail
+    get_event_detail,
+    auto_transition_event_status
 )
 from typing import List, Optional
 
@@ -132,7 +133,9 @@ def get_event(event_id: str, db: Session = Depends(get_db), current_user = Depen
         event = event_res._mapping
         if str(event["user_id"]) != str(current_user.id):
             raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este evento")
-            
+
+        event = auto_transition_event_status(dict(event), db)
+
         return map_event_to_detail(event, db)
     except Exception as e:
         if isinstance(e, HTTPException):
@@ -305,7 +308,13 @@ def get_events(
 
         events = db.execute(text(query), params).fetchall()
 
-        return [dict(event._mapping) for event in events]
+        result = []
+        for row in events:
+            event = dict(row._mapping)
+            event = auto_transition_event_status(event, db)
+            result.append(event)
+
+        return result
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error retrieving events: {str(e)}")

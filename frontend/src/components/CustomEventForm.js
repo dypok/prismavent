@@ -163,7 +163,7 @@ document.addEventListener("submit", async (e) => {
         });
 
         localStorage.removeItem("selectedEventTemplate");
-        window.history.pushState({}, "", `/events/detail?id=${createdEvent.id}`);
+        window.history.replaceState({}, "", `/events/detail?id=${createdEvent.id}`);
         window.dispatchEvent(new PopStateEvent("popstate"));
     } catch (err) {
         if (errorEl) {

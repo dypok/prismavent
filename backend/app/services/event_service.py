@@ -1,6 +1,42 @@
-from datetime import date
+from datetime import date, datetime
 from fastapi import HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.schemas.event import STATUS_SEQUENCE
+from app.services import budget_service
+
+def auto_transition_event_status(event: dict, db: Session) -> dict:
+    """
+    Auto-advance event status based on dates:
+    - confirmado → in_progress when event_date <= today
+    - in_progress → done when event_date < today
+    Returns the event dict with updated status (or unchanged).
+    """
+    current = event.get("status")
+    event_date = event.get("event_date")
+    today = date.today()
+
+    if not event_date or not current:
+        return event
+
+    if isinstance(event_date, str):
+        event_date = datetime.strptime(event_date[:10], "%Y-%m-%d").date()
+
+    new_status = None
+    if current == "confirmado" and event_date <= today:
+        new_status = "in_progress"
+    elif current == "in_progress" and event_date < today:
+        new_status = "done"
+
+    if new_status and new_status != current:
+        db.execute(
+            text("UPDATE events SET status = :status, updated_at = NOW() WHERE id = :id"),
+            {"id": event["id"], "status": new_status}
+        )
+        db.commit()
+        event["status"] = new_status
+
+    return event
 
 def validate_status_transition(current_status: str, new_status: str) -> None:
     """
@@ -30,9 +66,9 @@ def validate_status_transition(current_status: str, new_status: str) -> None:
 
 def validate_event_not_finalized(current_status: str) -> None:
     """
-    Raises a 400 Bad Request error if the event's status is 'finalizado'.
+    Raises a 400 Bad Request error if the event's status is 'finalizado' or 'done'.
     """
-    if current_status == "finalizado":
+    if current_status in ("finalizado", "done"):
         raise HTTPException(status_code=400, detail="No se puede modificar un evento finalizado")
 
 def validate_event_date_not_past(new_date: date | None) -> None:
@@ -62,10 +98,6 @@ def validate_event_is_draft(status: str) -> None:
             status_code=400,
             detail="Solo se pueden eliminar eventos en estado borrador"
         )
-
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-from app.services import budget_service
 
 def get_event_detail(event_id: str, db: Session) -> dict:
     """

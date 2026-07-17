@@ -100,11 +100,11 @@ class EventUpdate(BaseModel):
     location: Optional[str] = None
     visibility_status: Optional[str] = None
 
-# Estados válidos del ciclo de vida de un evento (ver event_service.py,
-# formatters.js y FRONTEND_INTEGRATION_GUIDE.md, que ya asumen estos 3)
-VALID_EVENT_STATUSES = {"borrador", "confirmado", "finalizado"}
+# Estados válidos del ciclo de vida de un evento
+# borrador → confirmado (manual) → in_progress (auto, día del evento) → done (auto, día siguiente)
+VALID_EVENT_STATUSES = {"borrador", "confirmado", "in_progress", "done", "finalizado"}
 
-STATUS_SEQUENCE = ["borrador", "confirmado", "finalizado"]
+STATUS_SEQUENCE = ["borrador", "confirmado", "in_progress", "done"]
 
 class EventStatusUpdate(BaseModel):
     status: str

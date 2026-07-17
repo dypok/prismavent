@@ -113,11 +113,10 @@ export async function EventDetail(eventId) {
   const confirmedResources =
     event?.event_items?.filter(item => item.confirmed).length || 0;
 
-  const isFinalized = event?.status === 'finalizado';
+  const isFinalized = event?.status === 'finalizado' || event?.status === 'done';
 
   const nextStatusLabel = {
     borrador: "Confirm Event",
-    confirmado: "Finish Event",
   };
 
   window.__currentEventData = event;
@@ -127,12 +126,17 @@ export async function EventDetail(eventId) {
   const stepMap = {
     borrador: 1,
     confirmado: 2,
-    finalizado: 3,
+    in_progress: 3,
+    done: 4,
+    finalizado: 4,
   };
 
-  const nextStatus = {
-    borrador: "planificando",
-    confirmado: "finalizado",
+  const statusLabels = {
+    borrador: "Borrador",
+    confirmado: "Confirmado",
+    in_progress: "En Progreso",
+    done: "Realizado",
+    finalizado: "Finalizado",
   };
   window.__eventData = { event, original, eventId };
   setTimeout(() => {
@@ -154,7 +158,7 @@ export async function EventDetail(eventId) {
             <div>
               <div class="flex items-center gap-3">
                 <h1 class="text-2xl font-bold text-[#1E1B15]" id="detail-title">${event?.name}</h1>
-                <span class="px-3 py-1 text-[10px] font-semibold bg-[#FEF3C7] text-[#755B00] rounded-full uppercase tracking-wider">${event?.status || "Borrador"}</span>
+                <span class="px-3 py-1 text-[10px] font-semibold bg-[#FEF3C7] text-[#755B00] rounded-full uppercase tracking-wider">${statusLabels[event?.status] || "Borrador"}</span>
               </div>
               <p class="text-[#9E8E6E] text-xs mt-0.5" id="detail-date-display">${event?.event_date}</p>
             </div>
@@ -403,7 +407,8 @@ export async function EventDetail(eventId) {
                         class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm">
                         <option value="borrador" ${event?.status === "borrador" || !event?.status ? "selected" : ""}>Borrador</option>
                         <option value="confirmado" ${event?.status === "confirmado" ? "selected" : ""}>Confirmado</option>
-                        <option value="finalizado" ${event?.status === "finalizado" ? "selected" : ""}>Finalizado</option>
+                        <option value="in_progress" ${event?.status === "in_progress" ? "selected" : ""}>En Progreso</option>
+                        <option value="done" ${event?.status === "done" ? "selected" : ""}>Realizado</option>
                       </select>
                     </div>
                     <div>
