@@ -456,26 +456,26 @@ export async function EventDetail(eventId) {
                     </div>
                     <p id="edit-error" class="hidden text-sm text-red-600 text-center bg-red-50 rounded-xl py-2"></p>
                   </form>
+
+                  ${event?.status === "borrador" ? `
+                  <div class="mt-6 pt-6 border-t border-[#F5EDE0]">
+                    <div class="rounded-xl border border-red-200 bg-red-50/40 p-4">
+                      <div class="flex items-center gap-2 mb-2">
+                        ${icon('alert-triangle', 18, 'text-red-600')}
+                        <h3 class="text-sm font-semibold text-red-700">Delete Event</h3>
+                      </div>
+                      <p class="text-xs text-gray-600 mb-3">This action permanently deletes this event and cannot be undone.</p>
+                      <button id="open-delete-modal" class="w-full py-2.5 rounded-xl border border-red-300 bg-white text-red-600 font-medium hover:bg-red-100 hover:border-red-500 transition flex items-center justify-center gap-2 text-sm">
+                        ${icon('trash', 16)}
+                        Delete Event
+                      </button>
+                    </div>
+                  </div>
+                  ` : ''}
                 </div>
               </aside>
 
             </section>
-
-            ${event?.status === "borrador" ? `
-              <div class="w-full lg:w-2/5">
-                <div class="rounded-2xl border border-red-200 bg-red-50/40 p-5">
-                  <div class="flex items-center gap-2 mb-2">
-                    ${icon('alert-triangle', 18, 'text-red-600')}
-                    <h3 class="text-sm font-semibold text-red-700">Delete Event</h3>
-                  </div>
-                  <p class="text-sm text-gray-600 mb-4">This action permanently deletes this event and cannot be undone.</p>
-                  <button id="open-delete-modal" class="w-full py-3 rounded-xl border border-red-300 bg-white text-red-600 font-medium hover:bg-red-100 hover:border-red-500 transition flex items-center justify-center gap-2">
-                    ${icon('trash', 18)}
-                    Delete Event
-                  </button>
-                </div>
-              </div>
-              ` : ''}
 
           </div>
         </div>
