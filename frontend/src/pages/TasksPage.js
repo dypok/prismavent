@@ -43,28 +43,28 @@ export async function TasksPage(eventId) {
         `)}
 
         <div class="flex-1 overflow-auto custom-scrollbar">
-          <div class="p-8 max-w-7xl mx-auto h-full flex flex-col">
+          <div class="p-4 lg:p-8 max-w-7xl mx-auto h-full flex flex-col">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 items-start min-h-[500px]">
               
-              <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 flex flex-col h-full min-h-[480px] shadow-sm" data-status="todo" id="col-todo">
+              <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-5 flex flex-col h-full min-h-[300px] lg:min-h-[480px] shadow-sm" data-status="todo" id="col-todo">
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-[#F5EDE0]">
                   <h3 class="font-semibold text-[#1E1B15] text-sm uppercase tracking-wider" id="header-todo">Por Hacer</h3>
                 </div>
-                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[380px]" id="tasks-todo"></div>
+                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[200px] lg:min-h-[380px]" id="tasks-todo"></div>
               </div>
 
-              <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 flex flex-col h-full min-h-[480px] shadow-sm" data-status="in_progress" id="col-in-progress">
+              <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-5 flex flex-col h-full min-h-[300px] lg:min-h-[480px] shadow-sm" data-status="in_progress" id="col-in-progress">
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-[#F5EDE0]">
                   <h3 class="font-semibold text-[#1E1B15] text-sm uppercase tracking-wider" id="header-in-progress">En Progreso</h3>
                 </div>
-                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[380px]" id="tasks-in_progress"></div>
+                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[200px] lg:min-h-[380px]" id="tasks-in_progress"></div>
               </div>
 
-              <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 flex flex-col h-full min-h-[480px] shadow-sm" data-status="done" id="col-done">
+              <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-5 flex flex-col h-full min-h-[300px] lg:min-h-[480px] shadow-sm" data-status="done" id="col-done">
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-[#F5EDE0]">
                   <h3 class="font-semibold text-[#1E1B15] text-sm uppercase tracking-wider" id="header-done">Realizado</h3>
                 </div>
-                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[380px]" id="tasks-done"></div>
+                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[200px] lg:min-h-[380px]" id="tasks-done"></div>
               </div>
 
             </div>
@@ -73,7 +73,7 @@ export async function TasksPage(eventId) {
       </main>
 
       <div id="task-modal" class="fixed inset-0 bg-[#1E1B15]/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl border border-[#E9E1D7] shadow-xl w-full max-w-lg transform scale-95 transition-all duration-300 animate-scale-in">
+        <div class="bg-white rounded-2xl border border-[#E9E1D7] shadow-xl w-full max-w-lg mx-4 transform scale-95 transition-all duration-300 animate-scale-in">
           <div class="p-6 border-b border-[#F5EDE0] flex justify-between items-center bg-[#FFF8F1]">
             <h3 class="text-lg font-bold text-[#1E1B15]" id="task-modal-title">Nueva Tarea</h3>
             <button id="close-task-modal" class="text-[#9E8E6E] hover:text-[#1E1B15] transition-colors">
@@ -158,8 +158,8 @@ function buildTaskCardHTML(task) {
       data-id="${task.id}"
       data-status="${task.status}"
     >
-      <h4 class="font-semibold text-[#1E1B15] text-sm break-words">${escapeHtml(task.title)}</h4>
-      ${task.description ? `<p class="text-xs text-[#6B6560] mt-1.5 break-words line-clamp-3 leading-relaxed">${escapeHtml(task.description)}</p>` : ''}
+              <h4 class="font-semibold text-[#1E1B15] text-sm break-words">${escapeHtml(task.title)}</h4>
+              ${task.description ? `<p class="text-xs text-[#6B6560] mt-1.5 break-words line-clamp-3 leading-relaxed">${escapeHtml(task.description)}</p>` : ''}
       
       <div class="flex flex-col gap-1 mt-4 pt-3 border-t border-[#F5EDE0]">
         <div class="text-[11px] text-[#9E8E6E]">

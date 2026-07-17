@@ -3,12 +3,12 @@ import logoIcon from "../assets/icons/logo.png";
 
 export function Auth() {
     return `
-        <div class="h-screen bg-[#F8F5F0] flex flex-col items-center justify-center px-6 font-sans overflow-hidden">
-        <div class="w-full max-w-[400px]">
+        <div class="h-screen bg-[#F8F5F0] flex flex-col items-center justify-center px-4 md:px-6 font-sans overflow-hidden">
+        <div class="w-full max-w-md mx-4 md:mx-auto">
             
             <!-- Logo -->
             <div class="flex flex-col items-center mb-5">
-                <img src="${logoIcon}" alt="Prismavent Logo" class="w-44 h-auto object-contain">
+                <img src="${logoIcon}" alt="Prismavent Logo" class="w-32 md:w-44 h-auto object-contain">
                 <p class="text-lg md:text-xl font-medium text-gray-600 tracking-wide text-center mt-2">
                     From start to glow, we've got the flow
                 </p>
@@ -19,7 +19,7 @@ export function Auth() {
             
             <!-- LOGIN SIDE -->
             <div id="login-side" class="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-xl overflow-hidden will-change-transform" style="transform: rotateY(0deg) translateZ(0);">
-                <div class="p-8">
+                <div class="p-6 md:p-10">
                 <div class="flex border-b border-gray-200 mb-6">
                     <button onclick="switchToLogin()" class="flex-1 pb-3 text-base font-medium border-b-2 border-[#C9A84C] text-gray-900">Login</button>
                     <button onclick="switchToSignup()" class="flex-1 pb-3 text-base font-medium text-gray-500 hover:text-gray-700">Sign Up</button>
@@ -61,13 +61,14 @@ export function Auth() {
 
             <!-- SIGNUP SIDE -->
             <div id="signup-side" class="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-xl overflow-hidden will-change-transform" style="transform: rotateY(180deg) translateZ(0);">
-                <div class="p-8">
+                <div class="p-6 md:p-10">
                 <div class="flex border-b border-gray-200 mb-5">
                     <button onclick="switchToLogin()" class="flex-1 pb-3 text-base font-medium text-gray-500 hover:text-gray-700">Login</button>
                     <button onclick="switchToSignup()" class="flex-1 pb-3 text-base font-medium border-b-2 border-[#C9A84C] text-gray-900">Sign Up</button>
                 </div>
 
                 <form id="signup-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                     <label class="block text-xs tracking-widest text-gray-500 mb-1">FULL NAME</label>
                     <input type="text" id="signup-name" placeholder="Carlos Mendoza" 
@@ -93,6 +94,7 @@ export function Auth() {
                     <label class="block text-xs tracking-widest text-gray-500 mb-1">CELLPHONE</label>
                     <input type="tel" id="signup-phone" placeholder="+34 123 456 789" 
                             class="w-full px-5 py-2.5 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#C9A84C] text-base">
+                    </div>
                     </div>
 
                     <button type="submit" 

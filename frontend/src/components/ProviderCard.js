@@ -19,7 +19,7 @@ export function ProviderCard(provider) {
           : `<span class="text-6xl opacity-30">🏢</span>`
         }
       </div>
-      <div class="p-5 space-y-3">
+      <div class="p-4 lg:p-6 space-y-3">
         <div class="flex items-start justify-between">
           <div class="flex-1 min-w-0">
             <h3 class="text-lg font-bold text-[#1E1B15] truncate">${provider.name}</h3>

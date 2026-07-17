@@ -4,7 +4,7 @@ import { icon } from './Icons.js';
 export function BudgetPanel(event) {
   if (!event) {
     return `
-      <div class="bg-white rounded-2xl border border-gray-200 p-6">
+      <div class="bg-white rounded-2xl border border-gray-200 p-4 lg:p-6">
         <p class="text-gray-500">Loading budget...</p>
       </div>
     `;
@@ -27,7 +27,7 @@ export function BudgetPanel(event) {
     new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(val);
 
   return `
-    <div class="bg-white rounded-2xl border border-gray-200 p-6" id="budget-panel">
+    <div class="bg-white rounded-2xl border border-gray-200 p-4 lg:p-6" id="budget-panel">
 
       <h2
         class="font-display text-3xl font-bold mb-4"

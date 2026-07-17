@@ -7,7 +7,7 @@ export function TasksPanel(event, tasks = []) {
   const todoTasks = tasks.filter(t => t.status === "todo").length;
 
   return `
-    <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+    <div class="bg-white rounded-2xl border border-gray-200 p-4 lg:p-6 shadow-sm">
       <div class="flex justify-between items-center mb-5">
         <h2 class="text-lg font-bold text-[#1E1B15] flex items-center gap-2">
           ${icon('layout', 20, 'text-[#755B00]')}
@@ -23,7 +23,7 @@ export function TasksPanel(event, tasks = []) {
         </button>
       </div>
 
-      <div class="grid grid-cols-3 gap-2 text-center">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
         <div class="bg-[#F8F5F0] rounded-xl p-3">
           <p class="text-xs text-[#9E8E6E]">Por Hacer</p>
           <p class="text-xl font-bold text-[#1E1B15] mt-1">${todoTasks}</p>

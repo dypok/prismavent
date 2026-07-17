@@ -26,12 +26,28 @@ export default class MyEvents {
                         <p class="text-[#9E8E6E] text-sm mt-0.5">Gestiona y coordina tus próximos eventos</p>
                     `)}
 
-                    <main class="flex-1 p-6 overflow-auto">
+                    <main class="flex-1 p-4 lg:p-8 overflow-y-auto">
                         <div class="mb-6">
-                            <div class="grid grid-cols-4 gap-3" id="stats-grid">${this.renderStatsSkeleton()}</div>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="stats-grid">${this.renderStatsSkeleton()}</div>
                         </div>
 
-                        <div id="events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                        <div class="flex flex-col md:flex-row gap-3 mb-6" id="search-filter-bar">
+                            <input type="text" placeholder="Buscar eventos..."
+                                   class="w-full md:max-w-md px-4 py-2.5 rounded-xl border border-[#E9E1D7] bg-white focus:outline-none focus:ring-2 focus:ring-[#755B00]/20 focus:border-[#755B00] text-sm" />
+                            <select class="w-full md:w-auto px-4 py-2.5 rounded-xl border border-[#E9E1D7] bg-white text-sm text-[#1E1B15]">
+                                <option value="">Todos los estados</option>
+                                <option value="borrador">Borrador</option>
+                                <option value="confirmado">Confirmado</option>
+                                <option value="in_progress">En Progreso</option>
+                                <option value="finalizado">Finalizado</option>
+                            </select>
+                            <select class="w-full md:w-auto px-4 py-2.5 rounded-xl border border-[#E9E1D7] bg-white text-sm text-[#1E1B15]">
+                                <option value="date">Ordenar por fecha</option>
+                                <option value="name">Ordenar por nombre</option>
+                            </select>
+                        </div>
+
+                        <div id="events-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                             ${this.renderGridSkeleton()}
                         </div>
                     </main>
@@ -62,7 +78,7 @@ export default class MyEvents {
         return Array(6).fill(0).map(() => `
             <div class="bg-white rounded-3xl overflow-hidden border border-[#E9E1D7] animate-pulse">
                 <div class="h-20 bg-[#F5EDE0]"></div>
-                <div class="p-4 space-y-3">
+                <div class="p-4 lg:p-6 space-y-3">
                     <div class="h-4 bg-[#E9E1D7] rounded w-3/4"></div>
                     <div class="h-2 bg-[#E9E1D7] rounded w-full"></div>
                     <div class="h-2 bg-[#E9E1D7] rounded w-1/2"></div>
@@ -78,12 +94,14 @@ export default class MyEvents {
     async loadEvents() {
         const grid = document.getElementById('events-grid');
         const statsGrid = document.getElementById('stats-grid');
+        const searchBar = document.getElementById('search-filter-bar');
 
         try {
             const events = await api.getEvents();
 
             if (events.length === 0) {
                 statsGrid.parentElement.classList.add('hidden');
+                if (searchBar) searchBar.classList.add('hidden');
                 grid.className = "flex-1 flex flex-col items-center justify-center min-h-[60vh]";
                 grid.innerHTML = `
                     <div class="flex flex-col items-center justify-center w-full max-w-2xl py-12 animate-fade-in-up">
@@ -104,9 +122,9 @@ export default class MyEvents {
             }
 
             statsGrid.parentElement.classList.remove('hidden');
-            grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5";
+            if (searchBar) searchBar.classList.remove('hidden');
+            grid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5";
 
-            // Estadísticas
             const total = events.length;
             const borradores = events.filter(e => e.status === 'borrador' || !e.status).length;
             const activos = total - borradores;
@@ -160,7 +178,7 @@ export default class MyEvents {
 
             let html = `
                 <div onclick="window.location.href='/events/new'" 
-                     class="bg-white border-2 border-dashed border-[#E9E1D7] rounded-3xl h-full min-h-[200px] flex flex-col items-center justify-center hover:border-[#755B00] hover:bg-[#FEF3C7]/30 transition-all cursor-pointer group p-6">
+                     class="bg-white border-2 border-dashed border-[#E9E1D7] rounded-3xl h-full min-h-[200px] flex flex-col items-center justify-center hover:border-[#755B00] hover:bg-[#FEF3C7]/30 transition-all cursor-pointer group p-4 lg:p-6">
                     <div class="w-12 h-12 bg-[#FEF3C7] rounded-full flex items-center justify-center text-3xl mb-2 group-hover:scale-110 transition-transform">
                         +
                     </div>
@@ -193,7 +211,7 @@ export default class MyEvents {
                         
                         <span class="absolute top-3 right-3 px-3 py-0.5 text-[10px] font-medium rounded-full ${cfg.cls}">${cfg.text}</span>
                     </div>
-                    <div class="p-4 flex flex-col flex-1">
+                    <div class="p-4 lg:p-6 flex flex-col flex-1">
                         <h3 class="font-semibold text-base text-[#1E1B15] ${event.description ? 'mb-0.5' : 'mb-3'} line-clamp-1 group-hover:text-[#755B00] transition-colors">${event.name}</h3>
                         ${event.description ? `<p class="text-[#9E8E6E] text-xs line-clamp-2 mb-3">${event.description}</p>` : ''}
                         

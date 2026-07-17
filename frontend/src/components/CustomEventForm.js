@@ -220,13 +220,13 @@ export function CustomEventForm() {
     return `
     <div class="w-full max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl animate-scale-in">
 
-      <div id="templateBanner" class="hidden px-10 pt-6">
+      <div id="templateBanner" class="hidden px-4 lg:px-10 pt-6">
         <div class="bg-[#FEF3C7] border border-[#FDE68A] rounded-2xl px-6 py-4 text-sm text-[#4D4637]">
           Formulario pre-rellenado desde la plantilla: <span id="templateBannerName" class="font-semibold"></span>
         </div>
       </div>
 
-      <div class="px-8 pt-6 pb-4 border-b border-[#E9E1D7]">
+      <div class="px-4 lg:px-8 pt-6 pb-4 border-b border-[#E9E1D7]">
         <div class="flex justify-between items-center">
           <div>
             <h2 class="font-display text-2xl text-[#1E1B15]">Nuevo Evento</h2>
@@ -237,7 +237,7 @@ export function CustomEventForm() {
         </div>
       </div>
 
-      <form id="createEventForm" class="p-8 space-y-6">
+      <form id="createEventForm" class="p-4 lg:p-8 space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 
           <div class="md:col-span-2">
@@ -271,7 +271,7 @@ export function CustomEventForm() {
 
           <div>
             <label class="block text-xs font-medium tracking-widest text-[#4D4637] mb-1.5">DURACIÓN</label>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-col sm:flex-row">
               <input type="number" id="eventDurationHours" min="0" value="0" class="flex-1 min-w-0 w-full px-5 py-3 border border-[#D0C5B2] rounded-2xl focus:border-[#755B00] text-sm" placeholder="Horas">
               ${customSelectHTML('eventDurationMinutes', [
                 { value: '0', label: '0 min' },
@@ -297,10 +297,10 @@ export function CustomEventForm() {
 
         </div>
 
-        <div class="pt-4 flex gap-4">
+        <div class="pt-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
           <button type="button" onclick="window.closeCustomModal()"
-            class="flex-1 py-3.5 border border-[#D0C5B2] rounded-2xl font-medium hover:bg-gray-50 text-sm">Cancelar</button>
-          <button type="submit" class="flex-1 py-3.5 bg-[#755B00] hover:bg-[#5F4A00] text-white font-semibold rounded-2xl text-sm shadow-sm">Crear Evento →</button>
+            class="w-full sm:flex-1 py-3.5 border border-[#D0C5B2] rounded-2xl font-medium hover:bg-gray-50 text-sm">Cancelar</button>
+          <button type="submit" class="w-full sm:flex-1 py-3.5 bg-[#755B00] hover:bg-[#5F4A00] text-white font-semibold rounded-2xl text-sm shadow-sm">Crear Evento →</button>
         </div>
 
         <p id="createEventError" class="hidden text-sm text-red-600 text-center"></p>

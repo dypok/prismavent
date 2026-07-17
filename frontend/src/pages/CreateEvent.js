@@ -24,7 +24,7 @@ export function CreateEvent() {
 
         ${Topbar()}
 
-        <main class="flex-1 bg-[#FFF8F1] flex items-center justify-center p-8 overflow-auto">
+        <main class="flex-1 bg-[#FFF8F1] flex items-center justify-center p-4 lg:p-8 overflow-auto">
           <div class="w-full max-w-5xl">
 
             <div class="text-center mb-8 md:mb-12">
@@ -37,10 +37,10 @@ export function CreateEvent() {
               </p>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-6 md:gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
 
               <div onclick="window.handleTemplateSelect('template')"
-                  class="group bg-white border border-[#E9E1D7] hover:border-[#C9A84C] rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-2 hover:shadow-2xl">
+                  class="group bg-white border border-[#E9E1D7] hover:border-[#C9A84C] rounded-3xl p-4 lg:p-6 cursor-pointer transition-all hover:-translate-y-2 hover:shadow-2xl">
                 <div class="w-14 h-14 bg-[#FEF3C7] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   ${icon('sparkle', 24, 'text-[#755B00]')}
                 </div>
@@ -55,7 +55,7 @@ export function CreateEvent() {
               </div>
 
               <div onclick="window.handleTemplateSelect('custom')"
-                  class="group bg-white border border-[#E9E1D7] hover:border-[#755B00] rounded-3xl p-8 cursor-pointer transition-all hover:-translate-y-2 hover:shadow-2xl">
+                  class="group bg-white border border-[#E9E1D7] hover:border-[#755B00] rounded-3xl p-4 lg:p-6 cursor-pointer transition-all hover:-translate-y-2 hover:shadow-2xl">
                 <div class="w-14 h-14 bg-[#D1FAE5] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   ${icon('pencil', 24, 'text-[#755B00]')}
                 </div>

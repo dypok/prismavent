@@ -19,7 +19,7 @@ export function TemplateEventFlow() {
             </div>
           </div>
         `)}
-        <main class="flex-1 bg-[#FFF8F1] p-6 lg:p-8 overflow-auto">
+        <main class="flex-1 bg-[#FFF8F1] p-4 sm:p-6 lg:p-8 overflow-auto">
           ${EventTemplatesGrid()}
         </main>
       </div>

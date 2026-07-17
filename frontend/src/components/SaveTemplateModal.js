@@ -7,7 +7,7 @@ let currentEventData = null;
 export function initSaveTemplateModal() {
     const modalHtml = `
         <div id="save-template-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 opacity-0 transition-all duration-300">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden transform scale-95 opacity-0 transition-all duration-300">
                 <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
                     <h3 class="text-lg font-bold text-gray-900">Guardar como Plantilla</h3>
                     <button onclick="window.closeSaveTemplateModal()" class="text-gray-400 hover:text-gray-700 transition-colors">
@@ -15,7 +15,7 @@ export function initSaveTemplateModal() {
                     </button>
                 </div>
                 
-                <div class="p-6">
+                <div class="p-4 lg:p-6">
                     <form id="save-template-form" class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Plantilla <span class="text-red-500">*</span></label>
@@ -31,7 +31,7 @@ export function initSaveTemplateModal() {
                                 placeholder="Breve descripción de los elementos que incluye..."></textarea>
                         </div>
 
-                        <div class="pt-2 flex justify-end gap-3">
+                        <div class="pt-2 flex flex-col sm:flex-row justify-end gap-3">
                             <button type="button" onclick="window.closeSaveTemplateModal()"
                                 class="px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
                                 Cancelar

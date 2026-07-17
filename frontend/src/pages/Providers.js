@@ -113,9 +113,9 @@ export async function ProvidersPage() {
           </div>
         `)}
         <div class="flex-1 overflow-auto">
-          <div class="p-8 max-w-7xl mx-auto">
+          <div class="p-4 lg:p-8 max-w-7xl mx-auto">
 
-            <div class="flex items-center gap-4 mb-8">
+            <div class="flex flex-col md:flex-row items-center gap-4 mb-8">
               <div class="flex-1 flex items-center gap-3 overflow-x-auto pb-1" id="categories-container">
                 <button class="category-pill shrink-0 px-5 py-2 rounded-full text-sm font-medium transition-all cursor-pointer bg-[#755B00] text-white" data-category-id="null">
                   Todos
@@ -126,7 +126,7 @@ export async function ProvidersPage() {
                   </button>
                 `).join('')}
               </div>
-              <div class="relative shrink-0 w-72">
+              <div class="relative w-full md:max-w-md">
                 ${icon('search', 16, 'absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#9E8E6E]')}
                 <input type="text" id="provider-search" placeholder="Buscar proveedor..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E9E1D7] rounded-xl text-sm text-[#1E1B15] placeholder:text-[#9E8E6E] focus:outline-none focus:border-[#755B00] transition-colors">
               </div>

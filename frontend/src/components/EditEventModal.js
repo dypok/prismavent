@@ -7,7 +7,7 @@ export function EditEventModal(eventId) {
   overlay.className = "fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in";
   overlay.innerHTML = `
     <div onclick="event.stopPropagation()" class="bg-white rounded-3xl w-full max-w-lg mx-4 shadow-2xl animate-scale-in max-h-[90vh] overflow-y-auto">
-      <div class="px-8 pt-6 pb-4 border-b border-[#E9E1D7] flex items-center justify-between">
+      <div class="px-4 md:px-8 pt-4 md:pt-6 pb-4 border-b border-[#E9E1D7] flex items-center justify-between">
         <div>
           <h2 class="text-2xl font-bold text-[#1E1B15]">Editar Evento</h2>
           <p class="text-sm text-[#9E8E6E] mt-0.5">Actualiza la información del evento</p>
@@ -15,7 +15,7 @@ export function EditEventModal(eventId) {
         <button onclick="document.getElementById('edit-event-overlay').remove()"
           class="w-10 h-10 rounded-xl hover:bg-[#F8F5F0] transition-colors flex items-center justify-center text-2xl text-[#9E8E6E] hover:text-[#1E1B15]">✕</button>
       </div>
-      <div class="p-8">
+      <div class="p-4 md:p-8">
         <div id="edit-event-loading" class="space-y-5 animate-pulse">
           <div class="h-4 bg-[#E9E1D7] rounded w-1/3"></div>
           <div class="h-10 bg-[#E9E1D7] rounded-2xl"></div>
@@ -42,7 +42,7 @@ export function EditEventModal(eventId) {
             <input type="text" id="edit-location"
               class="w-full px-5 py-3.5 border border-[#D0C5B2] rounded-2xl focus:border-[#755B00] focus:outline-none text-sm" placeholder="Ej: Hotel Hilton">
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1.5">INVITADOS</label>
               <input type="number" id="edit-guest-count" min="0"
@@ -59,7 +59,7 @@ export function EditEventModal(eventId) {
             <textarea id="edit-description" rows="3"
               class="w-full px-5 py-3.5 border border-[#D0C5B2] rounded-2xl focus:border-[#755B00] focus:outline-none text-sm resize-none"></textarea>
           </div>
-          <div class="flex gap-3 pt-2">
+          <div class="flex flex-col sm:flex-row gap-3 pt-2">
             <button type="button" onclick="document.getElementById('edit-event-overlay').remove()"
               class="flex-1 py-3.5 border-2 border-[#D0C5B2] rounded-2xl font-medium text-[#4D4637] hover:bg-[#F8F5F0] transition-all text-sm">Cancelar</button>
             <button type="submit"

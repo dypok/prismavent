@@ -10,7 +10,7 @@ const _fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency
 function buildResourceCardHTML(item) {
   const isConfirmed = item.confirmed;
   return `
-    <div class="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm ${isConfirmed ? 'border-2 border-[#C9A84C] border-l-4 border-[#C9A84C]' : 'border border-gray-200'}" data-item-id="${item.id}">
+    <div class="bg-white rounded-xl p-4 flex items-center justify-between gap-2 flex-wrap shadow-sm ${isConfirmed ? 'border-2 border-[#C9A84C] border-l-4 border-[#C9A84C]' : 'border border-gray-200'}" data-item-id="${item.id}">
       <div class="flex-1 min-w-0">
         <p class="font-semibold truncate ${isConfirmed ? 'text-[#C9A84C]' : 'text-[#1E1B15]'}">${item.name}</p>
         <p class="text-sm text-[#9E8E6E]">${item.quantity} x ${_fmt(item.unit_price)}</p>
@@ -49,7 +49,7 @@ function ProgressRing(confirmed, total) {
 
 function buildEditResourceCardHTML(item) {
   return `
-    <div class="bg-white rounded-xl border-2 border-[#755B00] p-4 shadow-sm is-editing" data-item-id="${item.id}">
+    <div class="bg-white rounded-xl border-2 border-[#755B00] p-4 flex flex-wrap items-center shadow-sm is-editing" data-item-id="${item.id}">
       <div class="flex-1 min-w-0 space-y-2">
         <input type="text" class="edit-name w-full px-3 py-1.5 border border-[#D0C5B2] rounded-lg text-sm focus:border-[#755B00] focus:outline-none" value="${item.name.replace(/"/g, '&quot;')}" placeholder="Nombre del recurso">
         <div class="flex gap-2">
@@ -170,11 +170,11 @@ export async function EventDetail(eventId) {
         `)}
 
         <div class="flex-1 overflow-auto custom-scrollbar">
-          <div class="p-8">
+          <div class="p-4 lg:p-8">
 
-            <section class="flex gap-6">
+            <section class="flex flex-col lg:flex-row gap-6">
 
-              <div class="flex-1 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <div class="w-full bg-white rounded-2xl border border-gray-200 p-4 lg:p-6 shadow-sm">
                 ${EventStepper(stepMap[event?.status] || 1)}
 
                 ${isFinalized ? `
@@ -183,17 +183,17 @@ export async function EventDetail(eventId) {
                 </div>
                 ` : ''}
 
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-center flex-wrap gap-2 mb-6">
                   <h2 class="text-xl font-bold text-[#1E1B15] flex items-center gap-2">
                     ${icon('package', 22, 'text-[#755B00]')}
                     Recursos del Evento
                   </h2>
-                  <div class="flex items-center gap-2" id="resources-counter-wrapper">
+                  <div class="flex items-center gap-2 flex-wrap" id="resources-counter-wrapper">
                     <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmedResources} de ${totalResources} confirmados</span>
                     ${ProgressRing(confirmedResources, totalResources)}
                   </div>
                 </div>
-                <div id="resources-canvas" class="rounded-xl border-2 border-dashed border-gray-300 bg-[#F8F5F0]/50">
+                <div id="resources-canvas" class="rounded-xl border-2 border-dashed border-gray-300 bg-[#F8F5F0]/50 overflow-x-auto">
                   <div class="p-4 space-y-3" id="resources-list">
                     ${event.event_items && event.event_items.length > 0
                       ? event.event_items.slice(0, 10).map(item => buildResourceCardHTML(item)).join('')
@@ -210,7 +210,7 @@ export async function EventDetail(eventId) {
                   </div>
 
                   <form id="add-resource-form" class="hidden border-t border-dashed border-gray-300 p-4 bg-white/80 space-y-3">
-                    <div class="grid grid-cols-3 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <input type="text" id="res-name" placeholder="Nombre del recurso" required
                         class="col-span-3 w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none">
                       <input type="number" id="res-quantity" placeholder="Cantidad" min="1" required
@@ -243,10 +243,10 @@ export async function EventDetail(eventId) {
                 </div>
               </div>
 
-              <aside class="w-2/5 space-y-6 animate-fade-in-up">
+              <aside class="w-full lg:w-2/5 space-y-6 animate-fade-in-up">
                 ${BudgetPanel(event)}
 
-                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm" id="detail-info-panel">
+                <div class="bg-white rounded-2xl border border-gray-200 p-4 lg:p-6 shadow-sm" id="detail-info-panel">
                   <div class="flex items-center justify-between mb-5">
                     <h2 class="text-lg font-bold text-[#1E1B15] flex items-center gap-2">
                       <span></span> Información del Evento
@@ -442,12 +442,12 @@ export async function EventDetail(eventId) {
 
             </section>
 
-            <div class="flex gap-6 mt-6">
-              <div class="flex-1">
+            <div class="flex flex-col lg:flex-row gap-6 mt-6">
+              <div class="w-full">
                 ${TasksPanel(event, tasks)}
               </div>
               ${event?.status === "borrador" ? `
-              <div class="w-2/5">
+              <div class="w-full lg:w-2/5">
                 <div class="rounded-2xl border border-red-200 bg-red-50/40 p-5">
                   <div class="flex items-center gap-2 mb-2">
                     ${icon('alert-triangle', 18, 'text-red-600')}

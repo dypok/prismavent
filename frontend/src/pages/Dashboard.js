@@ -47,16 +47,16 @@ export async function initDashboard() {
   if (!main) return;
 
   main.innerHTML = `
-    <div class="space-y-6 animate-fade-in">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="stats-cards">
-        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 shadow-sm animate-pulse"><div class="h-4 bg-gray-200 rounded w-20 mb-3"></div><div class="h-8 bg-gray-200 rounded w-12"></div></div>
-        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 shadow-sm animate-pulse"><div class="h-4 bg-gray-200 rounded w-20 mb-3"></div><div class="h-8 bg-gray-200 rounded w-12"></div></div>
-        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 shadow-sm animate-pulse"><div class="h-4 bg-gray-200 rounded w-20 mb-3"></div><div class="h-8 bg-gray-200 rounded w-12"></div></div>
-        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 shadow-sm animate-pulse"><div class="h-4 bg-gray-200 rounded w-20 mb-3"></div><div class="h-8 bg-gray-200 rounded w-12"></div></div>
+    <div class="space-y-4 lg:space-y-6 animate-fade-in">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="stats-cards">
+        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm animate-pulse"><div class="h-4 bg-gray-200 rounded w-20 mb-3"></div><div class="h-8 bg-gray-200 rounded w-12"></div></div>
+        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm animate-pulse"><div class="h-4 bg-gray-200 rounded w-20 mb-3"></div><div class="h-8 bg-gray-200 rounded w-12"></div></div>
+        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm animate-pulse"><div class="h-4 bg-gray-200 rounded w-20 mb-3"></div><div class="h-8 bg-gray-200 rounded w-12"></div></div>
+        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm animate-pulse"><div class="h-4 bg-gray-200 rounded w-20 mb-3"></div><div class="h-8 bg-gray-200 rounded w-12"></div></div>
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 shadow-sm animate-pulse"><div class="h-5 bg-gray-200 rounded w-40 mb-4"></div><div class="h-20 bg-gray-100 rounded"></div></div>
-        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 shadow-sm animate-pulse"><div class="h-5 bg-gray-200 rounded w-40 mb-4"></div><div class="h-20 bg-gray-100 rounded"></div></div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm animate-pulse"><div class="h-5 bg-gray-200 rounded w-40 mb-4"></div><div class="h-20 bg-gray-100 rounded"></div></div>
+        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm animate-pulse"><div class="h-5 bg-gray-200 rounded w-40 mb-4"></div><div class="h-20 bg-gray-100 rounded"></div></div>
       </div>
     </div>
   `;
@@ -81,10 +81,10 @@ export async function initDashboard() {
       .slice(0, 5);
 
     main.innerHTML = `
-      <div class="space-y-6 animate-fade-in">
+      <div class="space-y-4 lg:space-y-6 animate-fade-in">
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 shadow-sm">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-wider text-[#9E8E6E]">Total Eventos</p>
@@ -95,7 +95,7 @@ export async function initDashboard() {
               </div>
             </div>
           </div>
-          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 shadow-sm">
+          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-wider text-[#9E8E6E]">Próximos</p>
@@ -106,7 +106,7 @@ export async function initDashboard() {
               </div>
             </div>
           </div>
-          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 shadow-sm">
+          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-wider text-[#9E8E6E]">En Progreso</p>
@@ -117,7 +117,7 @@ export async function initDashboard() {
               </div>
             </div>
           </div>
-          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 shadow-sm">
+          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-wider text-[#9E8E6E]">Realizados</p>
@@ -130,9 +130,9 @@ export async function initDashboard() {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
 
-          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-6 shadow-sm">
+          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
             <h3 class="font-semibold text-[#1E1B15] text-sm uppercase tracking-wider mb-4">Estado de Eventos</h3>
             <div class="space-y-3">
               ${statusOrder.map(s => {
@@ -155,7 +155,7 @@ export async function initDashboard() {
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-6 shadow-sm">
+          <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
             <div class="flex justify-between items-center mb-4">
               <h3 class="font-semibold text-[#1E1B15] text-sm uppercase tracking-wider">Próximos Eventos</h3>
               <a href="/events" onclick="event.preventDefault(); window.history.pushState({},'','/events'); window.dispatchEvent(new PopStateEvent('popstate'))" class="text-xs text-[#755B00] hover:underline font-medium">Ver todos</a>
@@ -185,9 +185,9 @@ export async function initDashboard() {
 
         </div>
 
-        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-6 shadow-sm">
+        <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
           <h3 class="font-semibold text-[#1E1B15] text-sm uppercase tracking-wider mb-4">Acciones Rápidas</h3>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <a href="/events/new" onclick="event.preventDefault(); window.history.pushState({},'','/events/new'); window.dispatchEvent(new PopStateEvent('popstate'))" class="flex flex-col items-center gap-2 p-4 bg-[#FEF3C7] rounded-xl hover:bg-[#FDE68A] transition-colors">
               ${icon('plus', 22, 'text-[#755B00]')}
               <span class="text-xs font-semibold text-[#755B00]">Nuevo Evento</span>
