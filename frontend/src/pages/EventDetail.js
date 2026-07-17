@@ -3,6 +3,7 @@ import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
 import { getEventById, updateEvent, updateEventStatus, createEventItem, updateEventItem, deleteEventItem, getEventTasks } from "../service/api.js";
 import { TasksPanel } from "../components/TasksPanel.js";
+import { icon } from "../components/Icons.js";
 
 const _fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
 
@@ -21,14 +22,10 @@ function buildResourceCardHTML(item) {
           <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isConfirmed ? 'translate-x-5' : ''}"></span>
         </button>
           <button class="edit-resource p-1.5 rounded-lg hover:bg-green-50 transition-colors cursor-pointer" data-id="${item.id}" data-name="${item.name.replace(/"/g, '&quot;')}" data-quantity="${item.quantity}" data-price="${item.unit_price}" data-notes="${(item.notes || '').replace(/"/g, '&quot;')}" title="Editar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-            </svg>
+            ${icon('pencil', 16, 'text-green-600')}
         </button>
         <button class="delete-resource p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" data-id="${item.id}" title="Eliminar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 7L18.133 19.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"/>
-          </svg>
+          ${icon('trash', 16, 'text-red-600')}
         </button>
       </div>
     </div>
@@ -160,7 +157,7 @@ export async function EventDetail(eventId) {
         ${Topbar(`
           <div class="flex items-center gap-4 animate-fade-in">
             <button onclick="window.history.back()" class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#9E8E6E] hover:text-[#1E1B15] hover:shadow-sm transition-all border border-[#E9E1D7]">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              ${icon('chevron-left', 18)}
             </button>
             <div>
               <div class="flex items-center gap-3">
@@ -188,11 +185,7 @@ export async function EventDetail(eventId) {
 
                 <div class="flex justify-between items-center mb-6">
                   <h2 class="text-xl font-bold text-[#1E1B15] flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#755B00]">
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                      <line x1="12" y1="22.08" x2="12" y2="12"/>
-                    </svg>
+                    ${icon('package', 22, 'text-[#755B00]')}
                     Recursos del Evento
                   </h2>
                   <div class="flex items-center gap-2" id="resources-counter-wrapper">
@@ -306,7 +299,7 @@ export async function EventDetail(eventId) {
                               data-current-status="${event?.status}"
                               class="px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-semibold hover:bg-green-700 transition-all shadow-sm flex items-center gap-2"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              ${icon('check', 16)}
                               ${nextButtonText}
                             </button>
                           `
@@ -318,7 +311,7 @@ export async function EventDetail(eventId) {
                         onclick="toggleEdit()"
                         class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm flex items-center gap-2"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                        ${icon('pencil', 16)}
                         Editar
                       </button>
 
@@ -326,7 +319,7 @@ export async function EventDetail(eventId) {
                         onclick="window.__currentEventData && window.openSaveTemplateModal(window.__currentEventData)"
                         class="px-5 py-2.5 bg-white border border-[#E9E1D7] text-[#755B00] rounded-xl text-sm font-semibold hover:bg-[#FEF3C7] transition-all shadow-sm flex items-center gap-2"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        ${icon('save', 16)}
                         Guardar como Plantilla
                       </button>
 
@@ -339,18 +332,7 @@ export async function EventDetail(eventId) {
                               <div class="rounded-2xl border border-red-200 bg-red-50/40 p-5">
 
                                 <div class="flex items-center gap-2 mb-2">
-
-                                  <svg xmlns="http://www.w3.org/2000/svg"
-                                      width="18"
-                                      height="18"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="#DC2626"
-                                      stroke-width="2">
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                                  </svg>
+                                  ${icon('alert-triangle', 18, 'text-red-600')}
 
                                   <h3 class="text-sm font-semibold text-red-700">
                                     Delete Event
@@ -366,21 +348,7 @@ export async function EventDetail(eventId) {
                                   id="open-delete-modal"
                                   class="w-full py-3 rounded-xl border border-red-300 bg-white text-red-600 font-medium hover:bg-red-100 hover:border-red-500 transition flex items-center justify-center gap-2"
                                 >
-
-                                  <svg xmlns="http://www.w3.org/2000/svg"
-                                      width="18"
-                                      height="18"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                      stroke-width="2">
-
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          d="M19 7L18.133 19.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"/>
-
-                                  </svg>
-
+                                  ${icon('trash', 18)}
                                   Delete Event
 
                                 </button>
@@ -403,7 +371,7 @@ export async function EventDetail(eventId) {
                         <div class="relative">
                           <div id="editDateDisplay" class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl text-sm cursor-pointer bg-white flex items-center justify-between select-none z-10 relative">
                             <span id="editDateDisplayText" class="truncate">${event?.event_date ? new Date(event.event_date).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "Selecciona una fecha"}</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#9E8E6E] shrink-0 ml-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            ${icon('calendar', 14, 'text-[#9E8E6E] shrink-0 ml-2')}
                           </div>
                           <input type="hidden" id="edit-date" value="${event?.event_date ? event.event_date.slice(0, 10) : ""}">
                           <div id="editCalendar" class="calendar-popup hidden absolute top-full left-0 mt-1.5 bg-white border border-[#D0C5B2] rounded-2xl shadow-xl z-[100] p-4 w-72">

@@ -25,6 +25,7 @@ import {
 // === NUEVA IMPORTACIÓN ===
 import MyEvents from "./pages/MyEvents.js";
 import { ProvidersPage, initProvidersPage } from "./pages/Providers.js";
+import { initDashboard } from "./pages/Dashboard.js";
 
 console.log("Main.js cargado - Ruta:", window.location.pathname);
 
@@ -61,12 +62,12 @@ async function renderPage() {
               <p class="text-[#9E8E6E] text-xs mt-0.5">Bienvenido de vuelta a tu espacio</p>
             </div>
           `)}
-          <main class="flex-1 p-8 bg-[#FFF8F1] overflow-auto">
-            <!-- Contenido del Dashboard -->
-          </main>
+          <main class="flex-1 p-6 lg:p-8 bg-[#FFF8F1] overflow-auto"></main>
         </div>
       </div>
     `;
+    window.initDashboard = initDashboard;
+    initDashboard();
 
   // === RUTA: MIS EVENTOS ===
   } else if (path === '/my-events' || path === '/events') {

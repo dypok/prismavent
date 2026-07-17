@@ -1,5 +1,6 @@
 import api from "../service/api.js";
 import { showToast } from "./Toast.js";
+import { icon } from "./Icons.js";
 
 let currentEventData = null;
 
@@ -10,7 +11,7 @@ export function initSaveTemplateModal() {
                 <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
                     <h3 class="text-lg font-bold text-gray-900">Guardar como Plantilla</h3>
                     <button onclick="window.closeSaveTemplateModal()" class="text-gray-400 hover:text-gray-700 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        ${icon('x', 20)}
                     </button>
                 </div>
                 

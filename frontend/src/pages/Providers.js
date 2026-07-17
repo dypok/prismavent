@@ -2,6 +2,7 @@ import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { ProviderCard } from "../components/ProviderCard.js";
 import { getProviders, getCategories } from "../service/api.js";
+import { icon } from "../components/Icons.js";
 
 let state = {
   providers: [],
@@ -126,7 +127,7 @@ export async function ProvidersPage() {
                 `).join('')}
               </div>
               <div class="relative shrink-0 w-72">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9E8E6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                ${icon('search', 16, 'absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#9E8E6E]')}
                 <input type="text" id="provider-search" placeholder="Buscar proveedor..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E9E1D7] rounded-xl text-sm text-[#1E1B15] placeholder:text-[#9E8E6E] focus:outline-none focus:border-[#755B00] transition-colors">
               </div>
             </div>
