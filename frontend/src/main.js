@@ -5,6 +5,7 @@ import { Sidebar } from "./components/Sidebar.js";
 import { Topbar } from "./components/Topbar.js";
 import { CreateEvent } from "./pages/CreateEvent.js";
 import { EventDetail } from "./pages/EventDetail.js";
+import { GuestsPage, initGuestsPage } from "./pages/GuestsPage.js";
 import { CustomEventFlow } from "./pages/CustomEventFlow.js";
 import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
 import { prefillCustomEventForm } from "./components/CustomEventForm.js";
@@ -14,7 +15,9 @@ import {
   getEventById,
   updateEvent,
   updateEventStatus,
-  createGuest
+  createGuest,
+  deleteGuest,
+  updateGuest
  } from "./service/api.js";
 
 // === NUEVA IMPORTACIÓN ===
@@ -46,13 +49,17 @@ async function renderPage() {
       return;
     }
     document.querySelector("#app").innerHTML = `
-      <div class="flex h-screen">
+      <div class="flex h-screen animate-fade-in">
         ${Sidebar("dashboard")}
         <div class="flex-1 flex flex-col">
-          ${Topbar()}
+          ${Topbar(`
+            <div class="animate-fade-in">
+              <h1 class="text-2xl font-bold text-[#1E1B15]">Dashboard</h1>
+              <p class="text-[#9E8E6E] text-xs mt-0.5">Bienvenido de vuelta a tu espacio</p>
+            </div>
+          `)}
           <main class="flex-1 p-8 bg-[#FFF8F1] overflow-auto">
-            <h1 class="text-4xl font-bold text-gray-900">Dashboard</h1>
-            <p class="text-gray-600 mt-2">Bienvenido de vuelta</p>
+            <!-- Contenido del Dashboard -->
           </main>
         </div>
       </div>
@@ -155,7 +162,7 @@ async function renderPage() {
         });
       }
 
-    //modal de agregar invitados 
+//modal de agregar invitados 
     const addGuestButton = document.getElementById("btn-add-guest");
     const guestModal = document.getElementById("guest-modal");
     const cancelGuest = document.getElementById("cancel-guest");
@@ -174,50 +181,146 @@ async function renderPage() {
       });
     }
 
+    // Handler para botón "Ver todos" en GuestPanel
+    const viewAllBtn = document.getElementById("btn-view-all-guests");
+    if (viewAllBtn) {
+      viewAllBtn.addEventListener("click", (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        window.__genieTriggerRect = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+        const eventId = e.currentTarget.dataset.eventId;
+        window.history.pushState({}, "", `/events/${eventId}/guests`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      });
+    }
+
     const guestForm = document.getElementById("guest-form");
 
-    if (guestForm) {
-      guestForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+        if (guestForm) {
+          guestForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-        const event = await getEventById(eventId);
+            const submitBtn = guestForm.querySelector('button[type="submit"]');
+            const guestData = {
+              full_name: document.getElementById("guest-name").value,
+              confirmed: document.getElementById("guest-confirmed").checked,
+              notes: document.getElementById("guest-notes").value,
+            };
 
-        // Validar si supera el cupo
-        if ((event.guests.length + 1) > event.guest_count) {
+            // Disable button immediately to prevent double-click
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = "Guardando...";
+            }
 
-          const confirmAdd = confirm(
-            "Este invitado supera el número previsto de asistentes. ¿Desea continuar?"
-          );
+            try {
 
-          if (!confirmAdd) return;
+              const guestId = guestForm.dataset.editing;
+
+              if (guestId) {
+
+                await updateGuest(
+                  eventId,
+                  guestId,
+                  guestData
+                );
+
+                delete guestForm.dataset.editing;
+
+                showToast("Guest updated successfully.");
+
+              } else {
+
+                const event = await getEventById(eventId);
+
+                if ((event.guests.length + 1) > event.guest_count) {
+
+                  const confirmAdd = confirm(
+                    "Este invitado supera el número previsto de asistentes. ¿Desea continuar?"
+                  );
+
+                  if (!confirmAdd) return;
+                }
+
+                await createGuest(
+                  eventId,
+                  guestData
+                );
+
+                showToast("Guest created successfully.");
+              }
+
+              guestModal.classList.add("hidden");
+              guestModal.classList.remove("flex");
+
+              window.history.replaceState({}, "", `/events/detail?id=${eventId}`);
+              window.dispatchEvent(new PopStateEvent("popstate"));
+
+            } catch (error) {
+              console.error(error);
+              showToast(error.message, "error");
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Guardar";
+              }
+            }
+          });
         }
 
+    document.querySelectorAll(".delete-guest").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const guestId = button.dataset.id;
+
+        if (!confirm("Delete this guest?")) return;
+
         try {
+          await deleteGuest(eventId, guestId);
 
-          await createGuest(eventId, {
-            full_name: document.getElementById("guest-name").value,
-            confirmed: document.getElementById("guest-confirmed").checked,
-            notes: document.getElementById("guest-notes").value
-          });
-
-          guestModal.classList.add("hidden");
-          guestModal.classList.remove("flex");
-
-          // Recargar el detalle
           window.history.replaceState({}, "", `/events/detail?id=${eventId}`);
           window.dispatchEvent(new PopStateEvent("popstate"));
 
-          showToast("Guest created successfully.");
-
+          showToast("Guest deleted successfully.");
         } catch (error) {
           console.error(error);
           showToast(error.message, "error");
         }
       });
+    });
+
+    document.querySelectorAll(".edit-guest").forEach((button) => {
+
+      button.addEventListener("click", () => {
+
+        guestModal.classList.remove("hidden");
+        guestModal.classList.add("flex");
+
+        document.getElementById("guest-name").value =
+          button.dataset.name;
+
+        document.getElementById("guest-notes").value =
+          button.dataset.notes;
+
+        document.getElementById("guest-confirmed").checked =
+          button.dataset.confirmed === "true";
+
+        guestForm.dataset.editing = button.dataset.id;
+
+      });
+
+    });
+
+
+  // Ruta: Lista de invitados del evento
+  } else if (path.startsWith("/events/") && path.endsWith("/guests")) {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
     }
-
-
-  // Flujo: evento personalizado
+    const eventId = path.split("/events/")[1].split("/guests")[0];
+    const triggerRect = window.__genieTriggerRect || null;
+    document.querySelector("#app").innerHTML = await GuestsPage(eventId, triggerRect);
+    if (triggerRect) delete window.__genieTriggerRect;
+    initGuestsPage(eventId);
   } else if (path === "/events/new/custom") {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");

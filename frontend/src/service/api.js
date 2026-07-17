@@ -96,6 +96,24 @@ export async function apiFetch(path, options = {}) {
 // ========================
 
 // Obtener todos los eventos del usuario (para el grid)
+
+export async function updateProfile(name, password) {
+  const body = {};
+  if (name) body.name = name;
+  if (password) body.password = password;
+
+  const data = await apiFetch("/auth/profile", {
+    method: "PUT",
+    body: JSON.stringify(body)
+  });
+
+  if (name) {
+    setUserName(name);
+  }
+
+  return data;
+}
+
 export async function getEvents() {
   return await apiFetch('/events');   // ← CORREGIDO
 }
@@ -161,8 +179,31 @@ export async function updateEventStatus(eventId, status) {
   });
 }
 
+// Crear un recurso/item del evento
+export async function createEventItem(eventId, itemData) {
+  return await apiFetch(`/events/${eventId}/items`, {
+    method: 'POST',
+    body: JSON.stringify(itemData)
+  });
+}
+
+// Actualizar un recurso/item del evento
+export async function updateEventItem(eventId, itemId, itemData) {
+  return await apiFetch(`/events/${eventId}/items/${itemId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(itemData)
+  });
+}
+
+// Eliminar un recurso/item del evento
+export async function deleteEventItem(eventId, itemId) {
+  return await apiFetch(`/events/${eventId}/items/${itemId}`, {
+    method: 'DELETE'
+  });
+}
 
 export default {
+  updateProfile,
   login,
   register,
   getEvents,
@@ -172,6 +213,9 @@ export default {
   createGuest,
   updateGuest,
   deleteGuest,
+  createEventItem,
+  updateEventItem,
+  deleteEventItem,
   updateEvent,
   updateEventStatus,
   setAccessToken,

@@ -6,7 +6,7 @@ export function EditEventModal(eventId) {
   overlay.id = "edit-event-overlay";
   overlay.className = "fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in";
   overlay.innerHTML = `
-    <div class="bg-white rounded-3xl w-full max-w-lg mx-4 shadow-2xl animate-scale-in max-h-[90vh] overflow-y-auto">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-3xl w-full max-w-lg mx-4 shadow-2xl animate-scale-in max-h-[90vh] overflow-y-auto">
       <div class="px-8 pt-6 pb-4 border-b border-[#E9E1D7] flex items-center justify-between">
         <div>
           <h2 class="text-2xl font-bold text-[#1E1B15]">Editar Evento</h2>
@@ -72,6 +72,12 @@ export function EditEventModal(eventId) {
   `;
 
   document.body.appendChild(overlay);
+
+  overlay.onclick = (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  };
 
   getEventById(eventId).then(event => {
     document.getElementById("edit-event-loading").classList.add("hidden");

@@ -12,4 +12,7 @@ class TemplateResponse(BaseModel):
     event_type_id: str
     name: str
     description: Optional[str] = None
+    icon_url: Optional[str] = None
+    color_bg: Optional[str] = None
+    color_icon: Optional[str] = None
     template_items: List[TemplateItemSchema] = []
