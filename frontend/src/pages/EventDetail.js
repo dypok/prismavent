@@ -176,8 +176,15 @@ export async function EventDetail(eventId) {
                 ` : ''}
 
                 <div class="flex justify-between items-center mb-6">
-                  <h2 class="text-xl font-bold text-[#1E1B15] flex items-center gap-2">🎯 Recursos del Evento</h2>
-                  <div class="flex items-center gap-2">
+                  <h2 class="text-xl font-bold text-[#1E1B15] flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#755B00]">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                      <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    Recursos del Evento
+                  </h2>
+                  <div class="flex items-center gap-2" id="resources-counter-wrapper">
                     <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmedResources} de ${totalResources} confirmados</span>
                     ${ProgressRing(confirmedResources, totalResources)}
                   </div>
@@ -566,13 +573,13 @@ function refreshBudgetAndCounter(updated) {
   if (panel) {
     panel.outerHTML = BudgetPanel(updated);
   }
-  const confirmedResources = updated.event_items.filter(i => i.confirmed).length;
-  const totalResources = updated.event_items.length;
-  const headerRight = document.querySelector(".flex.justify-between.items-center.mb-6 .flex.items-center.gap-2");
-  if (headerRight) {
-    headerRight.innerHTML = `
-      <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${totalResources > 0 ? `${confirmedResources} de ${totalResources} confirmados` : "Sin recursos"}</span>
-      ${ProgressRing(confirmedResources, totalResources)}
+  const counterWrap = document.getElementById("resources-counter-wrapper");
+  if (counterWrap) {
+    const confirmed = updated.event_items.filter(i => i.confirmed).length;
+    const total = updated.event_items.length;
+    counterWrap.innerHTML = `
+      <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmed} de ${total} confirmados</span>
+      ${ProgressRing(confirmed, total)}
     `;
   }
 }
@@ -808,11 +815,14 @@ document.addEventListener("click", async (e) => {
         panel.outerHTML = BudgetPanel(updated);
       }
 
-      const confirmedResources = updated.event_items.filter(i => i.confirmed).length;
-      const totalResources = updated.event_items.length;
-      const counterEl = document.querySelector(".flex.justify-between.items-center.mb-6 span");
-      if (counterEl) {
-        counterEl.textContent = totalResources > 0 ? `${confirmedResources} de ${totalResources} confirmados` : "Sin recursos";
+      const counterWrap = document.getElementById("resources-counter-wrapper");
+      if (counterWrap) {
+        const confirmed = updated.event_items.filter(i => i.confirmed).length;
+        const total = updated.event_items.length;
+        counterWrap.innerHTML = `
+          <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmed} de ${total} confirmados</span>
+          ${ProgressRing(confirmed, total)}
+        `;
       }
     } catch (err) {
       alert(err.message || "Error al eliminar el recurso.");
