@@ -98,7 +98,7 @@ export function NewEventSelection() {
         startCustomEvent();
     });
 
-    // 🔧 CAMBIO: Listener para "Crear desde cero" desde el grid de plantillas
+    //CAMBIO: Listener para "Crear desde cero" desde el grid de plantillas
     window.addEventListener('showCustomEventForm', () => {
         startCustomEvent();
     });

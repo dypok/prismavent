@@ -2,6 +2,7 @@ import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { ProviderCard } from "../components/ProviderCard.js";
 import { getProviders, getCategories } from "../service/api.js";
+import { ProviderDrawer, openProviderDrawer } from "../components/ProviderDrawer.js";
 
 let state = {
   providers: [],
@@ -105,7 +106,7 @@ export async function ProvidersPage() {
           </div>
         `)}
         <div class="flex-1 overflow-auto">
-          <div class="px-8 max-w-7xl mx-auto">
+          <div class="p-8 max-w-7xl mx-auto">
 
             <div class="flex items-center gap-3 overflow-x-auto pb-1 mb-6" id="categories-container">
               <button class="category-pill shrink-0 px-5 py-2 rounded-full text-sm font-medium transition-all cursor-pointer bg-[#755B00] text-white" data-category-id="null">
@@ -132,6 +133,7 @@ export async function ProvidersPage() {
         </div>
       </main>
     </div>
+    ${ProviderDrawer()}
   `;
 }
 
@@ -149,8 +151,14 @@ export function initProvidersPage() {
   });
 
   document.addEventListener("click", (e) => {
-    if (e.target.closest(".view-provider-profile")) {
+    const profileBtn = e.target.closest(".view-provider-profile");
+    if (profileBtn) {
       e.preventDefault();
+      const providerId = profileBtn.dataset.id;
+      const provider = state.providers.find(p => String(p.id) === providerId);
+      if (provider) {
+        openProviderDrawer(provider, state.categoryMap[provider.category_id]);
+      }
     }
     if (e.target.closest(".quote-provider")) {
       e.preventDefault();
