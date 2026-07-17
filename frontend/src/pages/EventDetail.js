@@ -3,6 +3,8 @@ import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
 import { getEventById, updateEvent, updateEventStatus, createEventItem, updateEventItem, deleteEventItem, getEventTasks } from "../service/api.js";
 import { TasksPanel } from "../components/TasksPanel.js";
+import { WeatherWidgetHTML, initWeatherWidget } from "../components/WeatherWidget.js";
+import { icon } from "../components/Icons.js";
 
 const _fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
 
@@ -148,6 +150,7 @@ export async function EventDetail(eventId) {
   window.__eventData = { event, original, eventId };
   setTimeout(() => {
     initSaveTemplateModal();
+    initWeatherWidget(eventId, isFinalized);
   }, 0);
 
   return `
@@ -168,6 +171,7 @@ export async function EventDetail(eventId) {
                 <span class="px-3 py-1 text-[10px] font-semibold bg-[#FEF3C7] text-[#755B00] rounded-full uppercase tracking-wider">${statusLabels[event?.status] || "Borrador"}</span>
               </div>
               <p class="text-[#9E8E6E] text-xs mt-0.5" id="detail-date-display">${event?.event_date ? new Date(event.event_date).toLocaleString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}</p>
+              ${!isFinalized ? WeatherWidgetHTML() : ''}
             </div>
           </div>
         `)}

@@ -1,4 +1,4 @@
-import { getCities } from "../service/api.js";
+import { getCities, apiFetch } from "../service/api.js";
 import { icon } from "./Icons.js";
 
 const pad = (n) => String(n).padStart(2, '0');

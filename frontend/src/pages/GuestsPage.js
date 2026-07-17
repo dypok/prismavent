@@ -3,6 +3,7 @@ import { Topbar } from "../components/Topbar.js";
 import { GuestModal } from "../components/GuestModal.js";
 import { getEventById, getEventGuests, createGuest, updateGuest, deleteGuest } from "../service/api.js";
 import { showToast } from "../components/Toast.js";
+import { icon } from "../components/Icons.js";
 
 export async function GuestsPage(eventId) {
   let event = null;

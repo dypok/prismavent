@@ -2,6 +2,7 @@ import { getUserTemplates, deleteUserTemplate } from "../service/api.js";
 import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { showToast } from "../components/Toast.js";
+import { icon } from "../components/Icons.js";
 
 export class MyTemplates {
     constructor() {
