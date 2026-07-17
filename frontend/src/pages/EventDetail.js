@@ -206,7 +206,7 @@ export async function EventDetail(eventId) {
                 <div id="resources-canvas" class="rounded-xl border-2 border-dashed border-gray-300 bg-[#F8F5F0]/50 overflow-x-auto">
                   <div class="p-4 space-y-3" id="resources-list">
                     ${event.event_items && event.event_items.length > 0
-                      ? event.event_items.slice(0, 10).map(item => buildResourceCardHTML(item)).join('')
+                      ? event.event_items.slice(0, 5).map(item => buildResourceCardHTML(item)).join('')
                       : `
                         <div class="flex flex-col items-center justify-center py-12 text-[#9E8E6E]">
                           <svg class="w-16 h-16 mb-4 opacity-50 text-[#22C55E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -239,17 +239,21 @@ export async function EventDetail(eventId) {
                     </div>
                   </form>
 
-                  <div class="border-t border-dashed border-gray-300 p-3 flex justify-center ${(event.event_items?.length || 0) > 10 ? 'hidden' : ''}" id="add-resource-btn-wrapper">
+                  <div class="border-t border-dashed border-gray-300 p-3 flex justify-center ${(event.event_items?.length || 0) > 5 ? 'hidden' : ''}" id="add-resource-btn-wrapper">
                     <button id="btn-add-resource"
                       class="px-5 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-[#4D4637] hover:border-[#755B00] hover:text-[#755B00] transition-all shadow-sm">+ Añadir Recurso</button>
                   </div>
-                  <div class="border-t border-dashed border-gray-300 p-3 flex justify-center ${(event.event_items?.length || 0) <= 10 ? 'hidden' : ''}">
+                  <div class="border-t border-dashed border-gray-300 p-3 flex justify-center ${(event.event_items?.length || 0) <= 5 ? 'hidden' : ''}">
                     <button id="btn-view-all-resources" data-event-id="${event.id}"
                       class="px-5 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-[#755B00] hover:bg-[#FEF3C7] transition-all shadow-sm flex items-center gap-2">
                       ${icon('arrow-right', 16)}
                       Ver todos (${event.event_items?.length || 0})
                     </button>
                   </div>
+                </div>
+
+                <div class="mt-4">
+                  ${TasksPanel(event, tasks)}
                 </div>
               </div>
 
@@ -457,11 +461,7 @@ export async function EventDetail(eventId) {
 
             </section>
 
-            <div class="flex flex-col lg:flex-row gap-6 mt-6">
-              <div class="w-full">
-                ${TasksPanel(event, tasks)}
-              </div>
-              ${event?.status === "borrador" ? `
+            ${event?.status === "borrador" ? `
               <div class="w-full lg:w-2/5">
                 <div class="rounded-2xl border border-red-200 bg-red-50/40 p-5">
                   <div class="flex items-center gap-2 mb-2">
@@ -476,7 +476,6 @@ export async function EventDetail(eventId) {
                 </div>
               </div>
               ` : ''}
-            </div>
 
           </div>
         </div>
@@ -763,7 +762,7 @@ function renderResourceList() {
   const list = document.getElementById("resources-list");
   if (!list) return;
   const items = window.__eventData?.event?.event_items || [];
-  const maxVisible = 10;
+  const maxVisible = 5;
   const visible = items.slice(0, maxVisible);
   if (visible.length === 0) {
     list.innerHTML = `
