@@ -94,8 +94,11 @@ export function openProviderDrawer(provider, categoryName) {
 
       </div>
 
-      <div class="p-6 border-t border-[#E9E1D7] shrink-0">
-        <button onclick="showToast('Funci\u00f3n disponible pr\u00f3ximamente', 'success')" class="w-full py-3 rounded-xl bg-[#755B00] text-white font-semibold hover:bg-[#5F4A00] transition-all cursor-pointer">
+      <div class="p-6 border-t border-[#E9E1D7] shrink-0 space-y-2">
+        <button onclick="window.addToEventFromCard(this)" class="add-to-event w-full py-3 rounded-xl bg-[#755B00] text-white font-semibold hover:bg-[#5F4A00] transition-all cursor-pointer" data-provider-name="${provider.name.replace(/"/g, '&quot;')}" data-provider-price="${provider.reference_price ?? ''}">
+          A\u00f1adir a mi evento
+        </button>
+        <button onclick="showToast('Funci\u00f3n disponible pr\u00f3ximamente', 'success')" class="w-full py-2 rounded-xl border border-gray-200 text-[#9E8E6E] text-sm font-medium hover:bg-[#F8F5F0] transition-all cursor-pointer">
           Cotizar
         </button>
       </div>
