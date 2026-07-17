@@ -1,6 +1,5 @@
 import { getTemplates, getUserTemplates, deleteUserTemplate } from "../service/api.js";
 import { showToast } from "./Toast.js";
-import { icon } from "./Icons.js";
 
 let fetchedTemplates = [];
 let fetchedUserTemplates = [];

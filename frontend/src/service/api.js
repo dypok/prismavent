@@ -1,5 +1,4 @@
 import { setUserName } from "../utils/authUtils.js";
-import { icon } from "../components/Icons.js";
 
 const BASE_URL = "http://localhost:8000";
 const TOKEN_KEY = "prismavent_access_token";
@@ -76,7 +75,7 @@ function showSessionModal(msg) {
   overlay.innerHTML = `
     <div class="bg-white rounded-3xl p-8 w-[400px] shadow-2xl animate-scale-in text-center">
       <div class="w-14 h-14 bg-[#FEF3C7] rounded-full flex items-center justify-center mx-auto mb-4">
-        ${icon('alert-circle', 24, 'text-[#755B00]')}
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#755B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </div>
       <h2 class="text-xl font-bold text-[#1E1B15] mb-2">Sesión expirada</h2>
       <p class="text-sm text-[#4D4637] mb-6">${msg}</p>

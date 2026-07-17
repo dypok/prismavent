@@ -1,6 +1,5 @@
 import logoIcon from "../assets/icons/logo.png";
 import { logout } from "../utils/authUtils.js";
-import { icon } from "./Icons.js";
 
 window.handleLogout = function () {
   logout();
@@ -51,6 +50,12 @@ export function Sidebar(active = "new-event") {
     return false;
   };
 
+  // Helper para generar el ícono usando CSS Mask (adopta el color del texto automáticamente)
+  const renderIcon = (name) => {
+    const url = `https://api.iconify.design/lucide/${name}.svg?stroke-width=2`;
+    return `<div class="w-5 h-5 shrink-0 transition-colors duration-300" style="background-color: currentColor; mask: url('${url}') no-repeat center / contain; -webkit-mask: url('${url}') no-repeat center / contain;"></div>`;
+  };
+
   return `
     <div id="sidebar-backdrop" onclick="closeSidebar()" class="fixed inset-0 z-40 bg-black/50 hidden md:hidden"></div>
 
@@ -63,7 +68,7 @@ export function Sidebar(active = "new-event") {
 
       <!-- Menú de Navegación -->
       <nav class="flex-1">
-        <ul>
+        <ul class="space-y-1">
           <li onclick="navigateTo('/dashboard')" 
               class="nav-item hover:bg-white hover:text-[#755B00] 
               ${isActive('/dashboard') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">

@@ -3,7 +3,6 @@ import { Topbar } from "../components/Topbar.js";
 import { GuestModal } from "../components/GuestModal.js";
 import { getEventById, getEventGuests, createGuest, updateGuest, deleteGuest } from "../service/api.js";
 import { showToast } from "../components/Toast.js";
-import { icon } from "../components/Icons.js";
 
 export async function GuestsPage(eventId) {
   let event = null;
@@ -30,7 +29,7 @@ export async function GuestsPage(eventId) {
           <div class="flex items-center gap-6 lg:gap-8 animate-fade-in" style="animation-delay: 0.1s;">
             <div class="flex items-center gap-4">
               <button onclick="window.history.back()" class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#9E8E6E] hover:text-[#1E1B15] hover:shadow-sm transition-all border border-[#E9E1D7]">
-                ${icon('chevron-left', 18)}
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
               <div>
                 <h1 class="text-2xl font-bold text-[#1E1B15]">Invitados</h1>
@@ -41,7 +40,7 @@ export async function GuestsPage(eventId) {
               id="btn-add-guest-page"
               class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm flex items-center gap-2"
             >
-              ${icon('plus', 18)}
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
               Agregar Invitado
             </button>
           </div>

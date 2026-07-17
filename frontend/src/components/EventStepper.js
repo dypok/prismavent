@@ -1,5 +1,3 @@
-import { icon } from "./Icons.js";
-
 export function EventStepper(currentStep = 1) {
   const iconNames = ["file", "calendar-check", "play", "check-circle"];
   const steps = ["Borrador", "Confirmado", "En Progreso", "Realizado"];
