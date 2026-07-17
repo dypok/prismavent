@@ -1,6 +1,7 @@
 import { getUserName } from "../utils/authUtils.js";
 import api from "../service/api.js";
 import { showToast } from "./Toast.js";
+import { icon } from "./Icons.js";
 
 window.toggleProfile = function(e) {
   e.stopPropagation();

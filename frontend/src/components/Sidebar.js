@@ -1,5 +1,6 @@
 import logoIcon from "../assets/icons/logo.png";
 import { logout } from "../utils/authUtils.js";
+import { icon } from "./Icons.js";
 
 window.handleLogout = function () {
   logout();
