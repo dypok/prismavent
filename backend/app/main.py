@@ -9,6 +9,7 @@ from app.routers.event_items import router as event_items_router
 from app.routers.weather import router as weather_router
 from app.routers.providers import router as providers_router
 from app.routers.provider_categories import router as provider_categories_router
+from app.routers.event_tasks import router as event_tasks_router
 from app.middlewares.auth_middleware import SupabaseAuthMiddleware
 
 Base.metadata.create_all(bind=engine)
@@ -32,6 +33,7 @@ app.include_router(event_items_router)
 app.include_router(weather_router)
 app.include_router(providers_router)
 app.include_router(provider_categories_router)
+app.include_router(event_tasks_router)
 
 @app.get("/")
 def read_root():
