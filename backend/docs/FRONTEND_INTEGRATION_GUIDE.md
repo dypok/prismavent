@@ -655,3 +655,87 @@ Todos los endpoints de proveedores requieren que el frontend envíe el token de 
 * **Seguridad:** Requiere rol `admin` (`HTTP 403 Forbidden` si no se tienen permisos).
 * **Respuesta Exitosa (HTTP 204 No Content):**
   *(Sin cuerpo en la respuesta)*
+
+---
+
+## 10. Endpoints de Tareas del Evento — Kanban (`/events/{event_id}/tasks`)
+
+Permite gestionar un tablero Kanban de tareas para cada evento. Cada tarea tiene un título, descripción, prioridad visual y fecha límite. El estado de la tarea (`todo`, `in_progress`, `done`) define su columna en el tablero.
+
+### 10.1 Listar Tareas
+* **Endpoint:** `GET /events/{event_id}/tasks`
+* **Seguridad:** Requiere Token (`Authorization: Bearer <token>`). Solo el dueño del evento.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  [
+    {
+      "id": "a1b2c3d4-...",
+      "event_id": "e0eebc99-...",
+      "title": "Contratar catering",
+      "description": "Contactar al menos 3 proveedores",
+      "status": "in_progress",
+      "priority": "high",
+      "due_date": "2026-10-05",
+      "created_at": "2026-07-16T10:00:00Z",
+      "updated_at": "2026-07-16T10:00:00Z"
+    }
+  ]
+  ```
+
+### 10.2 Crear Tarea
+* **Endpoint:** `POST /events/{event_id}/tasks`
+* **Seguridad:** Requiere Token. Solo el dueño del evento.
+* **Cuerpo de la Petición:**
+  ```json
+  {
+    "title": "Contratar catering",
+    "description": "Contactar al menos 3 proveedores",
+    "priority": "high",
+    "due_date": "2026-10-05"
+  }
+  ```
+* **Reglas de Validación:**
+  * `title`: requerido, 1-255 caracteres.
+  * `priority`: debe ser `low`, `medium` o `high` (default: `medium`).
+  * `due_date`: requerido, debe ser una fecha futura y **no puede ser posterior a la fecha del evento**.
+  * El evento no debe estar en estado `finalizado`.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  Retorna el objeto de la tarea creada (misma estructura que en el listado).
+
+### 10.3 Editar Tarea (Parcial)
+* **Endpoint:** `PATCH /events/{event_id}/tasks/{task_id}`
+* **Seguridad:** Requiere Token. Solo el dueño del evento.
+* **Campos editables:** `title`, `description`, `priority`, `due_date`.
+* **Cuerpo de la Petición (ejemplo):**
+  ```json
+  {
+    "title": "Contratar catering actualizado",
+    "priority": "medium"
+  }
+  ```
+* **Validaciones:** Mismas reglas que creación para `due_date` y `priority`.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  Retorna el objeto completo de la tarea actualizada.
+
+### 10.4 Mover Tarea entre Columnas Kanban
+* **Endpoint:** `PATCH /events/{event_id}/tasks/{task_id}/move`
+* **Seguridad:** Requiere Token. Solo el dueño del evento.
+* **Descripción:** Cambia exclusivamente el estado de la tarea para moverla entre columnas del tablero Kanban.
+* **Cuerpo de la Petición:**
+  ```json
+  {
+    "status": "in_progress"
+  }
+  ```
+* **Estados válidos:** `todo`, `in_progress`, `done`.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  Retorna el objeto completo de la tarea con el nuevo estado.
+
+### Códigos de Error Comunes
+| Código | Escenario | Detail |
+|---|---|---|
+| `404` | Evento o tarea no existe | `"Event not found"` / `"Task not found"` |
+| `403` | Usuario no es dueño del evento | `"You do not have permission to access this event"` |
+| `400` | Evento finalizado | `"Cannot modify a finalized event"` |
+| `400` | `due_date` posterior a `event_date` | `"Task due date cannot be after the event date."` |
+| `422` | Status inválido en `/move` | Error de validación de Pydantic |
