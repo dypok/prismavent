@@ -147,7 +147,7 @@ function renderGuestsTable(guests, eventId) {
       <td class="py-4 px-5 text-[#9E8E6E] max-w-xs truncate block" title="${escapeHtml(guest.notes || "")}">${escapeHtml(guest.notes || "—")}</td>
       <td class="py-4 px-5 text-center">
         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${guest.confirmed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-          ${guest.confirmed ? '✅ Confirmado' : '⏳ Pendiente'}
+          ${guest.confirmed ? icon('check-circle', 14, 'text-green-700') + ' Confirmado' : icon('clock', 14, 'text-amber-700') + ' Pendiente'}
         </span>
       </td>
       <td class="py-4 px-5 text-center">

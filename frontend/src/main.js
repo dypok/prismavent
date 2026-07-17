@@ -6,6 +6,7 @@ import { Topbar } from "./components/Topbar.js";
 import { CreateEvent } from "./pages/CreateEvent.js";
 import { EventDetail } from "./pages/EventDetail.js";
 import { GuestsPage, initGuestsPage } from "./pages/GuestsPage.js";
+import { ResourcesPage, initResourcesPage } from "./pages/ResourcesPage.js";
 import { TasksPage, initTasksPage } from "./pages/TasksPage.js";
 import { CustomEventFlow } from "./pages/CustomEventFlow.js";
 import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
@@ -196,6 +197,16 @@ async function renderPage() {
       });
     }
 
+    // Handler para botón "Ver todos" en recursos
+    const viewAllResourcesBtn = document.getElementById("btn-view-all-resources");
+    if (viewAllResourcesBtn) {
+      viewAllResourcesBtn.addEventListener("click", (e) => {
+        const eventId = e.currentTarget.dataset.eventId;
+        window.history.pushState({}, "", `/events/${eventId}/resources`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      });
+    }
+
     // Handler para botón "Ver Tablero" en TasksPanel
     const viewKanbanBtn = document.getElementById("btn-view-kanban");
     if (viewKanbanBtn) {
@@ -334,6 +345,17 @@ async function renderPage() {
     document.querySelector("#app").innerHTML = await GuestsPage(eventId, triggerRect);
     if (triggerRect) delete window.__genieTriggerRect;
     initGuestsPage(eventId);
+
+  // Ruta: Lista de recursos del evento
+  } else if (path.startsWith("/events/") && path.endsWith("/resources")) {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    const eventId = path.split("/events/")[1].split("/resources")[0];
+    document.querySelector("#app").innerHTML = await ResourcesPage(eventId);
+    initResourcesPage(eventId);
 
   // Ruta: Tablero Kanban de tareas
   } else if (path.startsWith("/events/") && path.endsWith("/tasks")) {

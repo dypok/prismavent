@@ -44,37 +44,27 @@ export async function TasksPage(eventId) {
 
         <div class="flex-1 overflow-auto custom-scrollbar">
           <div class="p-8 max-w-7xl mx-auto h-full flex flex-col">
-            <!-- Minimalist Kanban Columns -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 items-start min-h-[500px]">
               
-              <!-- Column: TO DO -->
               <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 flex flex-col h-full min-h-[480px] shadow-sm" data-status="todo" id="col-todo">
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-[#F5EDE0]">
                   <h3 class="font-semibold text-[#1E1B15] text-sm uppercase tracking-wider" id="header-todo">Por Hacer</h3>
                 </div>
-                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[380px]" id="tasks-todo">
-                  <!-- Cards -->
-                </div>
+                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[380px]" id="tasks-todo"></div>
               </div>
 
-              <!-- Column: IN PROGRESS -->
               <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 flex flex-col h-full min-h-[480px] shadow-sm" data-status="in_progress" id="col-in-progress">
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-[#F5EDE0]">
                   <h3 class="font-semibold text-[#1E1B15] text-sm uppercase tracking-wider" id="header-in-progress">En Progreso</h3>
                 </div>
-                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[380px]" id="tasks-in_progress">
-                  <!-- Cards -->
-                </div>
+                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[380px]" id="tasks-in_progress"></div>
               </div>
 
-              <!-- Column: DONE -->
               <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 flex flex-col h-full min-h-[480px] shadow-sm" data-status="done" id="col-done">
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-[#F5EDE0]">
                   <h3 class="font-semibold text-[#1E1B15] text-sm uppercase tracking-wider" id="header-done">Realizado</h3>
                 </div>
-                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[380px]" id="tasks-done">
-                  <!-- Cards -->
-                </div>
+                <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar task-list-dropzone min-h-[380px]" id="tasks-done"></div>
               </div>
 
             </div>
@@ -82,7 +72,6 @@ export async function TasksPage(eventId) {
         </div>
       </main>
 
-      <!-- Task Modal Structure -->
       <div id="task-modal" class="fixed inset-0 bg-[#1E1B15]/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl border border-[#E9E1D7] shadow-xl w-full max-w-lg transform scale-95 transition-all duration-300 animate-scale-in">
           <div class="p-6 border-b border-[#F5EDE0] flex justify-between items-center bg-[#FFF8F1]">
@@ -94,33 +83,21 @@ export async function TasksPage(eventId) {
           <form id="task-form" class="p-6 space-y-4">
             <div>
               <label for="task-title" class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1.5 uppercase">Título</label>
-              <input 
-                type="text" 
-                id="task-title" 
-                placeholder="Ej. Contratar banquete" 
-                required 
-                maxlength="255"
-                class="w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none transition bg-white"
-              >
+              <input type="text" id="task-title" placeholder="Ej. Contratar banquete" required maxlength="255"
+                class="w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none transition bg-white">
             </div>
             
             <div>
               <label for="task-description" class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1.5 uppercase">Descripción (Opcional)</label>
-              <textarea 
-                id="task-description" 
-                placeholder="Detalla las especificaciones de la tarea..." 
-                rows="3" 
-                class="w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none transition resize-none bg-white"
-              ></textarea>
+              <textarea id="task-description" placeholder="Detalla las especificaciones de la tarea..." rows="3"
+                class="w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none transition resize-none bg-white"></textarea>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label for="task-priority" class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1.5 uppercase">Prioridad</label>
-                <select 
-                  id="task-priority" 
-                  class="w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none transition bg-white text-[#1E1B15]"
-                >
+                <select id="task-priority"
+                  class="w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm focus:border-[#755B00] focus:outline-none transition bg-white text-[#1E1B15]">
                   <option value="low">Baja</option>
                   <option value="medium" selected>Media</option>
                   <option value="high">Alta</option>
@@ -141,19 +118,10 @@ export async function TasksPage(eventId) {
             </div>
 
             <div class="flex gap-3 pt-4 border-t border-[#F5EDE0]">
-              <button 
-                type="button" 
-                id="btn-cancel-task"
-                class="flex-1 py-3 border border-[#D0C5B2] rounded-xl text-sm font-semibold text-[#4D4637] hover:bg-[#F8F5F0] transition"
-              >
-                Cancelar
-              </button>
-              <button 
-                type="submit" 
-                class="flex-1 py-3 bg-[#755B00] text-white font-semibold rounded-xl text-sm hover:bg-[#5F4A00] transition shadow-sm"
-              >
-                Guardar Tarea
-              </button>
+              <button type="button" id="btn-cancel-task"
+                class="flex-1 py-3 border border-[#D0C5B2] rounded-xl text-sm font-semibold text-[#4D4637] hover:bg-[#F8F5F0] transition">Cancelar</button>
+              <button type="submit"
+                class="flex-1 py-3 bg-[#755B00] text-white font-semibold rounded-xl text-sm hover:bg-[#5F4A00] transition shadow-sm">Guardar Tarea</button>
             </div>
           </form>
         </div>
@@ -165,7 +133,6 @@ export async function TasksPage(eventId) {
 let allTasks = [];
 let currentEventId = null;
 
-// Helper to escape HTML characters
 function escapeHtml(str) {
   return String(str || "")
     .replace(/&/g, '&amp;')
@@ -175,7 +142,6 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
-// Format task due date as weekday, day of month, month, year (e.g. lunes, 17 de julio de 2026)
 function formatTaskDueDate(dueDateStr) {
   if (!dueDateStr) return "";
   const [year, month, day] = dueDateStr.split("-").map(Number);
@@ -184,16 +150,11 @@ function formatTaskDueDate(dueDateStr) {
 }
 
 function buildTaskCardHTML(task) {
-  const priorityLabels = {
-    low: "Baja",
-    medium: "Media",
-    high: "Alta"
-  };
+  const priorityLabels = { low: "Baja", medium: "Media", high: "Alta" };
 
   return `
     <div 
-      class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm hover:border-[#755B00] hover:shadow transition duration-200 cursor-grab active:cursor-grabbing draggable-task" 
-      draggable="true" 
+      class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm hover:border-[#755B00] hover:shadow transition duration-200 cursor-grab draggable-task select-none" 
       data-id="${task.id}"
       data-status="${task.status}"
     >
@@ -243,19 +204,12 @@ function renderKanbanBoard() {
     in_progress: document.getElementById("tasks-in_progress"),
     done: document.getElementById("tasks-done")
   };
-
   const headers = {
     todo: document.getElementById("header-todo"),
     in_progress: document.getElementById("header-in-progress"),
     done: document.getElementById("header-done")
   };
-
-  const grouped = {
-    todo: [],
-    in_progress: [],
-    done: []
-  };
-
+  const grouped = { todo: [], in_progress: [], done: [] };
   allTasks.forEach(task => {
     if (grouped[task.status] !== undefined) {
       grouped[task.status].push(task);
@@ -263,23 +217,16 @@ function renderKanbanBoard() {
       grouped.todo.push(task);
     }
   });
-
-  const headerTitles = {
-    todo: "Por Hacer",
-    in_progress: "En Progreso",
-    done: "Realizado"
-  };
+  const headerTitles = { todo: "Por Hacer", in_progress: "En Progreso", done: "Realizado" };
 
   Object.keys(columns).forEach(status => {
     const colContainer = columns[status];
     const headerEl = headers[status];
     if (!colContainer) return;
-
     const list = grouped[status];
     if (headerEl) {
       headerEl.textContent = `${headerTitles[status]} (${list.length})`;
     }
-
     if (list.length === 0) {
       colContainer.innerHTML = `
         <div class="flex flex-col items-center justify-center py-10 text-center text-[#9E8E6E] border-2 border-dashed border-[#E9E1D7] rounded-xl bg-[#FAFAF8]/40 select-none">
@@ -291,31 +238,15 @@ function renderKanbanBoard() {
       colContainer.innerHTML = list.map(task => buildTaskCardHTML(task)).join("");
     }
   });
-
   attachCardEvents();
 }
 
 function attachCardEvents() {
-  const cards = document.querySelectorAll(".draggable-task");
-  cards.forEach(card => {
-    card.addEventListener("dragstart", (e) => {
-      card.classList.add("opacity-50");
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", card.dataset.id);
-    });
-
-    card.addEventListener("dragend", () => {
-      card.classList.remove("opacity-50");
-    });
-  });
-
   document.querySelectorAll(".btn-edit-task").forEach(btn => {
     btn.addEventListener("click", () => {
       const taskId = btn.dataset.id;
       const task = allTasks.find(t => t.id === taskId);
-      if (task) {
-        openTaskModal(task);
-      }
+      if (task) openTaskModal(task);
     });
   });
 
@@ -324,7 +255,6 @@ function attachCardEvents() {
       const taskId = btn.dataset.id;
       const task = allTasks.find(t => t.id === taskId);
       if (!task) return;
-
       if (confirm(`¿Estás seguro de que deseas eliminar la tarea "${task.title}"?`)) {
         try {
           await deleteEventTask(currentEventId, taskId);
@@ -338,25 +268,180 @@ function attachCardEvents() {
       }
     });
   });
+}
 
-  document.querySelectorAll(".btn-move-quick").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const taskId = btn.dataset.id;
-      const targetStatus = btn.dataset.target;
-      await moveTaskStatus(taskId, targetStatus);
-    });
+// ── Custom mouse-based drag and drop ──
+
+let dragState = null;
+
+function initCustomDrag() {
+  document.addEventListener("mousedown", (e) => {
+    const card = e.target.closest(".draggable-task");
+    if (!card) return;
+    if (e.target.closest("button")) return;
+    if (e.button !== 0) return;
+
+    dragState = {
+      card,
+      taskId: card.dataset.id,
+      startX: e.clientX,
+      startY: e.clientY,
+      dragging: false,
+      sourceStatus: card.dataset.status,
+    };
   });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!dragState) return;
+
+    const dx = e.clientX - dragState.startX;
+    const dy = e.clientY - dragState.startY;
+
+    if (!dragState.dragging && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+      dragState.dragging = true;
+      dragState.currentX = e.clientX;
+      dragState.currentY = e.clientY;
+      startDrag();
+    }
+
+    if (dragState.dragging) {
+      dragState.currentX = e.clientX;
+      dragState.currentY = e.clientY;
+      moveDrag(e);
+    }
+  });
+
+  document.addEventListener("mouseup", (e) => {
+    if (!dragState) return;
+    if (dragState.dragging) {
+      endDrag(e);
+    } else {
+      clearHighlights();
+    }
+    dragState = null;
+  });
+}
+
+function startDrag() {
+  const card = dragState.card;
+  const rect = card.getBoundingClientRect();
+
+  card.classList.add("opacity-20");
+
+  const ghost = card.cloneNode(true);
+  ghost.style.position = "fixed";
+  ghost.style.pointerEvents = "none";
+  ghost.style.zIndex = "9999";
+  ghost.style.width = rect.width + "px";
+  ghost.style.transform = "rotate(2deg) scale(1.03)";
+  ghost.style.boxShadow = "0 20px 60px rgba(0,0,0,0.18)";
+  ghost.style.borderRadius = "12px";
+  ghost.style.opacity = "0.92";
+  ghost.style.transition = "none";
+  ghost.id = "drag-ghost";
+  document.body.appendChild(ghost);
+
+  dragState.ghost = ghost;
+  dragState.offsetX = dragState.currentX - rect.left;
+  dragState.offsetY = dragState.currentY - rect.top;
+}
+
+function moveDrag(e) {
+  const ghost = dragState.ghost;
+  if (!ghost) return;
+  ghost.style.left = (e.clientX - dragState.offsetX) + "px";
+  ghost.style.top = (e.clientY - dragState.offsetY) + "px";
+
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const colDiv = el?.closest("[data-status]");
+  const targetStatus = colDiv?.dataset?.status;
+
+  document.querySelectorAll(".task-list-dropzone").forEach(zone => {
+    const col = zone.closest("[data-status]");
+    if (!col) return;
+    if (targetStatus && col.dataset.status === targetStatus && targetStatus !== dragState.sourceStatus) {
+      zone.classList.add("bg-[#F5EDD6]/40", "ring-2", "ring-[#C9A84C]/40", "ring-inset");
+    } else {
+      zone.classList.remove("bg-[#F5EDD6]/40", "ring-2", "ring-[#C9A84C]/40", "ring-inset");
+    }
+  });
+}
+
+function endDrag(e) {
+  if (dragState.ghost) {
+    dragState.ghost.remove();
+  }
+
+  clearHighlights();
+
+  if (dragState.card) {
+    dragState.card.classList.remove("opacity-20");
+  }
+
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const colDiv = el?.closest("[data-status]");
+  const targetStatus = colDiv?.dataset?.status;
+
+  if (targetStatus && targetStatus !== dragState.sourceStatus) {
+    moveTaskStatus(dragState.taskId, targetStatus);
+  }
+}
+
+function clearHighlights() {
+  document.querySelectorAll(".task-list-dropzone").forEach(zone => {
+    zone.classList.remove("bg-[#F5EDD6]/40", "ring-2", "ring-[#C9A84C]/40", "ring-inset");
+  });
+}
+
+function moveTaskCard(taskId, newStatus) {
+  const card = document.querySelector(`.draggable-task[data-id="${taskId}"]`);
+  if (!card) return false;
+  const targetZone = document.getElementById(`tasks-${newStatus}`);
+  if (!targetZone) return false;
+  const taskIdx = allTasks.findIndex(t => t.id === taskId);
+  if (taskIdx === -1) return false;
+  const originalStatus = allTasks[taskIdx].status;
+
+  card.dataset.status = newStatus;
+  allTasks[taskIdx].status = newStatus;
+  targetZone.appendChild(card);
+
+  const headerEl = document.getElementById(`header-${newStatus}`);
+  if (headerEl) {
+    const count = allTasks.filter(t => t.status === newStatus).length;
+    const titles = { todo: "Por Hacer", in_progress: "En Progreso", done: "Realizado" };
+    headerEl.textContent = `${titles[newStatus]} (${count})`;
+  }
+  const origHeaderEl = document.getElementById(`header-${originalStatus}`);
+  if (origHeaderEl) {
+    const count = allTasks.filter(t => t.status === originalStatus).length;
+    const titles = { todo: "Por Hacer", in_progress: "En Progreso", done: "Realizado" };
+    origHeaderEl.textContent = `${titles[originalStatus]} (${count})`;
+  }
+
+  const emptyState = targetZone.querySelector(".border-dashed");
+  if (emptyState) emptyState.remove();
+
+  const sourceZone = document.getElementById(`tasks-${originalStatus}`);
+  if (sourceZone && !sourceZone.querySelector(".draggable-task")) {
+    const titles = { todo: "Por Hacer", in_progress: "En Progreso", done: "Realizado" };
+    sourceZone.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-10 text-center text-[#9E8E6E] border-2 border-dashed border-[#E9E1D7] rounded-xl bg-[#FAFAF8]/40 select-none">
+        <p class="text-xs font-semibold text-[#6B6560]">Sin tareas</p>
+        <p class="text-[10px] mt-0.5">Arrastra una tarea aquí</p>
+      </div>
+    `;
+  }
+  return true;
 }
 
 async function moveTaskStatus(taskId, newStatus) {
   const taskIdx = allTasks.findIndex(t => t.id === taskId);
   if (taskIdx === -1) return;
-
   const originalStatus = allTasks[taskIdx].status;
-  
-  // Optimistic UI update
-  allTasks[taskIdx].status = newStatus;
-  renderKanbanBoard();
+  if (originalStatus === newStatus) return;
+  const moved = moveTaskCard(taskId, newStatus);
+  if (!moved) return;
 
   try {
     await moveEventTask(currentEventId, taskId, newStatus);
@@ -364,9 +449,7 @@ async function moveTaskStatus(taskId, newStatus) {
   } catch (error) {
     console.error("Error moving task:", error);
     showToast(error.message || "Error al mover la tarea.", "error");
-    // Revert
-    allTasks[taskIdx].status = originalStatus;
-    renderKanbanBoard();
+    moveTaskCard(taskId, originalStatus);
   }
 }
 
@@ -374,7 +457,6 @@ function openTaskModal(task = null) {
   const modal = document.getElementById("task-modal");
   const form = document.getElementById("task-form");
   const modalTitle = document.getElementById("task-modal-title");
-  
   if (!modal || !form || !modalTitle) return;
 
   form.reset();
@@ -383,7 +465,6 @@ function openTaskModal(task = null) {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = tomorrow.toISOString().split("T")[0];
-
   const display = document.getElementById("task-dateDisplay");
   const hiddenInput = document.getElementById("task-due-date");
 
@@ -448,7 +529,6 @@ export function initTasksPage(eventId) {
   if (taskForm) {
     taskForm.onsubmit = async (e) => {
       e.preventDefault();
-      
       const submitBtn = taskForm.querySelector('button[type="submit"]');
       const title = document.getElementById("task-title").value.trim();
       const description = document.getElementById("task-description").value.trim();
@@ -460,12 +540,7 @@ export function initTasksPage(eventId) {
         return;
       }
 
-      const taskData = {
-        title,
-        description: description || null,
-        priority,
-        due_date
-      };
+      const taskData = { title, description: description || null, priority, due_date };
 
       submitBtn.disabled = true;
       submitBtn.textContent = "Guardando...";
@@ -481,7 +556,6 @@ export function initTasksPage(eventId) {
           allTasks.push(newTask);
           showToast("Tarea creada exitosamente.");
         }
-        
         closeTaskModal();
         renderKanbanBoard();
       } catch (err) {
@@ -494,30 +568,7 @@ export function initTasksPage(eventId) {
     };
   }
 
-  const zones = document.querySelectorAll(".task-list-dropzone");
-  zones.forEach(zone => {
-    zone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
-      zone.classList.add("bg-[#F5EDD6]/20", "border-2", "border-dashed", "border-[#C9A84C]/40");
-    });
-
-    zone.addEventListener("dragleave", () => {
-      zone.classList.remove("bg-[#F5EDD6]/20", "border-2", "border-dashed", "border-[#C9A84C]/40");
-    });
-
-    zone.addEventListener("drop", async (e) => {
-      e.preventDefault();
-      zone.classList.remove("bg-[#F5EDD6]/20", "border-2", "border-dashed", "border-[#C9A84C]/40");
-      
-      const taskId = e.dataTransfer.getData("text/plain");
-      const column = zone.closest("[data-status]");
-      if (!column) return;
-
-      const targetStatus = column.dataset.status;
-      await moveTaskStatus(taskId, targetStatus);
-    });
-  });
+  initCustomDrag();
 }
 
 async function loadTasks(eventId) {
@@ -527,16 +578,10 @@ async function loadTasks(eventId) {
   } catch (error) {
     console.error("Error loading tasks:", error);
     showToast("Error al cargar las tareas del evento.", "error");
-    
-    const columns = ["tasks-todo", "tasks-in_progress", "tasks-done"];
-    columns.forEach(colId => {
+    ["tasks-todo", "tasks-in_progress", "tasks-done"].forEach(colId => {
       const el = document.getElementById(colId);
       if (el) {
-        el.innerHTML = `
-          <div class="text-center py-6 text-red-500 text-xs">
-            No se pudieron cargar las tareas.
-          </div>
-        `;
+        el.innerHTML = `<div class="text-center py-6 text-red-500 text-xs">No se pudieron cargar las tareas.</div>`;
       }
     });
   }

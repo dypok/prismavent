@@ -52,7 +52,7 @@ export function GuestsPanel(event) {
               </div>
               <div class="flex items-center gap-2">
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${guest.confirmed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-                  ${guest.confirmed ? '✅' : '⏳'}
+                  ${guest.confirmed ? icon('check-circle', 14, 'text-green-700') : icon('clock', 14, 'text-amber-700')}
                 </span>
                 <button
                   class="edit-guest text-[#755B00] font-medium hover:underline text-sm"
