@@ -1,3 +1,5 @@
+import { BudgetProgressGauge } from './BudgetProgressGauge.js';
+
 export function BudgetPanel(event) {
   if (!event) {
     return `
@@ -7,10 +9,18 @@ export function BudgetPanel(event) {
     `;
   }
 
+  const items = event.event_items || [];
   const totalEstimated = Number(event.total_estimated) || 0;
   const maxBudget = event.max_budget != null ? Number(event.max_budget) : null;
-  const overBudget = maxBudget !== null && totalEstimated > maxBudget;
-  const remaining = maxBudget !== null ? maxBudget - totalEstimated : null;
+
+  const confirmedTotal = items
+    .filter(i => i.confirmed)
+    .reduce((s, i) => s + Number(i.quantity) * Number(i.unit_price), 0);
+  const pendingTotal = items
+    .filter(i => !i.confirmed)
+    .reduce((s, i) => s + Number(i.quantity) * Number(i.unit_price), 0);
+
+  const remaining = maxBudget !== null ? maxBudget - confirmedTotal : null;
 
   const formatCOP = (val) =>
     new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(val);
@@ -19,29 +29,50 @@ export function BudgetPanel(event) {
     <div class="bg-white rounded-2xl border border-gray-200 p-6" id="budget-panel">
 
       <h2
-        class="text-3xl font-bold mb-6"
+        class="text-3xl font-bold mb-4"
         style="font-family: 'Playfair Display', serif;"
       >
-        Budget
+        Presupuesto
       </h2>
 
-      ${overBudget ? `
-        <div class="mb-4 rounded-lg border border-red-300 bg-red-100 p-3 text-red-800">
-          ⚠️ You have exceeded your maximum budget.
+      ${maxBudget !== null ? `
+        <div class="flex flex-col items-center mb-4">
+          ${BudgetProgressGauge(confirmedTotal, maxBudget)}
         </div>
-      ` : ''}
 
-      <div id="budget-items" class="space-y-3">
 
-        ${event.event_items.length === 0
+        <div class="grid grid-cols-3 gap-2 mb-5 text-center">
+          <div class="bg-green-50 rounded-xl p-2.5">
+            <p class="text-[10px] text-gray-500 mb-0.5">Confirmado</p>
+            <p class="text-sm font-bold text-green-600">${formatCOP(confirmedTotal)}</p>
+          </div>
+          <div class="bg-amber-50 rounded-xl p-2.5">
+            <p class="text-[10px] text-gray-500 mb-0.5">Pendiente</p>
+            <p class="text-sm font-bold text-amber-600">${formatCOP(pendingTotal)}</p>
+          </div>
+          <div class="${remaining >= 0 ? 'bg-blue-50' : 'bg-red-50'} rounded-xl p-2.5">
+            <p class="text-[10px] text-gray-500 mb-0.5">Disponible</p>
+            <p class="text-sm font-bold ${remaining >= 0 ? 'text-blue-600' : 'text-red-600'}">${formatCOP(Math.abs(remaining))}${remaining < 0 ? ' excedido' : ''}</p>
+          </div>
+        </div>
+      ` : `
+        <p class="text-sm text-gray-400 text-center mb-4">Sin límite de presupuesto</p>
+      `}
+
+      <div id="budget-items" class="space-y-2">
+
+        ${items.length === 0
           ? '<p class="text-gray-400 text-sm">No resources added yet.</p>'
-          : event.event_items
+          : items
               .map((item) => {
                 const subtotal = Number(item.quantity) * Number(item.unit_price);
                 return `
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-700">${item.name}</span>
-                    <span class="font-medium">${formatCOP(subtotal)}</span>
+                  <div class="flex justify-between items-center py-1.5 ${item.confirmed ? '' : 'opacity-70'}">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span class="text-xs flex-shrink-0">${item.confirmed ? '✅' : '⏳'}</span>
+                      <span class="text-sm text-gray-700 truncate">${item.name}</span>
+                    </div>
+                    <span class="text-sm font-medium flex-shrink-0 ml-2">${formatCOP(subtotal)}</span>
                   </div>
                 `;
               })
@@ -50,7 +81,7 @@ export function BudgetPanel(event) {
 
       </div>
 
-      <hr class="my-6">
+      <hr class="my-5">
 
       <div class="space-y-3">
         <div class="flex justify-between items-center">
@@ -63,20 +94,7 @@ export function BudgetPanel(event) {
             <span class="font-medium">Presupuesto máx.</span>
             <span class="text-xl font-bold">${formatCOP(maxBudget)}</span>
           </div>
-
-          <hr class="my-2">
-
-          <div class="flex justify-between items-center">
-            <span class="font-semibold text-lg">Saldo restante</span>
-            <span class="text-2xl font-bold ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}">
-              ${remaining >= 0 ? '+' : ''}${formatCOP(remaining)}
-            </span>
-          </div>
-        ` : `
-          <div class="flex justify-between items-center">
-            <span class="font-medium text-gray-500">Sin límite de presupuesto</span>
-          </div>
-        `}
+        ` : ''}
       </div>
 
     </div>
