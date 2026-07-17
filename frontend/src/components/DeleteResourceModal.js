@@ -4,7 +4,7 @@ export function DeleteResourceModal() {
       id="resource-delete-modal"
       class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 animate-fade-in backdrop-blur-sm"
     >
-      <div class="bg-white rounded-3xl p-8 w-[420px] shadow-2xl animate-scale-in">
+      <div class="bg-white rounded-3xl p-4 lg:p-6 w-full max-w-md mx-4 shadow-2xl animate-scale-in">
 
         <h2 class="text-2xl font-bold mb-3 text-[#1E1B15]">
           Delete Resource

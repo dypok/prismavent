@@ -6,6 +6,7 @@ import { Topbar } from "./components/Topbar.js";
 import { CreateEvent } from "./pages/CreateEvent.js";
 import { EventDetail } from "./pages/EventDetail.js";
 import { GuestsPage, initGuestsPage } from "./pages/GuestsPage.js";
+import { ResourcesPage, initResourcesPage } from "./pages/ResourcesPage.js";
 import { TasksPage, initTasksPage } from "./pages/TasksPage.js";
 import { CustomEventFlow } from "./pages/CustomEventFlow.js";
 import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
@@ -25,6 +26,7 @@ import {
 // === NUEVA IMPORTACIÓN ===
 import MyEvents from "./pages/MyEvents.js";
 import { ProvidersPage, initProvidersPage } from "./pages/Providers.js";
+import { initDashboard } from "./pages/Dashboard.js";
 
 console.log("Main.js cargado - Ruta:", window.location.pathname);
 
@@ -61,12 +63,12 @@ async function renderPage() {
               <p class="text-[#9E8E6E] text-xs mt-0.5">Bienvenido de vuelta a tu espacio</p>
             </div>
           `)}
-          <main class="flex-1 p-8 bg-[#FFF8F1] overflow-auto">
-            <!-- Contenido del Dashboard -->
-          </main>
+          <main class="flex-1 p-6 lg:p-8 bg-[#FFF8F1] overflow-auto"></main>
         </div>
       </div>
     `;
+    window.initDashboard = initDashboard;
+    initDashboard();
 
   // === RUTA: MIS EVENTOS ===
   } else if (path === '/my-events' || path === '/events') {
@@ -191,6 +193,16 @@ async function renderPage() {
         window.__genieTriggerRect = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
         const eventId = e.currentTarget.dataset.eventId;
         window.history.pushState({}, "", `/events/${eventId}/guests`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      });
+    }
+
+    // Handler para botón "Ver todos" en recursos
+    const viewAllResourcesBtn = document.getElementById("btn-view-all-resources");
+    if (viewAllResourcesBtn) {
+      viewAllResourcesBtn.addEventListener("click", (e) => {
+        const eventId = e.currentTarget.dataset.eventId;
+        window.history.pushState({}, "", `/events/${eventId}/resources`);
         window.dispatchEvent(new PopStateEvent("popstate"));
       });
     }
@@ -333,6 +345,17 @@ async function renderPage() {
     document.querySelector("#app").innerHTML = await GuestsPage(eventId, triggerRect);
     if (triggerRect) delete window.__genieTriggerRect;
     initGuestsPage(eventId);
+
+  // Ruta: Lista de recursos del evento
+  } else if (path.startsWith("/events/") && path.endsWith("/resources")) {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    const eventId = path.split("/events/")[1].split("/resources")[0];
+    document.querySelector("#app").innerHTML = await ResourcesPage(eventId);
+    initResourcesPage(eventId);
 
   // Ruta: Tablero Kanban de tareas
   } else if (path.startsWith("/events/") && path.endsWith("/tasks")) {

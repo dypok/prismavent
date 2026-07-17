@@ -47,9 +47,9 @@ export async function GuestsPage(eventId) {
         `)}
 
         <div class="flex-1 overflow-auto custom-scrollbar">
-          <div class="p-8 max-w-7xl mx-auto">
+          <div class="p-4 lg:p-8 max-w-7xl mx-auto">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 animate-fade-in-up" style="animation-delay: 0.2s;">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 animate-fade-in-up" style="animation-delay: 0.2s;">
               <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
                 <p class="text-sm text-[#9E8E6E]">Total invitados</p>
                 <p class="text-3xl font-bold text-[#1E1B15] mt-1">${guests.length}</p>
@@ -66,8 +66,8 @@ export async function GuestsPage(eventId) {
 
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden animate-fade-in-up" style="animation-delay: 0.3s;">
               <div class="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div class="relative max-w-md w-full">
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <div class="relative w-full">
+                  ${icon('search', 20, 'absolute left-3 top-1/2 -translate-y-1/2 text-gray-400')}
                   <input
                     type="text"
                     id="guest-search"
@@ -75,13 +75,13 @@ export async function GuestsPage(eventId) {
                     class="w-full pl-10 pr-4 py-2.5 border border-[#E9E1D7] rounded-xl focus:border-[#755B00] focus:outline-none text-sm bg-white"
                   >
                 </div>
-                <div class="flex items-center gap-3">
-                  <select id="guest-filter" class="px-4 py-2.5 border border-[#E9E1D7] rounded-xl focus:border-[#755B00] focus:outline-none text-sm bg-white">
+                <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 w-full md:w-auto">
+                  <select id="guest-filter" class="w-full md:w-auto px-4 py-2.5 border border-[#E9E1D7] rounded-xl focus:border-[#755B00] focus:outline-none text-sm bg-white">
                     <option value="all">Todos</option>
                     <option value="confirmed">Confirmados</option>
                     <option value="pending">Pendientes</option>
                   </select>
-                  <select id="guest-sort" class="px-4 py-2.5 border border-[#E9E1D7] rounded-xl focus:border-[#755B00] focus:outline-none text-sm bg-white">
+                  <select id="guest-sort" class="w-full md:w-auto px-4 py-2.5 border border-[#E9E1D7] rounded-xl focus:border-[#755B00] focus:outline-none text-sm bg-white">
                     <option value="name-asc">Nombre A-Z</option>
                     <option value="name-desc">Nombre Z-A</option>
                     <option value="status">Estado</option>
@@ -105,7 +105,7 @@ export async function GuestsPage(eventId) {
                 </table>
               </div>
 
-              <div class="p-4 border-t border-gray-100 flex items-center justify-between" id="pagination-container">
+              <div class="p-4 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-3" id="pagination-container">
                 <p class="text-sm text-[#9E8E6E]" id="pagination-info">Mostrando 0 de 0 invitados</p>
                 <div class="flex gap-2" id="pagination-buttons"></div>
               </div>
@@ -146,7 +146,7 @@ function renderGuestsTable(guests, eventId) {
       <td class="py-4 px-5 text-[#9E8E6E] max-w-xs truncate block" title="${escapeHtml(guest.notes || "")}">${escapeHtml(guest.notes || "—")}</td>
       <td class="py-4 px-5 text-center">
         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${guest.confirmed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-          ${guest.confirmed ? '✅ Confirmado' : '⏳ Pendiente'}
+          ${guest.confirmed ? icon('check-circle', 14, 'text-green-700') + ' Confirmado' : icon('clock', 14, 'text-amber-700') + ' Pendiente'}
         </span>
       </td>
       <td class="py-4 px-5 text-center">

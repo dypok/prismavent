@@ -1,3 +1,5 @@
+import { icon } from './Icons.js';
+
 export function ProviderCard(provider) {
   const starsHtml = (rating) => {
     const full = Math.floor(rating || 0);
@@ -17,7 +19,7 @@ export function ProviderCard(provider) {
           : `<span class="text-6xl opacity-30">🏢</span>`
         }
       </div>
-      <div class="p-5 space-y-3">
+      <div class="p-4 lg:p-6 space-y-3">
         <div class="flex items-start justify-between">
           <div class="flex-1 min-w-0">
             <h3 class="text-lg font-bold text-[#1E1B15] truncate">${provider.name}</h3>
@@ -32,7 +34,7 @@ export function ProviderCard(provider) {
         <p class="text-sm text-[#4D4637] line-clamp-2 leading-relaxed">${provider.description || 'Sin descripción disponible.'}</p>
 
         <div class="flex items-center gap-1.5 text-sm text-[#9E8E6E]">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${icon('map-pin', 14)}
           <span class="truncate">${provider.location || 'Ubicación no especificada'}</span>
         </div>
 

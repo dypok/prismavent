@@ -11,8 +11,8 @@ export function CustomEventFlow() {
 
   return `
     ${Background}
-    <div onclick="window.closeCustomModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto">
-      <div onclick="event.stopPropagation()">
+    <div onclick="window.closeCustomModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in overflow-y-auto">
+      <div onclick="event.stopPropagation()" class="w-full">
         ${CustomEventForm()}
       </div>
     </div>

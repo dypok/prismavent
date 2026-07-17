@@ -6,7 +6,7 @@ export function GuestModal() {
       class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 animate-fade-in backdrop-blur-sm"
     >
 
-      <div onclick="event.stopPropagation()" class="bg-white rounded-3xl p-8 w-[420px] shadow-2xl animate-scale-in">
+      <div onclick="event.stopPropagation()" class="bg-white rounded-3xl p-4 md:p-8 w-full max-w-md mx-4 shadow-2xl animate-scale-in">
 
         <h2 class="text-2xl font-bold mb-6 text-[#1E1B15]">
           Invitado

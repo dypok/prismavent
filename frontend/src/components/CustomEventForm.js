@@ -1,4 +1,5 @@
 import { getCities } from "../service/api.js";
+import { icon } from "./Icons.js";
 
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -28,7 +29,7 @@ function customSelectHTML(prefix, options, defaultVal, placeholder) {
     <div class="relative">
       <div id="${prefix}Display" class="w-full px-5 py-3 border border-[#D0C5B2] rounded-2xl text-sm cursor-pointer bg-white flex items-center justify-between select-none">
         <span class="truncate">${sel ? sel.label : (placeholder || 'Selecciona...')}</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#9E8E6E] shrink-0 ml-2"><polyline points="6 9 12 15 18 9"/></svg>
+        ${icon('chevron-down', 16, 'text-[#9E8E6E] shrink-0 ml-2')}
       </div>
       <input type="hidden" id="${prefix}" value="${defaultVal}">
       <div id="${prefix}List" class="hidden absolute top-full left-0 mt-1.5 bg-white border border-[#D0C5B2] rounded-2xl shadow-xl z-[100] w-full max-h-60 overflow-y-auto py-2">
@@ -219,13 +220,13 @@ export function CustomEventForm() {
     return `
     <div class="w-full max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl animate-scale-in">
 
-      <div id="templateBanner" class="hidden px-10 pt-6">
+      <div id="templateBanner" class="hidden px-4 lg:px-10 pt-6">
         <div class="bg-[#FEF3C7] border border-[#FDE68A] rounded-2xl px-6 py-4 text-sm text-[#4D4637]">
           Formulario pre-rellenado desde la plantilla: <span id="templateBannerName" class="font-semibold"></span>
         </div>
       </div>
 
-      <div class="px-8 pt-6 pb-4 border-b border-[#E9E1D7]">
+      <div class="px-4 lg:px-8 pt-6 pb-4 border-b border-[#E9E1D7]">
         <div class="flex justify-between items-center">
           <div>
             <h2 class="font-display text-2xl text-[#1E1B15]">Nuevo Evento</h2>
@@ -236,7 +237,7 @@ export function CustomEventForm() {
         </div>
       </div>
 
-      <form id="createEventForm" class="p-8 space-y-6">
+      <form id="createEventForm" class="p-4 lg:p-8 space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 
           <div class="md:col-span-2">
@@ -256,7 +257,7 @@ export function CustomEventForm() {
             <div class="relative">
               <div id="eventDateDisplay" class="w-full px-5 py-3 border border-[#D0C5B2] rounded-2xl text-sm cursor-pointer bg-white flex items-center justify-between select-none">
                 <span class="truncate">${defaultDateText}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#9E8E6E] shrink-0 ml-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                ${icon('calendar', 16, 'text-[#9E8E6E] shrink-0 ml-2')}
               </div>
               <input type="hidden" id="eventDate" value="${defaultDateVal}">
               ${calendarHTML('event', today)}
@@ -270,7 +271,7 @@ export function CustomEventForm() {
 
           <div>
             <label class="block text-xs font-medium tracking-widest text-[#4D4637] mb-1.5">DURACIÓN</label>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-col sm:flex-row">
               <input type="number" id="eventDurationHours" min="0" value="0" class="flex-1 min-w-0 w-full px-5 py-3 border border-[#D0C5B2] rounded-2xl focus:border-[#755B00] text-sm" placeholder="Horas">
               ${customSelectHTML('eventDurationMinutes', [
                 { value: '0', label: '0 min' },
@@ -296,10 +297,10 @@ export function CustomEventForm() {
 
         </div>
 
-        <div class="pt-4 flex gap-4">
+        <div class="pt-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
           <button type="button" onclick="window.closeCustomModal()"
-            class="flex-1 py-3.5 border border-[#D0C5B2] rounded-2xl font-medium hover:bg-gray-50 text-sm">Cancelar</button>
-          <button type="submit" class="flex-1 py-3.5 bg-[#755B00] hover:bg-[#5F4A00] text-white font-semibold rounded-2xl text-sm shadow-sm">Crear Evento →</button>
+            class="w-full sm:flex-1 py-3.5 border border-[#D0C5B2] rounded-2xl font-medium hover:bg-gray-50 text-sm">Cancelar</button>
+          <button type="submit" class="w-full sm:flex-1 py-3.5 bg-[#755B00] hover:bg-[#5F4A00] text-white font-semibold rounded-2xl text-sm shadow-sm">Crear Evento →</button>
         </div>
 
         <p id="createEventError" class="hidden text-sm text-red-600 text-center"></p>

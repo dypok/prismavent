@@ -1,6 +1,72 @@
 import { getUserName } from "../utils/authUtils.js";
 import api from "../service/api.js";
 import { showToast } from "./Toast.js";
+import { icon } from "./Icons.js";
+
+window.toggleProfile = function(e) {
+  e.stopPropagation();
+  const popover = document.getElementById("profile-popover");
+  if (!popover) return;
+  popover.classList.toggle("hidden");
+  popover.classList.toggle("flex");
+};
+
+window.closeProfile = function(e) {
+  const popover = document.getElementById("profile-popover");
+  const btn = document.getElementById("btn-toggle-profile");
+  if (!popover || !btn) return;
+  if (!popover.contains(e.target) && !btn.contains(e.target)) {
+    popover.classList.add("hidden");
+    popover.classList.remove("flex");
+  }
+};
+
+document.addEventListener("click", function(e) {
+  const popover = document.getElementById("profile-popover");
+  if (!popover || popover.classList.contains("hidden")) return;
+  window.closeProfile(e);
+});
+
+window.submitProfile = async function(e) {
+  e.preventDefault();
+  const name = document.getElementById("popover-name").value.trim();
+  const password = document.getElementById("popover-password").value;
+  const confirmPassword = document.getElementById("popover-confirm").value;
+  const errorEl = document.getElementById("popover-error");
+  const submitBtn = document.getElementById("popover-submit");
+  const popover = document.getElementById("profile-popover");
+
+  if (!errorEl || !submitBtn || !popover) return;
+  errorEl.classList.add("hidden");
+
+  if (password && password !== confirmPassword) {
+    errorEl.textContent = "Las contraseñas no coinciden.";
+    errorEl.classList.remove("hidden");
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Guardando...";
+
+  try {
+    await api.updateProfile(name || null, password || null);
+    showToast("Perfil actualizado correctamente");
+    if (name) {
+      const topbarName = document.getElementById("topbar-user-name");
+      if (topbarName) topbarName.textContent = name;
+    }
+    document.getElementById("popover-password").value = "";
+    document.getElementById("popover-confirm").value = "";
+    popover.classList.add("hidden");
+    popover.classList.remove("flex");
+  } catch (error) {
+    errorEl.textContent = error.message || "Error al actualizar perfil.";
+    errorEl.classList.remove("hidden");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Guardar";
+  }
+};
 
 export function Topbar(leftContent = "") {
   const userName = getUserName();
@@ -14,103 +80,34 @@ export function Topbar(leftContent = "") {
     greeting = "Buenas noches";
   }
 
-  // Agregamos listeners una vez que el Topbar está en el DOM
-  setTimeout(() => {
-    const btnToggle = document.getElementById("btn-toggle-profile");
-    const popover = document.getElementById("profile-popover");
-    const form = document.getElementById("profile-form-inline");
-
-    if (btnToggle && popover) {
-      // Toggle popover
-      btnToggle.addEventListener("click", (e) => {
-        e.stopPropagation();
-        popover.classList.toggle("hidden");
-        popover.classList.toggle("flex");
-      });
-
-      // Cerrar si se hace clic fuera del popover
-      document.addEventListener("click", (e) => {
-        if (!popover.contains(e.target) && !btnToggle.contains(e.target)) {
-          popover.classList.add("hidden");
-          popover.classList.remove("flex");
-        }
-      });
-    }
-
-    if (form) {
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        const name = document.getElementById("popover-name").value.trim();
-        const password = document.getElementById("popover-password").value;
-        const confirmPassword = document.getElementById("popover-confirm").value;
-        const errorEl = document.getElementById("popover-error");
-        const submitBtn = document.getElementById("popover-submit");
-
-        errorEl.classList.add("hidden");
-
-        if (password && password !== confirmPassword) {
-          errorEl.textContent = "Las contraseñas no coinciden.";
-          errorEl.classList.remove("hidden");
-          return;
-        }
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Guardando...";
-
-        try {
-          await api.updateProfile(name || null, password || null);
-          showToast("Perfil actualizado correctamente");
-          
-          if (name) {
-            const topbarName = document.getElementById("topbar-user-name");
-            if (topbarName) topbarName.textContent = name;
-          }
-
-          document.getElementById("popover-password").value = "";
-          document.getElementById("popover-confirm").value = "";
-          
-          // Cerrar popover
-          popover.classList.add("hidden");
-          popover.classList.remove("flex");
-        } catch (error) {
-          errorEl.textContent = error.message || "Error al actualizar perfil.";
-          errorEl.classList.remove("hidden");
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Guardar";
-        }
-      });
-    }
-  }, 0);
-
   return `
-    <header class="flex justify-between items-center h-20 px-8 lg:px-12 bg-[#FFF8F1]">
+    <header class="flex justify-between items-center h-16 lg:h-20 px-4 lg:px-12 bg-[#FFF8F1]">
       
-      <div class="flex flex-col justify-center">
-        ${leftContent}
+      <div class="flex items-center gap-3 min-w-0">
+        <button id="sidebar-toggle" onclick="toggleSidebar()" class="md:hidden w-10 h-10 bg-white rounded-xl shadow-sm border border-[#E9E1D7] flex items-center justify-center text-[#755B00] hover:bg-[#FEF3C7] transition-all duration-200 cursor-pointer shrink-0">
+          ${icon('menu', 20)}
+        </button>
+        <div class="flex flex-col justify-center min-w-0">
+          ${leftContent}
+        </div>
       </div>
 
-      <div class="flex items-center">
-        <p class="text-sm text-[#4D4637] mr-6">
+      <div class="flex items-center gap-2 lg:gap-4 shrink-0">
+        <p class="text-xs lg:text-sm text-[#4D4637] hidden sm:block">
           ${greeting}, <span id="topbar-user-name" class="font-semibold text-[#1E1B15]">${userName}</span>
         </p>
 
         <div class="relative">
-          <button id="btn-toggle-profile" class="cursor-pointer text-[#9E8E6E] hover:text-[#1E1B15] transition-colors p-2 rounded-xl hover:bg-white border border-transparent hover:border-[#E9E1D7] flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
+          <button id="btn-toggle-profile" onclick="toggleProfile(event)" class="cursor-pointer text-[#9E8E6E] hover:text-[#1E1B15] transition-colors p-2 rounded-xl hover:bg-white border border-transparent hover:border-[#E9E1D7] flex items-center justify-center">
+            ${icon('settings', 20)}
           </button>
 
-          <!-- Menú Popover de Perfil -->
-          <div id="profile-popover" class="absolute right-0 top-full mt-3 w-80 bg-white rounded-2xl shadow-xl border border-[#E9E1D7] hidden flex-col p-6 z-50 animate-fade-in origin-top-right">
+          <div id="profile-popover" class="absolute right-0 top-full mt-3 w-72 md:w-80 bg-white rounded-2xl shadow-xl border border-[#E9E1D7] hidden flex-col p-4 md:p-6 z-50 animate-fade-in origin-top-right">
             
             <h3 class="text-lg font-bold text-[#1E1B15] mb-1">Ajustes de Perfil</h3>
             <p class="text-xs text-[#9E8E6E] mb-5">Actualiza tu información personal</p>
 
-            <form id="profile-form-inline" class="space-y-4">
+            <form id="profile-form-inline" onsubmit="submitProfile(event)" class="space-y-4">
               <div>
                 <label class="block text-[10px] font-semibold tracking-widest text-[#4D4637] mb-1.5 uppercase">Nombre</label>
                 <input 

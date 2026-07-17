@@ -1,3 +1,5 @@
+import { icon } from "./Icons.js";
+
 export function TasksPanel(event, tasks = []) {
   const totalTasks = tasks.length;
   const doneTasks = tasks.filter(t => t.status === "done").length;
@@ -5,14 +7,10 @@ export function TasksPanel(event, tasks = []) {
   const todoTasks = tasks.filter(t => t.status === "todo").length;
 
   return `
-    <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+    <div class="bg-white rounded-2xl border border-gray-200 p-4 lg:p-6 shadow-sm">
       <div class="flex justify-between items-center mb-5">
         <h2 class="text-lg font-bold text-[#1E1B15] flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#755B00]">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <rect x="7" y="7" width="3" height="10"/>
-            <rect x="14" y="12" width="3" height="5"/>
-          </svg>
+          ${icon('layout', 20, 'text-[#755B00]')}
           Tareas (Kanban)
         </h2>
         <button
@@ -21,11 +19,11 @@ export function TasksPanel(event, tasks = []) {
           data-event-id="${event?.id}"
         >
           Ver Tablero
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          ${icon('arrow-right', 14)}
         </button>
       </div>
 
-      <div class="grid grid-cols-3 gap-2 text-center">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
         <div class="bg-[#F8F5F0] rounded-xl p-3">
           <p class="text-xs text-[#9E8E6E]">Por Hacer</p>
           <p class="text-xl font-bold text-[#1E1B15] mt-1">${todoTasks}</p>

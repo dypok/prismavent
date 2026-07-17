@@ -1,3 +1,5 @@
+import { icon } from './Icons.js';
+
 export function GuestsPanel(event) {
   const guests = event?.guests || [];
   const displayed = guests.slice(0, 5);
@@ -14,7 +16,7 @@ export function GuestsPanel(event) {
             id="btn-add-guest"
             class="px-4 py-2 rounded-xl bg-[#755B00] text-white text-sm hover:bg-[#5F4A00] flex items-center gap-1.5"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            ${icon('user-plus', 14)}
             Agregar
           </button>
           ${hasMore ? `
@@ -50,7 +52,7 @@ export function GuestsPanel(event) {
               </div>
               <div class="flex items-center gap-2">
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${guest.confirmed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-                  ${guest.confirmed ? '✅' : '⏳'}
+                  ${guest.confirmed ? icon('check-circle', 14, 'text-green-700') : icon('clock', 14, 'text-amber-700')}
                 </span>
                 <button
                   class="edit-guest text-[#755B00] font-medium hover:underline text-sm"

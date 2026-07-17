@@ -1,9 +1,10 @@
 import { BudgetProgressGauge } from './BudgetProgressGauge.js';
+import { icon } from './Icons.js';
 
 export function BudgetPanel(event) {
   if (!event) {
     return `
-      <div class="bg-white rounded-2xl border border-gray-200 p-6">
+      <div class="bg-white rounded-2xl border border-gray-200 p-4 lg:p-6">
         <p class="text-gray-500">Loading budget...</p>
       </div>
     `;
@@ -26,7 +27,7 @@ export function BudgetPanel(event) {
     new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(val);
 
   return `
-    <div class="bg-white rounded-2xl border border-gray-200 p-6" id="budget-panel">
+    <div class="bg-white rounded-2xl border border-gray-200 p-4 lg:p-6" id="budget-panel">
 
       <h2
         class="font-display text-3xl font-bold mb-4"
@@ -70,8 +71,8 @@ export function BudgetPanel(event) {
                     <div class="flex items-center gap-2 min-w-0">
                       <span class="text-xs flex-shrink-0">${
                         item.confirmed
-                          ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
-                          : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+                          ? icon('check-circle-2', 16, 'text-green-500')
+                          : icon('clock', 16, 'text-amber-500')
                       }</span>
                       <span class="text-sm text-gray-700 truncate">${item.name}</span>
                     </div>

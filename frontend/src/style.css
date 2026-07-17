@@ -68,3 +68,103 @@
         font-size: 12px; /* Reduce toda la interfaz un 25% */
     }
 }
+
+/* ===== SIDEBAR RESPONSIVE ===== */
+
+#sidebar {
+    width: 16rem;
+    transition: width 0.3s ease, transform 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    #sidebar {
+        width: 4rem;
+    }
+    #sidebar:hover {
+        width: 16rem;
+    }
+}
+
+@media (max-width: 767px) {
+    #sidebar {
+        transform: translateX(-100%);
+    }
+    #sidebar[data-sidebar-open="true"] {
+        transform: translateX(0);
+    }
+}
+
+/* Nav items — collapsed */
+#sidebar .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.875rem 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#sidebar:hover .nav-item,
+#sidebar[data-sidebar-open="true"] .nav-item {
+    justify-content: flex-start;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+/* SVG icon container */
+#sidebar .nav-item .icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Labels — hidden when collapsed, visible on hover/open */
+#sidebar .nav-label {
+    display: none;
+    white-space: nowrap;
+}
+
+#sidebar:hover .nav-label,
+#sidebar[data-sidebar-open="true"] .nav-label {
+    display: inline;
+}
+
+/* Logout area — collapsed */
+#sidebar .logout-area {
+    padding: 0.5rem;
+    transition: padding 0.3s ease;
+}
+
+#sidebar:hover .logout-area,
+#sidebar[data-sidebar-open="true"] .logout-area {
+    padding: 1rem;
+}
+
+/* Logout button — collapsed */
+#sidebar .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#sidebar:hover .logout-btn,
+#sidebar[data-sidebar-open="true"] .logout-btn {
+    justify-content: flex-start;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Logout button icon */
+#sidebar .logout-btn .icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}

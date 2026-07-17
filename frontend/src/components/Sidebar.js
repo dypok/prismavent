@@ -1,5 +1,6 @@
 import logoIcon from "../assets/icons/logo.png";
 import { logout } from "../utils/authUtils.js";
+import { icon } from "./Icons.js";
 
 window.handleLogout = function () {
   logout();
@@ -7,7 +8,38 @@ window.handleLogout = function () {
   window.dispatchEvent(new PopStateEvent("popstate"));
 };
 
+window.toggleSidebar = function () {
+  const sidebar = document.getElementById("sidebar");
+  const backdrop = document.getElementById("sidebar-backdrop");
+  if (!sidebar || !backdrop) return;
+  const isOpen = sidebar.getAttribute("data-sidebar-open") === "true";
+  sidebar.setAttribute("data-sidebar-open", isOpen ? "false" : "true");
+  backdrop.classList.toggle("hidden", isOpen);
+  document.body.classList.toggle("overflow-hidden", !isOpen);
+};
+
+window.closeSidebar = function () {
+  const sidebar = document.getElementById("sidebar");
+  const backdrop = document.getElementById("sidebar-backdrop");
+  if (!sidebar || !backdrop) return;
+  sidebar.setAttribute("data-sidebar-open", "false");
+  backdrop.classList.add("hidden");
+  document.body.classList.remove("overflow-hidden");
+};
+
+window.addEventListener("resize", function () {
+  if (window.innerWidth >= 768) {
+    const sidebar = document.getElementById("sidebar");
+    const backdrop = document.getElementById("sidebar-backdrop");
+    if (sidebar) sidebar.setAttribute("data-sidebar-open", "false");
+    if (backdrop) backdrop.classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+  }
+});
+
 export function Sidebar(active = "new-event") {
+  document.body.classList.remove("overflow-hidden");
+
   const currentPath = window.location.pathname;
 
   const isActive = (path) => {
@@ -26,58 +58,60 @@ export function Sidebar(active = "new-event") {
   };
 
   return `
-    <aside class="sticky top-0 left-0 w-16 hover:w-64 h-screen bg-[#FFF8F1] border-r border-[#E9E1D7] flex flex-col transition-all duration-300 group overflow-hidden shrink-0 z-40">
+    <div id="sidebar-backdrop" onclick="closeSidebar()" class="fixed inset-0 z-40 bg-black/50 hidden md:hidden"></div>
+
+    <aside id="sidebar" data-sidebar-open="false" class="fixed md:sticky top-0 left-0 h-screen bg-[#FFF8F1] border-r border-[#E9E1D7] flex flex-col overflow-hidden shrink-0 z-40">
       
       <!-- Logo -->
-      <div class="h-24 pt-8 pb-4 flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300">
-        <img src="${logoIcon}" alt="Prismavent" class="w-10 h-auto object-contain transition-all duration-300 drop-shadow-sm">
+      <div class="h-24 pt-8 pb-4 flex items-center justify-center overflow-hidden shrink-0">
+        <img src="${logoIcon}" alt="Prismavent" class="w-10 h-auto object-contain drop-shadow-sm">
       </div>
 
       <!-- Menú de Navegación -->
       <nav class="flex-1">
         <ul class="space-y-1">
           <li onclick="navigateTo('/dashboard')" 
-              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-4
-              ${isActive('/dashboard') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
-            ${renderIcon('layout-dashboard')}
-            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Dashboard</span>
+              class="nav-item hover:bg-white hover:text-[#755B00] 
+              ${isActive('/dashboard') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
+            <span class="icon-wrap">${icon('layout', 20)}</span>
+            <span class="nav-label">Dashboard</span>
           </li>
 
           <li onclick="navigateTo('/events')" 
-              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-4
-              ${isActive('/events') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
-            ${renderIcon('calendar-days')}
-            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Mis Eventos</span>
+              class="nav-item hover:bg-white hover:text-[#755B00] 
+              ${isActive('/events') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
+            <span class="icon-wrap">${icon('calendar', 20)}</span>
+            <span class="nav-label">Mis Eventos</span>
           </li>
 
           <li onclick="navigateTo('/events/new')" 
-              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-4
-              ${isActive('/events/new') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
-            ${renderIcon('plus-circle')}
-            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">New Event</span>
+              class="nav-item hover:bg-white hover:text-[#755B00] 
+              ${isActive('/events/new') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
+            <span class="icon-wrap">${icon('plus', 20)}</span>
+            <span class="nav-label">New Event</span>
           </li>
 
           <li onclick="navigateTo('/providers')" 
-              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-4
-              ${isActive('/providers') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
-            ${renderIcon('store')}
-            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Providers</span>
+              class="nav-item hover:bg-white hover:text-[#755B00] 
+              ${isActive('/providers') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
+            <span class="icon-wrap">${icon('store', 20)}</span>
+            <span class="nav-label">Providers</span>
           </li>
 
           <li onclick="navigateTo('/history')" 
-              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-4
-              ${isActive('/history') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
-            ${renderIcon('history')}
-            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">History</span>
+              class="nav-item hover:bg-white hover:text-[#755B00] 
+              ${isActive('/history') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
+            <span class="icon-wrap">${icon('clock', 20)}</span>
+            <span class="nav-label">History</span>
           </li>
         </ul>
       </nav>
 
       <!-- Botón de Cerrar Sesión -->
-      <div class="mt-auto p-2 group-hover:p-4 border-t border-[#E9E1D7] overflow-hidden shrink-0 transition-all duration-300">
-        <button onclick="window.handleLogout()" class="w-full flex items-center justify-start gap-4 px-3 group-hover:px-4 py-2.5 text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] rounded-xl transition-all duration-300 text-sm font-medium cursor-pointer">
-          ${renderIcon('log-out')}
-          <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Cerrar Sesión</span>
+      <div class="logout-area mt-auto border-t border-[#E9E1D7] overflow-hidden shrink-0">
+        <button onclick="window.handleLogout()" class="logout-btn text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] rounded-xl text-sm font-medium cursor-pointer">
+          <span class="icon-wrap">${icon('log-out', 20)}</span>
+          <span class="nav-label">Cerrar Sesión</span>
         </button>
       </div>
     </aside>
