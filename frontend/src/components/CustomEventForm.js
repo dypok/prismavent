@@ -207,6 +207,7 @@ function initCalendar(prefix, inputId, displayId) {
 }
 
 window.initCalendar = initCalendar;
+window.calendarHTML = calendarHTML;
 
 let citiesCache = [];
 

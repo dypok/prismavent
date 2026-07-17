@@ -248,6 +248,38 @@ export async function deleteEventItem(eventId, itemId) {
   });
 }
 
+// --- Event Tasks (Kanban) ---
+export async function getEventTasks(eventId) {
+  return await apiFetch(`/events/${eventId}/tasks`);
+}
+
+export async function createEventTask(eventId, taskData) {
+  return await apiFetch(`/events/${eventId}/tasks`, {
+    method: 'POST',
+    body: JSON.stringify(taskData)
+  });
+}
+
+export async function updateEventTask(eventId, taskId, taskData) {
+  return await apiFetch(`/events/${eventId}/tasks/${taskId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(taskData)
+  });
+}
+
+export async function moveEventTask(eventId, taskId, status) {
+  return await apiFetch(`/events/${eventId}/tasks/${taskId}/move`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status })
+  });
+}
+
+export async function deleteEventTask(eventId, taskId) {
+  return await apiFetch(`/events/${eventId}/tasks/${taskId}`, {
+    method: 'DELETE'
+  });
+}
+
 export default {
   updateProfile,
   login,
@@ -274,5 +306,10 @@ export default {
   getAccessToken,
   clearAccessToken,
   apiFetch,
-  deleteEvent
+  deleteEvent,
+  getEventTasks,
+  createEventTask,
+  updateEventTask,
+  moveEventTask,
+  deleteEventTask
 };

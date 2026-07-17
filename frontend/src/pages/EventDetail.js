@@ -1,7 +1,8 @@
 import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
-import { getEventById, updateEvent, updateEventStatus, createEventItem, updateEventItem, deleteEventItem } from "../service/api.js";
+import { getEventById, updateEvent, updateEventStatus, createEventItem, updateEventItem, deleteEventItem, getEventTasks } from "../service/api.js";
+import { TasksPanel } from "../components/TasksPanel.js";
 
 const _fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
 
@@ -78,11 +79,17 @@ import { initSaveTemplateModal } from "../components/SaveTemplateModal.js";
 export async function EventDetail(eventId) {
   let event = null;
   let original = null;
+  let tasks = [];
 
   if (eventId) {
     try {
       event = await getEventById(eventId);
       original = event ? { ...event } : null;
+      try {
+        tasks = await getEventTasks(eventId);
+      } catch (tErr) {
+        console.error("Error fetching tasks for EventDetail", tErr);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -287,6 +294,7 @@ export async function EventDetail(eventId) {
                     </div>` : ''}
                     
                     ${GuestsPanel(event)}
+                    ${TasksPanel(event, tasks)}
 
                     <div class="flex flex-wrap gap-3" id="detail-actions">
 
