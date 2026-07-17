@@ -139,16 +139,7 @@ export async function EventDetail(eventId) {
         `)}
 
         <div class="flex-1 overflow-auto custom-scrollbar">
-          <div class="p-8 max-w-7xl mx-auto">
-
-            <div class="flex justify-end mb-8 animate-fade-in" id="detail-actions">
-              <button onclick="window.__currentEventData && window.openSaveTemplateModal(window.__currentEventData)"
-                class="px-5 py-2.5 bg-white border border-[#E9E1D7] text-[#755B00] rounded-xl text-sm font-semibold hover:bg-[#FEF3C7] transition-all shadow-sm flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                Guardar como Plantilla
-              </button>
-            </div>
-            </div>
+          <div class="p-8">
 
             <section class="flex gap-6">
 
@@ -250,7 +241,7 @@ export async function EventDetail(eventId) {
                     
                     ${GuestsPanel(event)}
 
-                    <div class="flex gap-3" id="detail-actions">
+                    <div class="flex flex-wrap gap-3" id="detail-actions">
 
                       ${
                         nextButtonText
@@ -272,6 +263,14 @@ export async function EventDetail(eventId) {
                         class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm"
                       >
                         Editar
+                      </button>
+
+                      <button
+                        onclick="window.__currentEventData && window.openSaveTemplateModal(window.__currentEventData)"
+                        class="px-5 py-2.5 bg-white border border-[#E9E1D7] text-[#755B00] rounded-xl text-sm font-semibold hover:bg-[#FEF3C7] transition-all shadow-sm flex items-center gap-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Guardar como Plantilla
                       </button>
 
                     </div>
