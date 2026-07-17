@@ -63,7 +63,7 @@ export async function register(name, email, password, phone) {
   return data;
 }
 
-// --- Fetch autenticado (sin cambios) ---
+// --- Fetch autenticado ---
 
 export async function apiFetch(path, options = {}) {
   const token = getAccessToken();
@@ -81,6 +81,17 @@ export async function apiFetch(path, options = {}) {
     ...options,
     headers
   });
+
+  if (res.status === 401) {
+    clearAccessToken();
+    const msg = token
+      ? "Tu sesión expiró. Redirigiendo al login..."
+      : "Debes iniciar sesión para continuar.";
+    alert(msg);
+    window.history.pushState({}, "", "/login");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    throw new Error(msg);
+  }
 
   const data = await res.json().catch(() => null);
 
@@ -133,6 +144,21 @@ export async function deleteEvent(eventId) {
 // Obtener templates (útil para crear evento)
 export async function getTemplates() {
   return await apiFetch('/templates');
+}
+
+export async function getUserTemplates() {
+  return await apiFetch('/user-templates');
+}
+
+export async function createUserTemplate(payload) {
+  return await apiFetch('/user-templates', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteUserTemplate(id) {
+  return await apiFetch(`/user-templates/${id}`, { method: 'DELETE' });
 }
 
 // Obtener invitados de un evento
@@ -209,6 +235,9 @@ export default {
   getEvents,
   getEventById,
   getTemplates,
+  getUserTemplates,
+  createUserTemplate,
+  deleteUserTemplate,
   getEventGuests,
   createGuest,
   updateGuest,

@@ -8,6 +8,7 @@ import { EventDetail } from "./pages/EventDetail.js";
 import { GuestsPage, initGuestsPage } from "./pages/GuestsPage.js";
 import { CustomEventFlow } from "./pages/CustomEventFlow.js";
 import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
+import { MyTemplates } from "./pages/MyTemplates.js";
 import { prefillCustomEventForm } from "./components/CustomEventForm.js";
 import { deleteEvent } from "./service/api.js";
 import { showToast } from "./components/Toast.js";
@@ -338,6 +339,15 @@ async function renderPage() {
       return;
     }
     document.querySelector("#app").innerHTML = TemplateEventFlow();
+
+  } else if (path === "/my-templates") {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    const myTemplatesPage = new MyTemplates();
+    await myTemplatesPage.init();
 
   // 404
   } else {
