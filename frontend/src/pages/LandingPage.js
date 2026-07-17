@@ -35,32 +35,18 @@ export function LandingPage() {
     <div class="absolute inset-0 bg-gradient-to-b from-[#FFF8F1] via-[#FEF3C7]/30 to-[#FFF8F1] pointer-events-none"></div>
     <div class="absolute top-20 right-0 w-96 h-96 bg-[#C9A84C]/10 rounded-full blur-3xl"></div>
     <div class="absolute bottom-20 left-0 w-80 h-80 bg-[#376847]/10 rounded-full blur-3xl"></div>
-    <div class="relative max-w-7xl mx-auto px-4 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="relative max-w-4xl mx-auto px-4 lg:px-8 text-center">
       <div class="animate-fade-in-up">
         <span class="inline-block px-4 py-1.5 bg-[#FEF3C7] text-[#755B00] text-xs font-semibold rounded-full uppercase tracking-wider mb-4">Plataforma todo-en-uno</span>
         <h1 class="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-[#1E1B15] leading-tight">
           Planifica eventos inolvidables con <span class="text-[#755B00]">Prismavent</span>
         </h1>
-        <p class="text-[#9E8E6E] text-lg mt-6 leading-relaxed max-w-xl">
+        <p class="text-[#9E8E6E] text-lg mt-6 leading-relaxed max-w-2xl mx-auto">
           La plataforma todo-en-uno para organizar bodas, conferencias y celebraciones. Gestiona invitados, presupuestos, proveedores y tareas en un solo lugar.
         </p>
-        <div class="flex flex-col sm:flex-row gap-4 mt-8">
+        <div class="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
           <button onclick="window.navigateTo('/auth')" class="px-6 py-3 bg-[#755B00] hover:bg-[#5A4700] text-white rounded-xl font-semibold transition-all shadow-md hover:shadow-lg text-sm lg:text-base">Comenzar gratis</button>
           <a href="#features" class="px-6 py-3 border border-[#E9E1D7] bg-white hover:bg-[#FEF3C7] rounded-xl font-semibold text-[#4D4637] transition-all text-sm lg:text-base text-center">Ver características</a>
-        </div>
-      </div>
-      <div class="hidden lg:flex justify-center animate-fade-in-up">
-        <div class="w-80 h-80 relative">
-          <div class="absolute inset-0 bg-gradient-to-br from-[#C9A84C]/20 to-[#755B00]/20 rounded-3xl border border-[#E9E1D7]"></div>
-          <div class="absolute w-40 h-40 rounded-full bg-[#C9A84C]/15 blur-2xl top-8 left-6"></div>
-          <div class="absolute w-32 h-32 rounded-full bg-[#376847]/15 blur-2xl bottom-8 right-6"></div>
-          <div class="absolute w-24 h-24 rounded-full bg-[#755B00]/10 blur-xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
-          <svg class="absolute inset-0 w-full h-full text-[#C9A84C]/10" viewBox="0 0 100 100" fill="none">
-            <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 4"/>
-            <circle cx="50" cy="50" r="25" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 4"/>
-            <line x1="10" y1="50" x2="90" y2="50" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 4"/>
-            <line x1="50" y1="10" x2="50" y2="90" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 4"/>
-          </svg>
         </div>
       </div>
     </div>
