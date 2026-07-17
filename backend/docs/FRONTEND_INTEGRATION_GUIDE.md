@@ -250,8 +250,8 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
     "confirmed_guests_count": 1,
     "unconfirmed_guests_count": 1,
     "total_estimated": "4450.00",
-    "budget_alert": false,
-    "amount_over_budget": "0.00"
+    "over_budget": false,
+    "budget_exceeded_by": "0.00"
   }
   ```
 
@@ -320,8 +320,8 @@ Cualquier otra ruta no listada arriba requiere que el frontend envíe el token d
     "confirmed_guests_count": 0,
     "unconfirmed_guests_count": 0,
     "total_estimated": "3600.00",
-    "budget_alert": false,
-    "amount_over_budget": "0.00"
+    "over_budget": false,
+    "budget_exceeded_by": "0.00"
   }
   ```
 
@@ -427,13 +427,17 @@ Todos los endpoints siguientes requieren token de acceso JWT en la cabecera `Aut
 Cuando consumas el endpoint `GET /events/{event_id}`, verás dos campos de vital importancia para la interfaz del usuario:
 1. **`total_estimated` (String conteniendo un Decimal):** Es la suma calculada en el backend de todos los ítems del evento, multiplicando cantidad por precio unitario:
     $$\text{total\_estimated} = \sum (\text{quantity} \times \text{unit\_price})$$
-2. **`budget_alert` (Boolean):**
+2. **`over_budget` (Boolean):**
    * Es `true` si `total_estimated` supera estrictamente el presupuesto máximo definido (`max_budget`).
    * Es `false` si el total estimado está dentro del presupuesto máximo, o si `max_budget` es `null`.
    * Esta alerta está diseñada para activar alertas visuales (ejemplo: cambiar la barra a color rojo) en el dashboard del cliente.
-3. **`amount_over_budget` (String conteniendo un Decimal):**
+3. **`budget_exceeded_by` (String conteniendo un Decimal):**
    * Indica la diferencia monetaria exacta por la cual el total estimado excede el presupuesto máximo.
    * Es `0.00` si no se ha excedido el presupuesto o si `max_budget` no está definido.
+4. **Tipados y Validación de `max_budget`:**
+   * Al enviar el valor de `max_budget` (en peticiones `POST /events` o `PATCH /events/{event_id}`), el frontend debe enviarlo como un valor numérico (`number`) o una cadena de texto conteniendo un número válido (ej. `"5000.00"`), o `null` si no hay límite de presupuesto.
+   * **Tipos admitidos en la lógica del backend**: `Decimal`, `float`, `int`, `str` o `None` (`null`).
+   * Enviar tipos de datos no compatibles (como arreglos `[]` o diccionarios `{}`) está prohibido y será rechazado por la capa de validación de esquemas (Pydantic), resultando en un error `HTTP 422 Unprocessable Entity`.
 
 ---
 
@@ -441,7 +445,7 @@ Cuando consumas el endpoint `GET /events/{event_id}`, verás dos campos de vital
 
 Todos los endpoints de gestión de recursos (`event_items`) requieren que el frontend envíe el token de acceso en las cabeceras HTTP (`Authorization: Bearer <token>`). Además, validan la propiedad del evento (solo el dueño puede alterarlos).
 
-Para simplificar el estado en el frontend y evitar llamadas HTTP adicionales para refrescar el presupuesto o el listado del evento, **todas las operaciones de creación, edición y eliminación de recursos retornan el detalle completo y actualizado del evento (`EventDetailOut`)**, con los campos de presupuesto (`total_estimated`, `budget_alert` y `amount_over_budget`) recalculados en tiempo real.
+Para simplificar el estado en el frontend y evitar llamadas HTTP adicionales para refrescar el presupuesto o el listado del evento, **todas las operaciones de creación, edición y eliminación de recursos retornan el detalle completo y actualizado del evento (`EventDetailOut`)**, con los campos de presupuesto (`total_estimated`, `over_budget` y `budget_exceeded_by`) recalculados en tiempo real.
 
 ### 8.1 Crear Recurso (Item) del Evento
 * **Endpoint:** `POST /events/{event_id}/items`
@@ -477,3 +481,261 @@ Para simplificar el estado en el frontend y evitar llamadas HTTP adicionales par
 * **Descripción:** Elimina un recurso del evento.
 * **Respuesta Exitosa (HTTP 200 OK):**
   Retorna el objeto detallado del evento (`EventDetailOut`), reflejando la eliminación del recurso y la disminución del presupuesto estimado.
+
+---
+
+## 9. Endpoint de Pronóstico del Clima (`/events/{event_id}/weather`)
+
+Permite obtener el pronóstico del clima para el día y la ciudad del evento. Este endpoint interactúa con la API de OpenWeatherMap.
+
+### 9.1 Obtener Clima del Evento
+* **Endpoint:** `GET /events/{event_id}/weather`
+* **Seguridad:** Requiere Token (`Authorization: Bearer <token>`). Solo el dueño del evento puede realizar la consulta.
+* **Descripción:** Consulta el pronóstico para la fecha y ciudad del evento. Si la ciudad del evento está vacía, se asume `"Barranquilla"` por defecto.
+* **Reglas de Negocio:**
+  * Si la fecha del evento es mayor a 7 días en el futuro (o es en el pasado), retorna una respuesta exitosa (HTTP 200 OK) con los campos climáticos en `null` y un mensaje informativo.
+  * Si la fecha está dentro de los próximos 7 días, realiza la consulta y devuelve la temperatura, condición, descripción e ícono del clima correspondiente.
+  * Si el servicio meteorológico externo falla o no está configurado, responde con un error HTTP 502 Bad Gateway y un detalle de error amigable.
+
+* **Respuesta Exitosa - Clima Disponible (HTTP 200 OK):**
+  ```json
+  {
+    "temp": 30.2,
+    "condition": "Clear",
+    "description": "clear sky",
+    "icon": "01d",
+    "message": "Forecast available"
+  }
+  ```
+
+* **Respuesta Exitosa - Restricción de Fecha (HTTP 200 OK):**
+  ```json
+  {
+    "temp": null,
+    "condition": null,
+    "description": null,
+    "icon": null,
+    "message": "Weather forecast is only available up to 7 days before the event. 8 days remaining."
+  }
+  ```
+
+* **Respuesta de Error de Conexión / Externa (HTTP 502 Bad Gateway):**
+  ```json
+  {
+    "detail": "Failed to connect to the external weather service."
+  }
+  ```
+## 9. Endpoints de Catálogo de Proveedores (`/providers`)
+
+Todos los endpoints de proveedores requieren que el frontend envíe el token de acceso en las cabeceras HTTP (`Authorization: Bearer <token>`).
+
+### Seguridad y Roles (`can_edit`)
+* **Lectura:** Todos los usuarios autenticados pueden consultar el catálogo de proveedores (`GET /providers` y `GET /providers/{id}`).
+* **Escritura:** Solo los usuarios con rol de administrador (`admin`) pueden crear, modificar o eliminar proveedores (`POST`, `PATCH`, `DELETE`).
+* **Visualización Dinámica (`can_edit`):** Para facilitar que el frontend oculte o muestre los botones de edición y borrado, las respuestas de los proveedores incluyen el campo booleano `can_edit`. Este será `true` si el usuario que realiza la petición es administrador, y `false` en caso contrario.
+
+### 9.1 Obtener Catálogo de Proveedores
+* **Endpoint:** `GET /providers`
+* **Parámetros de Consulta (Query Parameters):**
+  * `category_id` (UUID, opcional): Filtrar proveedores por categoría específica.
+  * `search` (String, opcional): Buscar proveedores por coincidencia parcial de nombre (búsqueda insensible a mayúsculas).
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  [
+    {
+      "id": "a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1",
+      "category_id": "c1000000-0000-0000-0000-000000000001",
+      "city_id": "d1000000-0000-0000-0000-000000000001",
+      "name": "Catering Barranquilla Premium",
+      "description": "El mejor servicio de comida y banquetes para tu boda.",
+      "phone": "3001234567",
+      "website": "https://cateringbaq.com",
+      "address": "Calle 72 # 45-67",
+      "reference_price": "45.00",
+      "price_unit": "por persona",
+      "rating": "4.8",
+      "created_at": "2026-07-09T14:30:00Z",
+      "can_edit": false
+    }
+  ]
+  ```
+
+### 9.2 Obtener Detalle de un Proveedor
+* **Endpoint:** `GET /providers/{provider_id}`
+* **Parámetros de Ruta (Path Parameters):**
+  * `provider_id` (UUID): ID del proveedor a consultar.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "id": "a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1",
+    "category_id": "c1000000-0000-0000-0000-000000000001",
+    "city_id": "d1000000-0000-0000-0000-000000000001",
+    "name": "Catering Barranquilla Premium",
+    "description": "El mejor servicio de comida y banquetes para tu boda.",
+    "phone": "3001234567",
+    "website": "https://cateringbaq.com",
+    "address": "Calle 72 # 45-67",
+    "reference_price": "45.00",
+    "price_unit": "por persona",
+    "rating": "4.8",
+    "created_at": "2026-07-09T14:30:00Z",
+    "can_edit": false
+  }
+  ```
+
+### 9.3 Crear Proveedor (Solo Admin)
+* **Endpoint:** `POST /providers`
+* **Seguridad:** Requiere rol `admin` (`HTTP 403 Forbidden` si no se tienen permisos).
+* **Cuerpo de la Petición (Request Body):**
+  ```json
+  {
+    "category_id": "c1000000-0000-0000-0000-000000000001",
+    "city_id": "d1000000-0000-0000-0000-000000000001",
+    "name": "Sonido Barranquilla",
+    "description": "Servicios de DJs y amplificación profesional.",
+    "phone": "3009876543",
+    "website": "https://sonidobaq.com",
+    "address": "Carrera 43 # 50-20",
+    "reference_price": "1200000.00",
+    "price_unit": "por evento",
+    "rating": "4.5"
+  }
+  ```
+* **Respuesta Exitosa (HTTP 201 Created):**
+  ```json
+  {
+    "id": "b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2",
+    "category_id": "c1000000-0000-0000-0000-000000000001",
+    "city_id": "d1000000-0000-0000-0000-000000000001",
+    "name": "Sonido Barranquilla",
+    "description": "Servicios de DJs y amplificación profesional.",
+    "phone": "3009876543",
+    "website": "https://sonidobaq.com",
+    "address": "Carrera 43 # 50-20",
+    "reference_price": "1200000.00",
+    "price_unit": "por evento",
+    "rating": "4.5",
+    "created_at": "2026-07-16T11:00:00Z",
+    "can_edit": true
+  }
+  ```
+
+### 9.4 Editar Proveedor (Solo Admin)
+* **Endpoint:** `PATCH /providers/{provider_id}`
+* **Seguridad:** Requiere rol `admin` (`HTTP 403 Forbidden` si no se tienen permisos).
+* **Descripción:** Permite actualización parcial de un proveedor.
+* **Cuerpo de la Petición (Request Body):**
+  ```json
+  {
+    "name": "Sonido Barranquilla Pro",
+    "reference_price": "1400000.00"
+  }
+  ```
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "id": "b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2",
+    "category_id": "c1000000-0000-0000-0000-000000000001",
+    "city_id": "d1000000-0000-0000-0000-000000000001",
+    "name": "Sonido Barranquilla Pro",
+    "description": "Servicios de DJs y amplificación profesional.",
+    "phone": "3009876543",
+    "website": "https://sonidobaq.com",
+    "address": "Carrera 43 # 50-20",
+    "reference_price": "1400000.00",
+    "price_unit": "por evento",
+    "rating": "4.5",
+    "created_at": "2026-07-16T11:00:00Z",
+    "can_edit": true
+  }
+  ```
+
+### 9.5 Eliminar Proveedor (Solo Admin)
+* **Endpoint:** `DELETE /providers/{provider_id}`
+* **Seguridad:** Requiere rol `admin` (`HTTP 403 Forbidden` si no se tienen permisos).
+* **Respuesta Exitosa (HTTP 204 No Content):**
+  *(Sin cuerpo en la respuesta)*
+
+---
+
+## 10. Endpoints de Tareas del Evento — Kanban (`/events/{event_id}/tasks`)
+
+Permite gestionar un tablero Kanban de tareas para cada evento. Cada tarea tiene un título, descripción, prioridad visual y fecha límite. El estado de la tarea (`todo`, `in_progress`, `done`) define su columna en el tablero.
+
+### 10.1 Listar Tareas
+* **Endpoint:** `GET /events/{event_id}/tasks`
+* **Seguridad:** Requiere Token (`Authorization: Bearer <token>`). Solo el dueño del evento.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  [
+    {
+      "id": "a1b2c3d4-...",
+      "event_id": "e0eebc99-...",
+      "title": "Contratar catering",
+      "description": "Contactar al menos 3 proveedores",
+      "status": "in_progress",
+      "priority": "high",
+      "due_date": "2026-10-05",
+      "created_at": "2026-07-16T10:00:00Z",
+      "updated_at": "2026-07-16T10:00:00Z"
+    }
+  ]
+  ```
+
+### 10.2 Crear Tarea
+* **Endpoint:** `POST /events/{event_id}/tasks`
+* **Seguridad:** Requiere Token. Solo el dueño del evento.
+* **Cuerpo de la Petición:**
+  ```json
+  {
+    "title": "Contratar catering",
+    "description": "Contactar al menos 3 proveedores",
+    "priority": "high",
+    "due_date": "2026-10-05"
+  }
+  ```
+* **Reglas de Validación:**
+  * `title`: requerido, 1-255 caracteres.
+  * `priority`: debe ser `low`, `medium` o `high` (default: `medium`).
+  * `due_date`: requerido, debe ser una fecha futura y **no puede ser posterior a la fecha del evento**.
+  * El evento no debe estar en estado `finalizado`.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  Retorna el objeto de la tarea creada (misma estructura que en el listado).
+
+### 10.3 Editar Tarea (Parcial)
+* **Endpoint:** `PATCH /events/{event_id}/tasks/{task_id}`
+* **Seguridad:** Requiere Token. Solo el dueño del evento.
+* **Campos editables:** `title`, `description`, `priority`, `due_date`.
+* **Cuerpo de la Petición (ejemplo):**
+  ```json
+  {
+    "title": "Contratar catering actualizado",
+    "priority": "medium"
+  }
+  ```
+* **Validaciones:** Mismas reglas que creación para `due_date` y `priority`.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  Retorna el objeto completo de la tarea actualizada.
+
+### 10.4 Mover Tarea entre Columnas Kanban
+* **Endpoint:** `PATCH /events/{event_id}/tasks/{task_id}/move`
+* **Seguridad:** Requiere Token. Solo el dueño del evento.
+* **Descripción:** Cambia exclusivamente el estado de la tarea para moverla entre columnas del tablero Kanban.
+* **Cuerpo de la Petición:**
+  ```json
+  {
+    "status": "in_progress"
+  }
+  ```
+* **Estados válidos:** `todo`, `in_progress`, `done`.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  Retorna el objeto completo de la tarea con el nuevo estado.
+
+### Códigos de Error Comunes
+| Código | Escenario | Detail |
+|---|---|---|
+| `404` | Evento o tarea no existe | `"Event not found"` / `"Task not found"` |
+| `403` | Usuario no es dueño del evento | `"You do not have permission to access this event"` |
+| `400` | Evento finalizado | `"Cannot modify a finalized event"` |
+| `400` | `due_date` posterior a `event_date` | `"Task due date cannot be after the event date."` |
+| `422` | Status inválido en `/move` | Error de validación de Pydantic |

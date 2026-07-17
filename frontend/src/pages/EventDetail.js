@@ -6,17 +6,24 @@ import { getEventById, updateEvent, updateEventStatus, createEventItem, updateEv
 const _fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
 
 function buildResourceCardHTML(item) {
+  const isConfirmed = item.confirmed;
   return `
-    <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between shadow-sm" data-item-id="${item.id}">
+    <div class="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm ${isConfirmed ? 'border-2 border-[#C9A84C] border-l-4 border-[#C9A84C]' : 'border border-gray-200'}" data-item-id="${item.id}">
       <div class="flex-1 min-w-0">
-        <p class="font-semibold text-[#1E1B15] truncate">${item.name}</p>
+        <p class="font-semibold truncate ${isConfirmed ? 'text-[#C9A84C]' : 'text-[#1E1B15]'}">${item.name}</p>
         <p class="text-sm text-[#9E8E6E]">${item.quantity} x ${_fmt(item.unit_price)}</p>
         ${item.notes ? `<p class="text-xs text-[#9E8E6E] truncate mt-1">📝 ${item.notes}</p>` : ''}
       </div>
       <div class="flex items-center gap-2 ml-3">
         <span class="text-sm font-bold text-[#755B00] whitespace-nowrap">${_fmt(item.quantity * item.unit_price)}</span>
-        <span class="px-2 py-0.5 text-xs rounded-full ${item.confirmed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${item.confirmed ? '✅' : '⏳'}</span>
-        <button class="edit-resource p-1.5 rounded-lg hover:bg-[#FEF3C7] transition-colors cursor-pointer" data-id="${item.id}" data-name="${item.name.replace(/"/g, '&quot;')}" data-quantity="${item.quantity}" data-price="${item.unit_price}" data-notes="${(item.notes || '').replace(/"/g, '&quot;')}" title="Editar">✏️</button>
+        <button class="toggle-confirmed relative w-10 h-5 rounded-full transition-colors cursor-pointer border-none ${isConfirmed ? 'bg-[#C9A84C]' : 'bg-gray-300'}" data-id="${item.id}" title="${isConfirmed ? 'Marcar pendiente' : 'Marcar confirmado'}">
+          <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isConfirmed ? 'translate-x-5' : ''}"></span>
+        </button>
+          <button class="edit-resource p-1.5 rounded-lg hover:bg-green-50 transition-colors cursor-pointer" data-id="${item.id}" data-name="${item.name.replace(/"/g, '&quot;')}" data-quantity="${item.quantity}" data-price="${item.unit_price}" data-notes="${(item.notes || '').replace(/"/g, '&quot;')}" title="Editar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            </svg>
+        </button>
         <button class="delete-resource p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" data-id="${item.id}" title="Eliminar">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 7L18.133 19.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"/>
@@ -26,6 +33,22 @@ function buildResourceCardHTML(item) {
     </div>
   `;
 }
+function ProgressRing(confirmed, total) {
+  if (total === 0) return '';
+  const pct = Math.round((confirmed / total) * 100);
+  const r = 10;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (pct / 100) * circ;
+  return `
+    <div class="relative inline-flex items-center justify-center w-7 h-7" title="${pct}% confirmado">
+      <svg class="transform -rotate-90 w-7 h-7" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="${r}" fill="none" stroke="#E5E7EB" stroke-width="2.5"/>
+        <circle cx="12" cy="12" r="${r}" fill="none" stroke="#C9A84C" stroke-width="2.5" stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
+      </svg>
+    </div>
+  `;
+}
+
 function buildEditResourceCardHTML(item) {
   return `
     <div class="bg-white rounded-xl border-2 border-[#755B00] p-4 shadow-sm is-editing" data-item-id="${item.id}">
@@ -50,6 +73,7 @@ import { DeleteEventModal } from "../components/DeleteEventModal.js";
 import { DeleteResourceModal } from "../components/DeleteResourceModal.js";
 import { GuestsPanel } from "../components/GuestPanel.js";
 import { GuestModal } from "../components/GuestModal.js";
+import { initSaveTemplateModal } from "../components/SaveTemplateModal.js";
 
 export async function EventDetail(eventId) {
   let event = null;
@@ -96,6 +120,8 @@ export async function EventDetail(eventId) {
     confirmado: "Finish Event",
   };
 
+  window.__currentEventData = event;
+
   const nextButtonText = nextStatusLabel[event?.status];
 
   const stepMap = {
@@ -108,9 +134,10 @@ export async function EventDetail(eventId) {
     borrador: "planificando",
     confirmado: "finalizado",
   };
-
-  // ── Guardar referencia al evento original (ANTES del return) ──
   window.__eventData = { event, original, eventId };
+  setTimeout(() => {
+    initSaveTemplateModal();
+  }, 0);
 
   return `
     <div class="flex min-h-screen bg-[#F8F5F0]">
@@ -135,10 +162,7 @@ export async function EventDetail(eventId) {
         `)}
 
         <div class="flex-1 overflow-auto custom-scrollbar">
-          <div class="p-8 max-w-7xl mx-auto">
-
-            <div class="flex justify-end mb-8 animate-fade-in" id="detail-actions">
-            </div>
+          <div class="p-8">
 
             <section class="flex gap-6">
 
@@ -153,7 +177,10 @@ export async function EventDetail(eventId) {
 
                 <div class="flex justify-between items-center mb-6">
                   <h2 class="text-xl font-bold text-[#1E1B15] flex items-center gap-2">🎯 Recursos del Evento</h2>
-                  <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmedResources} de ${totalResources} confirmados</span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmedResources} de ${totalResources} confirmados</span>
+                    ${ProgressRing(confirmedResources, totalResources)}
+                  </div>
                 </div>
                 <div id="resources-canvas" class="rounded-xl border-2 border-dashed border-gray-300 bg-[#F8F5F0]/50">
                   <div class="p-4 space-y-3 max-h-[380px] overflow-y-auto" id="resources-list">
@@ -161,7 +188,9 @@ export async function EventDetail(eventId) {
                       ? event.event_items.map(item => buildResourceCardHTML(item)).join('')
                       : `
                         <div class="flex flex-col items-center justify-center py-12 text-[#9E8E6E]">
-                          <span class="text-5xl mb-4 opacity-50">🎨</span>
+                          <svg class="w-16 h-16 mb-4 opacity-50 text-[#22C55E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17a.75.75 0 01-.75-.75v-4.5a.75.75 0 011.5 0v4.5A.75.75 0 017 17z"/>
+                          </svg>
                           <p class="text-lg font-medium">Lienzo de Recursos</p>
                           <p class="text-sm mt-1">Agrega recursos a tu evento</p>
                         </div>
@@ -240,7 +269,7 @@ export async function EventDetail(eventId) {
                     
                     ${GuestsPanel(event)}
 
-                    <div class="flex gap-3" id="detail-actions">
+                    <div class="flex flex-wrap gap-3" id="detail-actions">
 
                       ${
                         nextButtonText
@@ -262,6 +291,14 @@ export async function EventDetail(eventId) {
                         class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm"
                       >
                         Editar
+                      </button>
+
+                      <button
+                        onclick="window.__currentEventData && window.openSaveTemplateModal(window.__currentEventData)"
+                        class="px-5 py-2.5 bg-white border border-[#E9E1D7] text-[#755B00] rounded-xl text-sm font-semibold hover:bg-[#FEF3C7] transition-all shadow-sm flex items-center gap-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Guardar como Plantilla
                       </button>
 
                     </div>
@@ -389,11 +426,6 @@ export async function EventDetail(eventId) {
     ${DeleteResourceModal()}
     </div>
   `;
-
-  // ── Guardar referencia al evento original (ANTES del return) ──
-  window.__eventData = { event, original, eventId };
-  
-  return template;
 }
 
 // ── Alternar entre vista y edición ──
@@ -518,7 +550,7 @@ async function saveInlineEdit(card) {
     window.__eventData.event = updated;
     window.__eventData.original = { ...updated };
     card.outerHTML = buildResourceCardHTML(updated.event_items.find(i => i.id === itemId));
-    await refreshBudgetAndCounter(updated);
+    refreshBudgetAndCounter(updated);
   } catch (err) {
     alert(err.message || "Error al actualizar el recurso.");
   }
@@ -529,17 +561,19 @@ function cancelInlineEdit(card) {
   if (item) card.outerHTML = buildResourceCardHTML(item);
 }
 
-async function refreshBudgetAndCounter(updated) {
+function refreshBudgetAndCounter(updated) {
   const panel = document.getElementById("budget-panel");
   if (panel) {
-    const { BudgetPanel } = await import("../components/BudgetPanel.js");
     panel.outerHTML = BudgetPanel(updated);
   }
   const confirmedResources = updated.event_items.filter(i => i.confirmed).length;
   const totalResources = updated.event_items.length;
-  const counterEl = document.querySelector(".flex.justify-between.items-center.mb-6 span");
-  if (counterEl) {
-    counterEl.textContent = totalResources > 0 ? `${confirmedResources} de ${totalResources} confirmados` : "Sin recursos";
+  const headerRight = document.querySelector(".flex.justify-between.items-center.mb-6 .flex.items-center.gap-2");
+  if (headerRight) {
+    headerRight.innerHTML = `
+      <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${totalResources > 0 ? `${confirmedResources} de ${totalResources} confirmados` : "Sin recursos"}</span>
+      ${ProgressRing(confirmedResources, totalResources)}
+    `;
   }
 }
 
@@ -547,7 +581,9 @@ function showEmptyStateIfNeeded(list) {
   if (!list.hasChildNodes() || list.children.length === 0) {
     list.innerHTML = `
       <div class="flex flex-col items-center justify-center py-12 text-[#9E8E6E]">
-        <span class="text-5xl mb-4 opacity-50">🎨</span>
+        <svg class="w-16 h-16 mb-4 opacity-50 text-[#22C55E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17a.75.75 0 01-.75-.75v-4.5a.75.75 0 011.5 0v4.5A.75.75 0 017 17z"/>
+                          </svg>
         <p class="text-lg font-medium">Lienzo de Recursos</p>
         <p class="text-sm mt-1">Agrega recursos a tu evento</p>
       </div>
@@ -602,6 +638,43 @@ document.addEventListener("click", (e) => {
   if (cancelBtn) {
     const card = cancelBtn.closest('[data-item-id].is-editing');
     if (card) cancelInlineEdit(card);
+  }
+
+  // ── Toggle confirmado ──
+  const toggleBtn = e.target.closest(".toggle-confirmed");
+  if (toggleBtn) {
+    e.preventDefault();
+    const itemId = toggleBtn.dataset.id;
+    const card = toggleBtn.closest('[data-item-id]');
+    if (!card) return;
+    const item = window.__eventData.event.event_items.find(i => i.id === itemId);
+    if (!item) return;
+    const newConfirmed = !item.confirmed;
+    const oldConfirmed = item.confirmed;
+    item.confirmed = newConfirmed;
+    card.outerHTML = buildResourceCardHTML(item);
+    const { eventId } = window.__eventData;
+    (async () => {
+      try {
+        const updated = await updateEventItem(eventId, itemId, { confirmed: newConfirmed });
+        window.__eventData.event = updated;
+        window.__eventData.original = { ...updated };
+        const list = document.getElementById("resources-list");
+        const existingCard = list.querySelector(`[data-item-id="${itemId}"]`);
+        if (existingCard) {
+          existingCard.outerHTML = buildResourceCardHTML(updated.event_items.find(i => i.id === itemId));
+        }
+        refreshBudgetAndCounter(updated);
+      } catch (err) {
+        item.confirmed = oldConfirmed;
+        const list = document.getElementById("resources-list");
+        const existingCard = list.querySelector(`[data-item-id="${itemId}"]`);
+        if (existingCard) {
+          existingCard.outerHTML = buildResourceCardHTML(item);
+        }
+        alert(err.message || "Error al actualizar el recurso.");
+      }
+    })();
   }
 
   // ── Eliminar ──
@@ -673,7 +746,7 @@ document.addEventListener("submit", async (e) => {
     document.getElementById("btn-add-resource").classList.remove("hidden");
     e.target.reset();
 
-    await refreshBudgetAndCounter(updated);
+    refreshBudgetAndCounter(updated);
 
   } catch (err) {
     errorEl.textContent = err.message || "Error al crear el recurso.";
@@ -720,7 +793,9 @@ document.addEventListener("click", async (e) => {
       if (!list.hasChildNodes() || list.children.length === 0) {
         list.innerHTML = `
           <div class="flex flex-col items-center justify-center py-12 text-[#9E8E6E]">
-            <span class="text-5xl mb-4 opacity-50">🎨</span>
+            <svg class="w-16 h-16 mb-4 opacity-50 text-[#22C55E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17a.75.75 0 01-.75-.75v-4.5a.75.75 0 011.5 0v4.5A.75.75 0 017 17z"/>
+                          </svg>
             <p class="text-lg font-medium">Lienzo de Recursos</p>
             <p class="text-sm mt-1">Agrega recursos a tu evento</p>
           </div>

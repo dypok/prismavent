@@ -83,6 +83,17 @@ def get_event_detail(event_id: str, db: Session) -> dict:
         
     event = dict(event_res._mapping)
     
+    # 1b. Fetch event type name
+    event_type_name = None
+    if event.get("event_type_id"):
+        et_res = db.execute(
+            text("SELECT name FROM event_types WHERE id = :id"),
+            {"id": event["event_type_id"]}
+        ).fetchone()
+        if et_res:
+            event_type_name = et_res[0]
+    event["event_type_name"] = event_type_name
+    
     # 2. Fetch associated event items
     items_res = db.execute(
         text("SELECT * FROM event_items WHERE event_id = :event_id"),
@@ -104,6 +115,13 @@ def get_event_detail(event_id: str, db: Session) -> dict:
     budget_alert = budget_service.check_budget_alert(total_estimated, event.get("max_budget"))
     amount_over_budget = budget_service.get_amount_over_budget(total_estimated, event.get("max_budget"))
     
+    # 4b. Calculate total_gastado (sum of confirmed items only)
+    gastado_res = db.execute(
+        text("SELECT COALESCE(SUM(quantity * unit_price), 0) FROM event_items WHERE event_id = :event_id AND confirmed = true"),
+        {"event_id": event_id}
+    ).scalar()
+    total_gastado = gastado_res
+    
     # 5. Calculate guest counters
     registered_guests_count = len(guests)
     confirmed_guests_count = sum(1 for g in guests if g["confirmed"])
@@ -116,7 +134,8 @@ def get_event_detail(event_id: str, db: Session) -> dict:
     event["confirmed_guests_count"] = confirmed_guests_count
     event["unconfirmed_guests_count"] = unconfirmed_guests_count
     event["total_estimated"] = total_estimated
-    event["budget_alert"] = budget_alert
-    event["amount_over_budget"] = amount_over_budget
+    event["total_gastado"] = total_gastado
+    event["over_budget"] = budget_alert
+    event["budget_exceeded_by"] = amount_over_budget
     
     return event

@@ -145,7 +145,11 @@ document.addEventListener("submit", async (e) => {
     );
 
     if (selectedTemplate) {
-        payload.template_id = selectedTemplate.id;
+        if (selectedTemplate.user_template_id) {
+            payload.user_template_id = selectedTemplate.user_template_id;
+        } else if (selectedTemplate.id) {
+            payload.template_id = selectedTemplate.id;
+        }
     }
 
     if (errorEl) errorEl.classList.add("hidden");

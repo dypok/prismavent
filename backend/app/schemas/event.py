@@ -6,6 +6,15 @@ from uuid import UUID
 from app.schemas.event_item import EventItemOut
 from app.schemas.guest import GuestResponse
 
+class EventHistoryOut(BaseModel):
+    id: UUID
+    event_id: UUID
+    previous_status: Optional[str] = None
+    new_status: str
+    changed_by: Optional[UUID] = None
+    comment: Optional[str] = None
+    changed_at: datetime
+
 class EventCreate(BaseModel):
     name: str
     description: Optional[str] = None
@@ -23,7 +32,7 @@ class EventCreate(BaseModel):
     @field_validator("event_date")
     @classmethod
     def event_date_must_be_future(cls, value: date) -> date:
-        if value <= date.today():
+        if value < date.today():
             raise ValueError("event_date debe ser una fecha futura (posterior a hoy)")
         return value
 
@@ -40,11 +49,13 @@ class EventResponse(BaseModel):
     city_id: Optional[UUID] = None
     city_custom: Optional[str] = None
     event_type_id: Optional[UUID] = None
+    event_type_name: Optional[str] = None
     location: Optional[str] = None
     status: str
     visibility_status: str
     confirmed_guests_count: int = 0
     total_estimated: Decimal = Decimal("0.0")
+    total_gastado: Decimal = Decimal("0.0")
     created_at: datetime
     updated_at: datetime
 
@@ -61,6 +72,7 @@ class EventDetailOut(BaseModel):
     city_id: Optional[UUID] = None
     city_custom: Optional[str] = None
     event_type_id: Optional[UUID] = None
+    event_type_name: Optional[str] = None
     location: Optional[str] = None
     status: str
     visibility_status: str
@@ -70,8 +82,9 @@ class EventDetailOut(BaseModel):
     confirmed_guests_count: int = 0
     unconfirmed_guests_count: int = 0
     total_estimated: Decimal
-    budget_alert: bool
-    amount_over_budget: Decimal
+    total_gastado: Decimal = Decimal("0.0")
+    over_budget: bool
+    budget_exceeded_by: Decimal
     created_at: datetime
     updated_at: datetime
 
