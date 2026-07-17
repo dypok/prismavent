@@ -10,3 +10,8 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+class UpdateProfileRequest(BaseModel):
+    name: Optional[str] = None
+    password: Optional[str] = None
+

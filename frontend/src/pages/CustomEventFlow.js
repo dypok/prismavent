@@ -1,16 +1,19 @@
-import { Sidebar } from "../components/Sidebar.js";
-import { Topbar } from "../components/Topbar.js";
+import { CreateEvent } from "./CreateEvent.js";
+import { TemplateEventFlow } from "./TemplateEventFlow.js";
 import { CustomEventForm } from "../components/CustomEventForm.js";
 
 export function CustomEventFlow() {
+  // Determinamos de dónde viene el usuario revisando si hay una plantilla en memoria.
+  // Si hay plantilla, pintamos el grid de plantillas de fondo. 
+  // Si no, pintamos la pantalla de inicio de fondo.
+  const isFromTemplate = localStorage.getItem("selectedEventTemplate") !== null;
+  const Background = isFromTemplate ? TemplateEventFlow() : CreateEvent();
+
   return `
-    <div class="flex h-screen">
-      ${Sidebar()}
-      <div class="flex-1 flex flex-col">
-        ${Topbar()}
-        <main class="flex-1 bg-[#FFF8F1] p-8 overflow-auto flex justify-center items-start">
-          ${CustomEventForm()}
-        </main>
+    ${Background}
+    <div onclick="window.closeCustomModal()" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto">
+      <div onclick="event.stopPropagation()">
+        ${CustomEventForm()}
       </div>
     </div>
   `;
