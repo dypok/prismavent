@@ -2,7 +2,6 @@ import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { getEventById, getEventTasks, createEventTask, updateEventTask, moveEventTask, deleteEventTask } from "../service/api.js";
 import { showToast } from "../components/Toast.js";
-import { icon } from "../components/Icons.js";
 
 export async function TasksPage(eventId) {
   let event = null;
@@ -24,7 +23,7 @@ export async function TasksPage(eventId) {
           <div class="flex items-center gap-6 lg:gap-8 animate-fade-in" style="animation-delay: 0.1s;">
             <div class="flex items-center gap-4">
               <button onclick="window.history.back()" class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#9E8E6E] hover:text-[#1E1B15] hover:shadow-sm transition-all border border-[#E9E1D7]">
-                ${icon('chevron-left', 18)}
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
               <div>
                 <h1 class="text-2xl font-bold text-[#1E1B15]">Tareas</h1>
@@ -36,7 +35,7 @@ export async function TasksPage(eventId) {
               id="btn-add-task"
               class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm flex items-center gap-2"
             >
-              ${icon('plus', 18)}
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
               Añadir Tarea
             </button>
           </div>
@@ -88,7 +87,7 @@ export async function TasksPage(eventId) {
           <div class="p-6 border-b border-[#F5EDE0] flex justify-between items-center bg-[#FFF8F1]">
             <h3 class="text-lg font-bold text-[#1E1B15]" id="task-modal-title">Nueva Tarea</h3>
             <button id="close-task-modal" class="text-[#9E8E6E] hover:text-[#1E1B15] transition-colors">
-              ${icon('x', 20)}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
           <form id="task-form" class="p-6 space-y-4">
@@ -132,7 +131,7 @@ export async function TasksPage(eventId) {
                 <div class="relative">
                   <div id="task-dateDisplay" class="w-full px-4 py-2.5 border border-[#D0C5B2] rounded-xl text-sm cursor-pointer bg-white flex items-center justify-between select-none">
                     <span class="truncate">Selecciona una fecha</span>
-                    ${icon('calendar', 16, 'text-[#9E8E6E] shrink-0 ml-2')}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#9E8E6E] shrink-0 ml-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   </div>
                   <input type="hidden" id="task-due-date" value="">
                   ${window.calendarHTML ? window.calendarHTML('task').replace('w-72', 'w-64') : ''}

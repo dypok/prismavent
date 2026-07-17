@@ -1,6 +1,5 @@
 import { getTemplates, getUserTemplates, deleteUserTemplate } from "../service/api.js";
 import { showToast } from "./Toast.js";
-import { icon } from "./Icons.js";
 
 let fetchedTemplates = [];
 let fetchedUserTemplates = [];
@@ -184,7 +183,7 @@ export function EventTemplatesGrid() {
       <div class="flex justify-between items-center mb-6">
         <button onclick="window.handleGridBack()"
           class="flex items-center gap-2 text-[#755B00] hover:text-[#4D3D00] transition-colors font-semibold text-lg">
-          ${icon('chevron-left', 20)}
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           Volver
         </button>
         <button onclick="window.navigateTo('/my-templates')" class="px-4 py-2 bg-white border border-[#E9E1D7] text-[#755B00] rounded-xl text-sm font-semibold hover:bg-[#FEF3C7] transition-all shadow-sm">

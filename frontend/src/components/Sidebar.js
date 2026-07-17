@@ -1,6 +1,5 @@
 import logoIcon from "../assets/icons/logo.png";
 import { logout } from "../utils/authUtils.js";
-import { icon } from "./Icons.js";
 
 window.handleLogout = function () {
   logout();
@@ -20,6 +19,12 @@ export function Sidebar(active = "new-event") {
     return false;
   };
 
+  // Helper para generar el ícono usando CSS Mask (adopta el color del texto automáticamente)
+  const renderIcon = (name) => {
+    const url = `https://api.iconify.design/lucide/${name}.svg?stroke-width=2`;
+    return `<div class="w-5 h-5 shrink-0 transition-colors duration-300" style="background-color: currentColor; mask: url('${url}') no-repeat center / contain; -webkit-mask: url('${url}') no-repeat center / contain;"></div>`;
+  };
+
   return `
     <aside class="sticky top-0 left-0 w-16 hover:w-64 h-screen bg-[#FFF8F1] border-r border-[#E9E1D7] flex flex-col transition-all duration-300 group overflow-hidden shrink-0 z-40">
       
@@ -30,49 +35,49 @@ export function Sidebar(active = "new-event") {
 
       <!-- Menú de Navegación -->
       <nav class="flex-1">
-        <ul>
+        <ul class="space-y-1">
           <li onclick="navigateTo('/dashboard')" 
-              class="flex items-center justify-center group-hover:justify-start py-3.5 px-0 group-hover:px-6 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-0 group-hover:border-l-4
-              ${isActive('/dashboard') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold border-l-4' : 'text-[#1E1B15] border-transparent'}">
-            <div class="flex items-center justify-center w-5 shrink-0">${icon('layout', 20)}</div>
-            <span class="font-medium hidden group-hover:inline ml-4 whitespace-nowrap">Dashboard</span>
+              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-4
+              ${isActive('/dashboard') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
+            ${renderIcon('layout-dashboard')}
+            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Dashboard</span>
           </li>
 
           <li onclick="navigateTo('/events')" 
-              class="flex items-center justify-center group-hover:justify-start py-3.5 px-0 group-hover:px-6 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-0 group-hover:border-l-4
-              ${isActive('/events') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold border-l-4' : 'text-[#1E1B15] border-transparent'}">
-            <div class="flex items-center justify-center w-5 shrink-0">${icon('calendar', 20)}</div>
-            <span class="font-medium hidden group-hover:inline ml-4 whitespace-nowrap">Mis Eventos</span>
+              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-4
+              ${isActive('/events') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
+            ${renderIcon('calendar-days')}
+            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Mis Eventos</span>
           </li>
 
           <li onclick="navigateTo('/events/new')" 
-              class="flex items-center justify-center group-hover:justify-start py-3.5 px-0 group-hover:px-6 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-0 group-hover:border-l-4
-              ${isActive('/events/new') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold border-l-4' : 'text-[#1E1B15] border-transparent'}">
-            <div class="flex items-center justify-center w-5 shrink-0">${icon('plus', 20)}</div>
-            <span class="font-medium hidden group-hover:inline ml-4 whitespace-nowrap">New Event</span>
+              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-4
+              ${isActive('/events/new') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
+            ${renderIcon('plus-circle')}
+            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">New Event</span>
           </li>
 
           <li onclick="navigateTo('/providers')" 
-              class="flex items-center justify-center group-hover:justify-start py-3.5 px-0 group-hover:px-6 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-0 group-hover:border-l-4
-              ${isActive('/providers') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold border-l-4' : 'text-[#1E1B15] border-transparent'}">
-            <div class="flex items-center justify-center w-5 shrink-0">${icon('store', 20)}</div>
-            <span class="font-medium hidden group-hover:inline ml-4 whitespace-nowrap">Providers</span>
+              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-4
+              ${isActive('/providers') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
+            ${renderIcon('store')}
+            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Providers</span>
           </li>
 
           <li onclick="navigateTo('/history')" 
-              class="flex items-center justify-center group-hover:justify-start py-3.5 px-0 group-hover:px-6 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-0 group-hover:border-l-4
-              ${isActive('/history') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold border-l-4' : 'text-[#1E1B15] border-transparent'}">
-            <div class="flex items-center justify-center w-5 shrink-0">${icon('clock', 20)}</div>
-            <span class="font-medium hidden group-hover:inline ml-4 whitespace-nowrap">History</span>
+              class="flex items-center gap-4 px-5 group-hover:px-6 py-3.5 hover:bg-white hover:text-[#755B00] transition-all duration-300 cursor-pointer border-l-4
+              ${isActive('/history') ? 'bg-[#FEF3C7] border-[#755B00] text-[#755B00] font-semibold' : 'text-[#1E1B15] border-transparent'}">
+            ${renderIcon('history')}
+            <span class="font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">History</span>
           </li>
         </ul>
       </nav>
 
       <!-- Botón de Cerrar Sesión -->
       <div class="mt-auto p-2 group-hover:p-4 border-t border-[#E9E1D7] overflow-hidden shrink-0 transition-all duration-300">
-        <button onclick="window.handleLogout()" class="w-full flex items-center justify-center group-hover:justify-start px-0 group-hover:px-4 py-2.5 text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] rounded-xl transition-all duration-300 text-sm font-medium cursor-pointer">
-          <div class="flex items-center justify-center w-5 shrink-0">${icon('log-out', 20)}</div>
-          <span class="hidden group-hover:inline ml-4 whitespace-nowrap">Cerrar Sesión</span>
+        <button onclick="window.handleLogout()" class="w-full flex items-center justify-start gap-4 px-3 group-hover:px-4 py-2.5 text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] rounded-xl transition-all duration-300 text-sm font-medium cursor-pointer">
+          ${renderIcon('log-out')}
+          <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Cerrar Sesión</span>
         </button>
       </div>
     </aside>

@@ -1,5 +1,4 @@
 import { BudgetProgressGauge } from './BudgetProgressGauge.js';
-import { icon } from './Icons.js';
 
 export function BudgetPanel(event) {
   if (!event) {
@@ -71,8 +70,8 @@ export function BudgetPanel(event) {
                     <div class="flex items-center gap-2 min-w-0">
                       <span class="text-xs flex-shrink-0">${
                         item.confirmed
-                          ? icon('check-circle-2', 16, 'text-green-500')
-                          : icon('clock', 16, 'text-amber-500')
+                          ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+                          : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
                       }</span>
                       <span class="text-sm text-gray-700 truncate">${item.name}</span>
                     </div>
