@@ -18,12 +18,12 @@ window.handleGridTemplateSelect = function (templateId, isUserTemplate = false) 
             JSON.stringify(template.preset)
         );
     }
-    window.history.pushState({}, "", "/events/new/custom");
+    window.history.replaceState({}, "", "/events/new/custom");
     window.dispatchEvent(new PopStateEvent("popstate"));
 };
 
 window.handleGridBack = function () {
-    window.history.pushState({}, "", "/events/new");
+    window.history.replaceState({}, "", "/events/new");
     window.dispatchEvent(new PopStateEvent("popstate"));
 };
 

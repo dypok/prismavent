@@ -29,8 +29,7 @@ export function BudgetPanel(event) {
     <div class="bg-white rounded-2xl border border-gray-200 p-6" id="budget-panel">
 
       <h2
-        class="text-3xl font-bold mb-4"
-        style="font-family: 'Playfair Display', serif;"
+        class="font-display text-3xl font-bold mb-4"
       >
         Presupuesto
       </h2>
@@ -69,7 +68,11 @@ export function BudgetPanel(event) {
                 return `
                   <div class="flex justify-between items-center py-1.5 ${item.confirmed ? '' : 'opacity-70'}">
                     <div class="flex items-center gap-2 min-w-0">
-                      <span class="text-xs flex-shrink-0">${item.confirmed ? '✅' : '⏳'}</span>
+                      <span class="text-xs flex-shrink-0">${
+                        item.confirmed
+                          ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+                          : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+                      }</span>
                       <span class="text-sm text-gray-700 truncate">${item.name}</span>
                     </div>
                     <span class="text-sm font-medium flex-shrink-0 ml-2">${formatCOP(subtotal)}</span>

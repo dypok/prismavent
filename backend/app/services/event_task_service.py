@@ -159,7 +159,40 @@ def move_task(event_id: str, task_id: str, user_id: str, new_status: str, db: Se
     db.commit()
     return task
 
+def delete_task(event_id: str, task_id: str, user_id: str, db: Session) -> None:
+    event_res = db.execute(
+        text("SELECT status, user_id FROM events WHERE id = :id"),
+        {"id": event_id}
+    ).fetchone()
+
+    if not event_res:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    if str(event_res.user_id) != str(user_id):
+        raise HTTPException(status_code=403, detail="You do not have permission to access this event")
+
+    validate_event_not_finalized(event_res.status)
+
+    task_check = db.execute(
+        text("SELECT id FROM event_tasks WHERE id = :id AND event_id = :event_id"),
+        {"id": task_id, "event_id": event_id}
+    ).fetchone()
+
+    if not task_check:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    db.execute(
+        text("DELETE FROM event_tasks WHERE id = :id AND event_id = :event_id"),
+        {"id": task_id, "event_id": event_id}
+    )
+    db.commit()
+
 def _validate_due_date_not_after_event(due_date: date, event_date: date) -> None:
+    from datetime import datetime
+    if isinstance(event_date, datetime):
+        event_date = event_date.date()
+    if isinstance(due_date, datetime):
+        due_date = due_date.date()
     if due_date > event_date:
         raise HTTPException(
             status_code=400,

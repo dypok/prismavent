@@ -1,6 +1,51 @@
-from datetime import date
+from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.schemas.event import STATUS_SEQUENCE
+from app.services import budget_service
+
+def auto_transition_event_status(event: dict, db: Session) -> dict:
+    """
+    Auto-advance event status based on dates:
+    - confirmado → in_progress when now >= event_date
+    - in_progress → done when now >= event_date + duration (or +24h if no duration)
+    Returns the event dict with updated status (or unchanged).
+    """
+    current = event.get("status")
+    event_date = event.get("event_date")
+    duration = event.get("duration", 0) or 0
+    now = datetime.now(timezone.utc)
+
+    if not event_date or not current:
+        return event
+
+    if isinstance(event_date, str):
+        event_date = datetime.fromisoformat(event_date.replace('Z', '+00:00'))
+
+    if event_date.tzinfo is None:
+        event_date = event_date.replace(tzinfo=timezone.utc)
+
+    new_status = None
+    if current == "confirmado" and now >= event_date:
+        new_status = "in_progress"
+    elif current == "in_progress":
+        if duration and duration > 0:
+            end_time = event_date + timedelta(minutes=duration)
+        else:
+            end_time = event_date + timedelta(days=1)
+        if now >= end_time:
+            new_status = "done"
+
+    if new_status and new_status != current:
+        db.execute(
+            text("UPDATE events SET status = :status, updated_at = NOW() WHERE id = :id"),
+            {"id": event["id"], "status": new_status}
+        )
+        db.commit()
+        event["status"] = new_status
+
+    return event
 
 def validate_status_transition(current_status: str, new_status: str) -> None:
     """
@@ -30,17 +75,22 @@ def validate_status_transition(current_status: str, new_status: str) -> None:
 
 def validate_event_not_finalized(current_status: str) -> None:
     """
-    Raises a 400 Bad Request error if the event's status is 'finalizado'.
+    Raises a 400 Bad Request error if the event's status is 'finalizado' or 'done'.
     """
-    if current_status == "finalizado":
+    if current_status in ("finalizado", "done"):
         raise HTTPException(status_code=400, detail="No se puede modificar un evento finalizado")
 
-def validate_event_date_not_past(new_date: date | None) -> None:
+def validate_event_date_not_past(new_date: datetime | None) -> None:
     """
     Raises a 400 Bad Request error if the new event_date is in the past.
     """
-    if new_date is not None and new_date < date.today():
-        raise HTTPException(status_code=400, detail="event_date no puede ser una fecha en el pasado")
+    if new_date is not None:
+        if isinstance(new_date, str):
+            new_date = datetime.fromisoformat(new_date.replace('Z', '+00:00'))
+        if new_date.tzinfo is None:
+            new_date = new_date.replace(tzinfo=timezone.utc)
+        if new_date < datetime.now(timezone.utc):
+            raise HTTPException(status_code=400, detail="event_date no puede ser una fecha en el pasado")
 
 def validate_guest_count_editable(payload_guest_count: int | None, guest_tracking_enabled: bool) -> None:
     """
@@ -62,10 +112,6 @@ def validate_event_is_draft(status: str) -> None:
             status_code=400,
             detail="Solo se pueden eliminar eventos en estado borrador"
         )
-
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-from app.services import budget_service
 
 def get_event_detail(event_id: str, db: Session) -> dict:
     """
@@ -93,6 +139,17 @@ def get_event_detail(event_id: str, db: Session) -> dict:
         if et_res:
             event_type_name = et_res[0]
     event["event_type_name"] = event_type_name
+
+    # 1c. Fetch city name
+    city_name = None
+    if event.get("city_id"):
+        city_res = db.execute(
+            text("SELECT name FROM cities WHERE id = :id"),
+            {"id": event["city_id"]}
+        ).fetchone()
+        if city_res:
+            city_name = city_res[0]
+    event["city_name"] = city_name
     
     # 2. Fetch associated event items
     items_res = db.execute(

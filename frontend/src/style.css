@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+    --font-display: 'Playfair Display', serif;
+}
+
 /* ===== ANIMACIONES FLIP CARD ===== */
 .perspective-1000 {
     perspective: 1200px;
@@ -27,19 +32,6 @@
 #flip-card:hover {
     transform: scale(1.01);
     transition: transform 0.3s ease;
-}
-
-.font-display {
-    font-family: 'Playfair Display', serif;
-}
-
-h1, h2, h3, .font-display {
-    font-family: 'Playfair Display', serif;
-}
-
-/* Asegurar que los títulos usen Playfair */
-.font-headline, .font-display-lg, .font-display-md {
-    font-family: 'Playfair Display', serif;
 }
 
 @keyframes fadeIn {

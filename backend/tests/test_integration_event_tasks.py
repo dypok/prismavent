@@ -182,5 +182,29 @@ class TestIntegrationEventTasks(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 422)
 
+    def test_delete_task_success(self):
+        future_date = str(date.today() + timedelta(days=5))
+        task_id = self._create_task(self.event_id_owner, future_date).json()["id"]
+        response = self.client.delete(
+            f"/events/{self.event_id_owner}/tasks/{task_id}",
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify it's gone
+        get_response = self.client.get(
+            f"/events/{self.event_id_owner}/tasks",
+            headers={"Authorization": "Bearer test-token"}
+        )
+        tasks = get_response.json()
+        self.assertNotIn(task_id, [t["id"] for t in tasks])
+
+    def test_delete_task_not_found(self):
+        response = self.client.delete(
+            f"/events/{self.event_id_owner}/tasks/{uuid4()}",
+            headers={"Authorization": "Bearer test-token"}
+        )
+        self.assertEqual(response.status_code, 404)
+
 if __name__ == "__main__":
     unittest.main()

@@ -6,10 +6,11 @@ import { Topbar } from "./components/Topbar.js";
 import { CreateEvent } from "./pages/CreateEvent.js";
 import { EventDetail } from "./pages/EventDetail.js";
 import { GuestsPage, initGuestsPage } from "./pages/GuestsPage.js";
+import { TasksPage, initTasksPage } from "./pages/TasksPage.js";
 import { CustomEventFlow } from "./pages/CustomEventFlow.js";
 import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
 import { MyTemplates } from "./pages/MyTemplates.js";
-import { prefillCustomEventForm } from "./components/CustomEventForm.js";
+import { prefillCustomEventForm, loadCities } from "./components/CustomEventForm.js";
 import { deleteEvent } from "./service/api.js";
 import { showToast } from "./components/Toast.js";
 import { 
@@ -145,7 +146,6 @@ async function renderPage() {
 
             const nextStatusMap = {
               borrador: "confirmado",
-              confirmado: "finalizado",
             };
 
             const updated = await updateEventStatus(
@@ -191,6 +191,16 @@ async function renderPage() {
         window.__genieTriggerRect = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
         const eventId = e.currentTarget.dataset.eventId;
         window.history.pushState({}, "", `/events/${eventId}/guests`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      });
+    }
+
+    // Handler para botón "Ver Tablero" en TasksPanel
+    const viewKanbanBtn = document.getElementById("btn-view-kanban");
+    if (viewKanbanBtn) {
+      viewKanbanBtn.addEventListener("click", (e) => {
+        const eventId = e.currentTarget.dataset.eventId;
+        window.history.pushState({}, "", `/events/${eventId}/tasks`);
         window.dispatchEvent(new PopStateEvent("popstate"));
       });
     }
@@ -323,6 +333,18 @@ async function renderPage() {
     document.querySelector("#app").innerHTML = await GuestsPage(eventId, triggerRect);
     if (triggerRect) delete window.__genieTriggerRect;
     initGuestsPage(eventId);
+
+  // Ruta: Tablero Kanban de tareas
+  } else if (path.startsWith("/events/") && path.endsWith("/tasks")) {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    const eventId = path.split("/events/")[1].split("/tasks")[0];
+    document.querySelector("#app").innerHTML = await TasksPage(eventId);
+    initTasksPage(eventId);
+
   } else if (path === "/events/new/custom") {
     if (!isAuthenticated()) {
       window.history.replaceState({}, "", "/login");
@@ -331,6 +353,7 @@ async function renderPage() {
     }
     document.querySelector("#app").innerHTML = CustomEventFlow();
     prefillCustomEventForm();
+    loadCities();
 
   // Flujo: evento desde plantilla
   } else if (path === "/events/new/template") {

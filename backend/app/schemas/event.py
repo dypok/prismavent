@@ -1,7 +1,7 @@
 from pydantic import BaseModel, field_validator, Field
 from typing import Optional
 from decimal import Decimal
-from datetime import date, datetime
+from datetime import datetime
 from uuid import UUID
 from app.schemas.event_item import EventItemOut
 from app.schemas.guest import GuestResponse
@@ -18,7 +18,7 @@ class EventHistoryOut(BaseModel):
 class EventCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    event_date: date  # YYYY-MM-DD
+    event_date: datetime
     guest_count: Optional[int] = 0
     max_budget: Optional[Decimal] = None
     template_id: Optional[str] = None
@@ -27,13 +27,14 @@ class EventCreate(BaseModel):
     city_custom: Optional[str] = None
     event_type_id: Optional[str] = None
     location: Optional[str] = None
+    duration: Optional[int] = 0
     visibility_status: Optional[str] = "active"
 
     @field_validator("event_date")
     @classmethod
-    def event_date_must_be_future(cls, value: date) -> date:
-        if value < date.today():
-            raise ValueError("event_date debe ser una fecha futura (posterior a hoy)")
+    def event_date_must_be_future(cls, value: datetime) -> datetime:
+        if value < datetime.now():
+            raise ValueError("event_date debe ser una fecha futura")
         return value
 
 class EventResponse(BaseModel):
@@ -41,16 +42,18 @@ class EventResponse(BaseModel):
     user_id: UUID
     name: str
     description: Optional[str] = None
-    event_date: date
+    event_date: datetime
     guest_count: int
     max_budget: Optional[Decimal] = None
     template_id: Optional[UUID] = None
     user_template_id: Optional[UUID] = None
     city_id: Optional[UUID] = None
     city_custom: Optional[str] = None
+    city_name: Optional[str] = None
     event_type_id: Optional[UUID] = None
     event_type_name: Optional[str] = None
     location: Optional[str] = None
+    duration: Optional[int] = 0
     status: str
     visibility_status: str
     confirmed_guests_count: int = 0
@@ -64,16 +67,18 @@ class EventDetailOut(BaseModel):
     user_id: UUID
     name: str
     description: Optional[str] = None
-    event_date: date
+    event_date: datetime
     guest_count: int
     max_budget: Optional[Decimal] = None
     template_id: Optional[UUID] = None
     user_template_id: Optional[UUID] = None
     city_id: Optional[UUID] = None
     city_custom: Optional[str] = None
+    city_name: Optional[str] = None
     event_type_id: Optional[UUID] = None
     event_type_name: Optional[str] = None
     location: Optional[str] = None
+    duration: Optional[int] = 0
     status: str
     visibility_status: str
     event_items: list[EventItemOut]
@@ -92,19 +97,20 @@ class EventDetailOut(BaseModel):
 class EventUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    event_date: Optional[date] = None
+    event_date: Optional[datetime] = None
     guest_count: Optional[int] = Field(default=None, ge=0)
     max_budget: Optional[Decimal] = Field(default=None, ge=0)
     city_id: Optional[UUID] = None
     city_custom: Optional[str] = None
     location: Optional[str] = None
+    duration: Optional[int] = Field(default=None, ge=0)
     visibility_status: Optional[str] = None
 
-# Estados válidos del ciclo de vida de un evento (ver event_service.py,
-# formatters.js y FRONTEND_INTEGRATION_GUIDE.md, que ya asumen estos 3)
-VALID_EVENT_STATUSES = {"borrador", "confirmado", "finalizado"}
+# Estados válidos del ciclo de vida de un evento
+# borrador → confirmado (manual) → in_progress (auto, día del evento) → done (auto, día siguiente)
+VALID_EVENT_STATUSES = {"borrador", "confirmado", "in_progress", "done", "finalizado"}
 
-STATUS_SEQUENCE = ["borrador", "confirmado", "finalizado"]
+STATUS_SEQUENCE = ["borrador", "confirmado", "in_progress", "done"]
 
 class EventStatusUpdate(BaseModel):
     status: str

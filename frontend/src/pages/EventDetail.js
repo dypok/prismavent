@@ -1,7 +1,8 @@
 import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
-import { getEventById, updateEvent, updateEventStatus, createEventItem, updateEventItem, deleteEventItem } from "../service/api.js";
+import { getEventById, updateEvent, updateEventStatus, createEventItem, updateEventItem, deleteEventItem, getEventTasks } from "../service/api.js";
+import { TasksPanel } from "../components/TasksPanel.js";
 
 const _fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
 
@@ -78,11 +79,17 @@ import { initSaveTemplateModal } from "../components/SaveTemplateModal.js";
 export async function EventDetail(eventId) {
   let event = null;
   let original = null;
+  let tasks = [];
 
   if (eventId) {
     try {
       event = await getEventById(eventId);
       original = event ? { ...event } : null;
+      try {
+        tasks = await getEventTasks(eventId);
+      } catch (tErr) {
+        console.error("Error fetching tasks for EventDetail", tErr);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -113,11 +120,10 @@ export async function EventDetail(eventId) {
   const confirmedResources =
     event?.event_items?.filter(item => item.confirmed).length || 0;
 
-  const isFinalized = event?.status === 'finalizado';
+  const isFinalized = event?.status === 'finalizado' || event?.status === 'done';
 
   const nextStatusLabel = {
     borrador: "Confirm Event",
-    confirmado: "Finish Event",
   };
 
   window.__currentEventData = event;
@@ -127,12 +133,17 @@ export async function EventDetail(eventId) {
   const stepMap = {
     borrador: 1,
     confirmado: 2,
-    finalizado: 3,
+    in_progress: 3,
+    done: 4,
+    finalizado: 4,
   };
 
-  const nextStatus = {
-    borrador: "planificando",
-    confirmado: "finalizado",
+  const statusLabels = {
+    borrador: "Borrador",
+    confirmado: "Confirmado",
+    in_progress: "En Progreso",
+    done: "Realizado",
+    finalizado: "Finalizado",
   };
   window.__eventData = { event, original, eventId };
   setTimeout(() => {
@@ -154,9 +165,9 @@ export async function EventDetail(eventId) {
             <div>
               <div class="flex items-center gap-3">
                 <h1 class="text-2xl font-bold text-[#1E1B15]" id="detail-title">${event?.name}</h1>
-                <span class="px-3 py-1 text-[10px] font-semibold bg-[#FEF3C7] text-[#755B00] rounded-full uppercase tracking-wider">${event?.status || "Borrador"}</span>
+                <span class="px-3 py-1 text-[10px] font-semibold bg-[#FEF3C7] text-[#755B00] rounded-full uppercase tracking-wider">${statusLabels[event?.status] || "Borrador"}</span>
               </div>
-              <p class="text-[#9E8E6E] text-xs mt-0.5" id="detail-date-display">${event?.event_date}</p>
+              <p class="text-[#9E8E6E] text-xs mt-0.5" id="detail-date-display">${event?.event_date ? new Date(event.event_date).toLocaleString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}</p>
             </div>
           </div>
         `)}
@@ -176,8 +187,15 @@ export async function EventDetail(eventId) {
                 ` : ''}
 
                 <div class="flex justify-between items-center mb-6">
-                  <h2 class="text-xl font-bold text-[#1E1B15] flex items-center gap-2">🎯 Recursos del Evento</h2>
-                  <div class="flex items-center gap-2">
+                  <h2 class="text-xl font-bold text-[#1E1B15] flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#755B00]">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                      <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    Recursos del Evento
+                  </h2>
+                  <div class="flex items-center gap-2" id="resources-counter-wrapper">
                     <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmedResources} de ${totalResources} confirmados</span>
                     ${ProgressRing(confirmedResources, totalResources)}
                   </div>
@@ -243,11 +261,19 @@ export async function EventDetail(eventId) {
                     </div>
                     <div class="flex justify-between items-center py-2.5 border-b border-[#F5EDE0]">
                       <span class="text-sm text-[#9E8E6E]">Fecha</span>
-                      <span class="text-sm font-medium text-[#1E1B15]" id="view-date">${event?.event_date || "—"}</span>
+                      <span class="text-sm font-medium text-[#1E1B15]" id="view-date">${event?.event_date ? new Date(event.event_date).toLocaleString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2.5 border-b border-[#F5EDE0]">
+                      <span class="text-sm text-[#9E8E6E]">Ciudad</span>
+                      <span class="text-sm font-medium text-[#1E1B15] text-right max-w-[200px]" id="view-city">${event?.city_name || event?.city_custom || "—"}</span>
                     </div>
                     <div class="flex justify-between items-center py-2.5 border-b border-[#F5EDE0]">
                       <span class="text-sm text-[#9E8E6E]">Ubicación</span>
                       <span class="text-sm font-medium text-[#1E1B15] text-right max-w-[200px]" id="view-location">${event?.location || "—"}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2.5 border-b border-[#F5EDE0]">
+                      <span class="text-sm text-[#9E8E6E]">Duración</span>
+                      <span class="text-sm font-medium text-[#1E1B15]" id="view-duration">${event?.duration ? formatDuration(event.duration) : "—"}</span>
                     </div>
                     <div class="flex justify-between items-center py-2.5 border-b border-[#F5EDE0]">
                       <span class="text-sm text-[#9E8E6E]">Invitados</span>
@@ -268,6 +294,7 @@ export async function EventDetail(eventId) {
                     </div>` : ''}
                     
                     ${GuestsPanel(event)}
+                    ${TasksPanel(event, tasks)}
 
                     <div class="flex flex-wrap gap-3" id="detail-actions">
 
@@ -277,8 +304,9 @@ export async function EventDetail(eventId) {
                             <button
                               id="btn-next-status"
                               data-current-status="${event?.status}"
-                              class="px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-semibold hover:bg-green-700 transition-all shadow-sm"
+                              class="px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-semibold hover:bg-green-700 transition-all shadow-sm flex items-center gap-2"
                             >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                               ${nextButtonText}
                             </button>
                           `
@@ -288,8 +316,9 @@ export async function EventDetail(eventId) {
                       <button
                         id="btn-edit"
                         onclick="toggleEdit()"
-                        class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm"
+                        class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm flex items-center gap-2"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                         Editar
                       </button>
 
@@ -368,15 +397,69 @@ export async function EventDetail(eventId) {
                       <input type="text" id="edit-name" value="${event?.name || ""}"
                         class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm">
                     </div>
-                    <div>
-                      <label class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1">FECHA</label>
-                      <input type="date" id="edit-date" value="${event?.event_date || ""}"
-                        class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1">FECHA</label>
+                        <div class="relative">
+                          <div id="editDateDisplay" class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl text-sm cursor-pointer bg-white flex items-center justify-between select-none z-10 relative">
+                            <span id="editDateDisplayText" class="truncate">${event?.event_date ? new Date(event.event_date).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "Selecciona una fecha"}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#9E8E6E] shrink-0 ml-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          </div>
+                          <input type="hidden" id="edit-date" value="${event?.event_date ? event.event_date.slice(0, 10) : ""}">
+                          <div id="editCalendar" class="calendar-popup hidden absolute top-full left-0 mt-1.5 bg-white border border-[#D0C5B2] rounded-2xl shadow-xl z-[100] p-4 w-72">
+                            <div class="flex items-center justify-between mb-3">
+                              <button type="button" id="editPrevMonth" class="text-[#755B00] text-lg font-bold px-2 hover:text-[#5F4A00]">&lsaquo;</button>
+                              <span class="text-sm font-semibold text-[#1E1B15] capitalize"></span>
+                              <button type="button" id="editNextMonth" class="text-[#755B00] text-lg font-bold px-2 hover:text-[#5F4A00]">&rsaquo;</button>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 text-center text-xs font-medium text-[#9E8E6E] mb-1">
+                              <span>Do</span><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span>
+                            </div>
+                            <div id="editDaysGrid" class="grid grid-cols-7 gap-1 text-center"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1">HORA</label>
+                        <div id="editTimeWrapper">
+                          ${window.customSelectHTML ? window.customSelectHTML('edit-time', (() => {
+                            const p = (n) => String(n).padStart(2, '0');
+                            const opts = [];
+                            for (let h = 0; h < 24; h++) {
+                              for (let m = 0; m < 60; m += 30) {
+                                const v = `${p(h)}:${p(m)}`;
+                                opts.push({ value: v, label: v });
+                              }
+                            }
+                            return opts;
+                          })(), event?.event_date ? (() => { const d = new Date(event.event_date); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; })() : '18:00', 'Selecciona hora') : `<select id="edit-time" class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl text-sm bg-white"></select>`}
+                        </div>
+                      </div>
                     </div>
+                      <div>
+                        <label class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1">CIUDAD</label>
+                        <div id="editCityWrapper">
+                          ${window.customSelectHTML ? window.customSelectHTML('edit-city', [], '', 'Cargando ciudades...') : '<select id="edit-city" class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl text-sm bg-white"><option value="">Cargando...</option></select>'}
+                        </div>
+                      </div>
                     <div>
-                      <label class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1">UBICACIÓN</label>
+                      <label class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1">UBICACIÓN (lugar/recinto)</label>
                       <input type="text" id="edit-location" value="${event?.location || ""}"
                         class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm" placeholder="Ej: Hotel Hilton">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold tracking-widest text-[#4D4637] mb-1">DURACIÓN</label>
+                      <div class="flex gap-2">
+                        <input type="number" id="edit-duration-hours" min="0" value="${Math.floor((event?.duration || 0) / 60)}" class="flex-1 min-w-0 w-full px-4 py-3 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] text-sm" placeholder="Horas">
+                        <div class="w-24 shrink-0">
+                          ${window.customSelectHTML ? window.customSelectHTML('edit-duration-minutes', [
+                            { value: '0', label: '0 min' },
+                            { value: '15', label: '15 min' },
+                            { value: '30', label: '30 min' },
+                            { value: '45', label: '45 min' },
+                          ], '0') : `<select id="edit-duration-minutes" class="w-full px-3 py-3 border border-[#D0C5B2] rounded-xl text-sm bg-white"><option value="0">0 min</option></select>`}
+                        </div>
+                      </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                       <div>
@@ -396,7 +479,8 @@ export async function EventDetail(eventId) {
                         class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl focus:border-[#755B00] focus:outline-none text-sm">
                         <option value="borrador" ${event?.status === "borrador" || !event?.status ? "selected" : ""}>Borrador</option>
                         <option value="confirmado" ${event?.status === "confirmado" ? "selected" : ""}>Confirmado</option>
-                        <option value="finalizado" ${event?.status === "finalizado" ? "selected" : ""}>Finalizado</option>
+                        <option value="in_progress" ${event?.status === "in_progress" ? "selected" : ""}>En Progreso</option>
+                        <option value="done" ${event?.status === "done" ? "selected" : ""}>Realizado</option>
                       </select>
                     </div>
                     <div>
@@ -428,18 +512,95 @@ export async function EventDetail(eventId) {
   `;
 }
 
+window.formatDuration = function(minutes) {
+    if (!minutes || minutes <= 0) return "—";
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h > 0 && m > 0) return `${h} h ${m} min`;
+    if (h > 0) return `${h} h`;
+    return `${m} min`;
+};
+
+window.loadEditCities = async function () {
+    try {
+        const { getCities } = await import("../service/api.js");
+        const cities = await getCities();
+        const wrapper = document.getElementById("editCityWrapper");
+        if (!wrapper) return;
+        const opts = cities.map(c => ({ value: c.id, label: `${c.name}${c.department ? `, ${c.department}` : ''}` }));
+        wrapper.innerHTML = window.customSelectHTML ? window.customSelectHTML('edit-city', opts, '', 'Selecciona una ciudad...') : '<input type="text" placeholder="Ciudad">';
+        if (window.initCustomSelect) window.initCustomSelect('edit-city');
+
+        const event = window.__eventData?.event;
+        if (event?.city_id) {
+            document.getElementById("edit-city").value = event.city_id;
+            const display = document.getElementById("edit-cityDisplay");
+            if (display) {
+                const match = cities.find(c => c.id === event.city_id);
+                if (match) display.querySelector('span').textContent = `${match.name}${match.department ? `, ${match.department}` : ''}`;
+            }
+        }
+    } catch {
+        const wrapper = document.getElementById("editCityWrapper");
+        if (wrapper) {
+            wrapper.innerHTML = window.customSelectHTML
+                ? window.customSelectHTML('edit-city', [], '', 'Sin conexión')
+                : '<input type="text" class="w-full px-4 py-3 border border-[#D0C5B2] rounded-xl text-sm" placeholder="Ciudad">';
+        }
+    }
+};
+
 // ── Alternar entre vista y edición ──
 window.toggleEdit = function () {
   const { event, original } = window.__eventData;
-  
-  // Populate form with current data
+
+  const pad = (n) => String(n).padStart(2, '0');
+
   document.getElementById("edit-name").value = event?.name || "";
-  document.getElementById("edit-date").value = event?.event_date || "";
   document.getElementById("edit-location").value = event?.location || "";
   document.getElementById("edit-guests").value = event?.guest_count ?? "";
   document.getElementById("edit-budget").value = event?.max_budget ?? "";
   document.getElementById("edit-description").value = event?.description || "";
   document.getElementById("edit-status").value = event?.status || "borrador";
+
+  // date
+  if (event?.event_date) {
+      const dt = new Date(event.event_date);
+      document.getElementById("edit-date").value = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+      document.getElementById("editDateDisplayText").textContent = dt.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+
+  // populate & set time
+  const p2 = (n) => String(n).padStart(2, '0');
+  const timeVal = event?.event_date ? (() => {
+      const dt = new Date(event.event_date);
+      return `${p2(dt.getHours())}:${p2(dt.getMinutes())}`;
+  })() : '18:00';
+  document.getElementById("edit-time").value = timeVal;
+  const timeDisplay = document.getElementById("edit-timeDisplay");
+  if (timeDisplay) timeDisplay.querySelector('span').textContent = timeVal;
+
+  const dur = event?.duration || 0;
+  document.getElementById("edit-duration-hours").value = Math.floor(dur / 60);
+  document.getElementById("edit-duration-minutes").value = dur % 60;
+  const minDisplay = document.getElementById("edit-duration-minutesDisplay");
+  if (minDisplay) {
+      const mins = dur % 60;
+      const labels = { 0: '0 min', 15: '15 min', 30: '30 min', 45: '45 min' };
+      minDisplay.querySelector('span').textContent = labels[mins] || '0 min';
+  }
+
+  if (event?.city_id) {
+      document.getElementById("edit-city").value = event.city_id;
+  }
+
+  if (window.initCustomSelect) {
+      window.initCustomSelect('edit-time');
+      window.initCustomSelect('edit-duration-minutes');
+  }
+  window.initCalendar('edit', 'edit-date', 'editDateDisplay');
+
+  window.loadEditCities();
 
   document.getElementById("detail-view").classList.add("hidden");
   document.getElementById("detail-edit").classList.remove("hidden");
@@ -449,16 +610,42 @@ window.toggleEdit = function () {
 
 window.cancelEdit = function () {
   const { original } = window.__eventData;
+
+  const pad = (n) => String(n).padStart(2, '0');
   
-  // Restore form to original values
   if (original) {
     document.getElementById("edit-name").value = original.name || "";
-    document.getElementById("edit-date").value = original.event_date || "";
     document.getElementById("edit-location").value = original.location || "";
     document.getElementById("edit-guests").value = original.guest_count ?? "";
     document.getElementById("edit-budget").value = original.max_budget ?? "";
     document.getElementById("edit-description").value = original.description || "";
     document.getElementById("edit-status").value = original.status || "borrador";
+
+    if (original.event_date) {
+        const dt = new Date(original.event_date);
+        document.getElementById("edit-date").value = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+        document.getElementById("editDateDisplayText").textContent = dt.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+        const tv = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+        document.getElementById("edit-time").value = tv;
+        const td = document.getElementById("edit-timeDisplay");
+        if (td) td.querySelector('span').textContent = tv;
+    }
+
+    const dur = original.duration || 0;
+    document.getElementById("edit-duration-hours").value = Math.floor(dur / 60);
+    document.getElementById("edit-duration-minutes").value = dur % 60;
+    const md = document.getElementById("edit-duration-minutesDisplay");
+    if (md) {
+        const mins = dur % 60;
+        const labels = { 0: '0 min', 15: '15 min', 30: '30 min', 45: '45 min' };
+        md.querySelector('span').textContent = labels[mins] || '0 min';
+    }
+
+    if (original.city_id) {
+        document.getElementById("edit-city").value = original.city_id;
+    } else {
+        document.getElementById("edit-city").value = "";
+    }
   }
   
   document.getElementById("detail-view").classList.remove("hidden");
@@ -478,16 +665,31 @@ document.addEventListener("submit", async (e) => {
   const submitBtn = e.target.querySelector('button[type="submit"]');
 
   const newStatus = document.getElementById("edit-status").value;
+  const citySelect = document.getElementById("edit-city");
+
+  const durHours = parseInt(document.getElementById("edit-duration-hours").value, 10) || 0;
+  const durMinutes = parseInt(document.getElementById("edit-duration-minutes").value, 10) || 0;
+
+  const dateVal = document.getElementById("edit-date").value;
+  const timeVal = document.getElementById("edit-time").value;
+
   const payload = {
     name: document.getElementById("edit-name").value,
-    event_date: document.getElementById("edit-date").value || null,
+    event_date: dateVal ? new Date(dateVal + 'T' + timeVal + ':00').toISOString() : null,
     location: document.getElementById("edit-location").value || null,
     guest_count: parseInt(document.getElementById("edit-guests").value, 10) || null,
     max_budget: parseFloat(document.getElementById("edit-budget").value) || null,
     description: document.getElementById("edit-description").value || null,
+    duration: durHours * 60 + durMinutes,
   };
 
-  Object.keys(payload).forEach((k) => { if (payload[k] === null) delete payload[k]; });
+  if (citySelect.value) payload.city_id = citySelect.value;
+
+  const cityFields = ['city_id'];
+  Object.keys(payload).forEach((k) => {
+      if (k === 'city_id' && payload[k] === '') delete payload[k];
+      if (!cityFields.includes(k) && payload[k] === null) delete payload[k];
+  });
 
   errorEl.classList.add("hidden");
   submitBtn.disabled = true;
@@ -509,13 +711,17 @@ document.addEventListener("submit", async (e) => {
 
     document.getElementById("detail-title").textContent = updated.name;
     document.getElementById("detail-date-display").textContent = updated.event_date
-      ? new Date(updated.event_date).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+      ? new Date(updated.event_date).toLocaleString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
       : "";
     document.getElementById("view-name").textContent = updated.name || "—";
-    document.getElementById("view-date").textContent = updated.event_date || "—";
+    document.getElementById("view-date").textContent = updated.event_date
+      ? new Date(updated.event_date).toLocaleString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
+      : "—";
+    document.getElementById("view-city").textContent = updated.city_name || updated.city_custom || "—";
     document.getElementById("view-location").textContent = updated.location || "—";
     document.getElementById("view-guests").textContent = updated.guest_count ?? "—";
     document.getElementById("view-budget").textContent = updated.max_budget ? "$" + parseFloat(updated.max_budget).toLocaleString() : "—";
+    document.getElementById("view-duration").textContent = updated.duration ? window.formatDuration(updated.duration) : "—";
 
     const statusBadge = document.getElementById("view-status");
     statusBadge.textContent = updated.status || "Borrador";
@@ -566,13 +772,13 @@ function refreshBudgetAndCounter(updated) {
   if (panel) {
     panel.outerHTML = BudgetPanel(updated);
   }
-  const confirmedResources = updated.event_items.filter(i => i.confirmed).length;
-  const totalResources = updated.event_items.length;
-  const headerRight = document.querySelector(".flex.justify-between.items-center.mb-6 .flex.items-center.gap-2");
-  if (headerRight) {
-    headerRight.innerHTML = `
-      <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${totalResources > 0 ? `${confirmedResources} de ${totalResources} confirmados` : "Sin recursos"}</span>
-      ${ProgressRing(confirmedResources, totalResources)}
+  const counterWrap = document.getElementById("resources-counter-wrapper");
+  if (counterWrap) {
+    const confirmed = updated.event_items.filter(i => i.confirmed).length;
+    const total = updated.event_items.length;
+    counterWrap.innerHTML = `
+      <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmed} de ${total} confirmados</span>
+      ${ProgressRing(confirmed, total)}
     `;
   }
 }
@@ -808,11 +1014,14 @@ document.addEventListener("click", async (e) => {
         panel.outerHTML = BudgetPanel(updated);
       }
 
-      const confirmedResources = updated.event_items.filter(i => i.confirmed).length;
-      const totalResources = updated.event_items.length;
-      const counterEl = document.querySelector(".flex.justify-between.items-center.mb-6 span");
-      if (counterEl) {
-        counterEl.textContent = totalResources > 0 ? `${confirmedResources} de ${totalResources} confirmados` : "Sin recursos";
+      const counterWrap = document.getElementById("resources-counter-wrapper");
+      if (counterWrap) {
+        const confirmed = updated.event_items.filter(i => i.confirmed).length;
+        const total = updated.event_items.length;
+        counterWrap.innerHTML = `
+          <span class="text-sm text-[#9E8E6E] bg-[#F8F5F0] px-3 py-1 rounded-lg">${confirmed} de ${total} confirmados</span>
+          ${ProgressRing(confirmed, total)}
+        `;
       }
     } catch (err) {
       alert(err.message || "Error al eliminar el recurso.");

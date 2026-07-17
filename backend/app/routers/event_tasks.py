@@ -44,3 +44,13 @@ def move_task(
     db: Session = Depends(get_db)
 ):
     return event_task_service.move_task(event_id, task_id, current_user.id, payload.status, db)
+
+@router.delete("/{event_id}/tasks/{task_id}")
+def delete_task(
+    event_id: str,
+    task_id: str,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    event_task_service.delete_task(event_id, task_id, current_user.id, db)
+    return {"detail": "Task deleted successfully"}
