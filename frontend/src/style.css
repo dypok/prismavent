@@ -52,6 +52,17 @@
     animation: scaleIn 0.3s ease-out forwards;
 }
 
+/* ===== ANIMACIONES LANDING PAGE ===== */
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
 /* ===== ESCALADO RESPONSIVE DE LA INTERFAZ ===== */
 /* Tailwind usa unidades 'rem' para márgenes, paddings, tamaños de fuente, etc. 
    Al reducir el font-size del html base, toda la interfaz se encoge de forma 
