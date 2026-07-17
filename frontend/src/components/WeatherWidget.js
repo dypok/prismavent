@@ -1,9 +1,5 @@
 import { apiFetch } from "../service/api.js";
 
-export function WeatherWidgetHTML() {
-  return `<div id="weather-widget" class="flex items-center gap-2 mt-1.5 min-h-[28px]"></div>`;
-}
-
 export async function initWeatherWidget(eventId, isFinalized) {
   const container = document.getElementById("weather-widget");
   if (!container) return;
