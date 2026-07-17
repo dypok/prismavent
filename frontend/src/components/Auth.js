@@ -3,7 +3,11 @@ import logoIcon from "../assets/icons/logo.png";
 
 export function Auth() {
     return `
-        <div class="h-screen bg-[#F8F5F0] flex flex-col items-center justify-center px-4 md:px-6 font-sans overflow-hidden">
+        <div class="h-screen bg-[#F8F5F0] flex flex-col items-center justify-center px-4 md:px-6 font-sans overflow-hidden relative">
+        <button onclick="window.navigateTo('/')" class="absolute top-4 left-4 md:top-6 md:left-6 flex items-center gap-1.5 px-3 py-2 bg-white rounded-xl border border-[#E9E1D7] text-[#4D4637] hover:text-[#755B00] hover:border-[#C9A84C] transition-all text-sm shadow-sm cursor-pointer z-10">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <span class="hidden sm:inline">Volver</span>
+        </button>
         <div class="w-full max-w-md mx-4 md:mx-auto">
             
             <!-- Logo -->

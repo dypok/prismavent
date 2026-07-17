@@ -50,8 +50,17 @@ export function LandingPage() {
         </div>
       </div>
       <div class="hidden lg:flex justify-center animate-fade-in-up">
-        <div class="w-80 h-80 rounded-3xl bg-gradient-to-br from-[#C9A84C]/20 to-[#755B00]/20 border border-[#E9E1D7] flex items-center justify-center p-8">
-          <img src="/logo.png" alt="Prismavent" class="w-full h-full object-contain opacity-40">
+        <div class="w-80 h-80 relative">
+          <div class="absolute inset-0 bg-gradient-to-br from-[#C9A84C]/20 to-[#755B00]/20 rounded-3xl border border-[#E9E1D7]"></div>
+          <div class="absolute w-40 h-40 rounded-full bg-[#C9A84C]/15 blur-2xl top-8 left-6"></div>
+          <div class="absolute w-32 h-32 rounded-full bg-[#376847]/15 blur-2xl bottom-8 right-6"></div>
+          <div class="absolute w-24 h-24 rounded-full bg-[#755B00]/10 blur-xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+          <svg class="absolute inset-0 w-full h-full text-[#C9A84C]/10" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 4"/>
+            <circle cx="50" cy="50" r="25" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 4"/>
+            <line x1="10" y1="50" x2="90" y2="50" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 4"/>
+            <line x1="50" y1="10" x2="50" y2="90" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 4"/>
+          </svg>
         </div>
       </div>
     </div>
