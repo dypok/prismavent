@@ -45,11 +45,11 @@ def create_event(payload: EventCreate, current_user = Depends(get_current_user),
             INSERT INTO events (
                 user_id, name, description, event_date, guest_count, max_budget,
                 template_id, user_template_id, city_id, city_custom, event_type_id,
-                location, status, visibility_status
+                location, duration, status, visibility_status
             ) VALUES (
                 :user_id, :name, :description, :event_date, :guest_count, :max_budget,
                 :template_id, :user_template_id, :city_id, :city_custom, :event_type_id,
-                :location, :status, :visibility_status
+                :location, :duration, :status, :visibility_status
             ) RETURNING id, user_id, city_id, city_custom, event_type_id, template_id, user_template_id, name, description, location, event_date, guest_count, max_budget, status, visibility_status, created_at, updated_at
         """)
         
@@ -66,6 +66,7 @@ def create_event(payload: EventCreate, current_user = Depends(get_current_user),
             "city_custom": payload.city_custom,
             "event_type_id": payload.event_type_id,
             "location": payload.location,
+            "duration": payload.duration,
             "status": "borrador", # Esto dejenlo como borrador >:(
             "visibility_status": payload.visibility_status
         }
@@ -182,6 +183,7 @@ def update_event(
                     city_id = COALESCE(:city_id, city_id),
                     city_custom = COALESCE(:city_custom, city_custom),
                     location = COALESCE(:location, location),
+                    duration = COALESCE(:duration, duration),
                     visibility_status = COALESCE(:visibility_status, visibility_status),
                     updated_at = NOW()
                 WHERE id = :id AND user_id = :user_id
@@ -198,6 +200,7 @@ def update_event(
                 "city_id": payload.city_id,
                 "city_custom": payload.city_custom,
                 "location": payload.location,
+                "duration": payload.duration,
                 "visibility_status": payload.visibility_status,
             }
         ).fetchone()
@@ -269,16 +272,17 @@ def get_events(
         )
     try:
         query = """
-                SELECT e.id, e.user_id, e.name, e.description, e.event_date,
-                    e.guest_count, e.max_budget, e.template_id, e.user_template_id,
-                    e.city_id, e.city_custom, e.event_type_id, et.name AS event_type_name,
-                    e.location,
-                    e.status, e.visibility_status, e.created_at, e.updated_at,
+SELECT e.id, e.user_id, e.name, e.description, e.event_date,
+    e.guest_count, e.max_budget, e.template_id, e.user_template_id,
+    e.city_id, e.city_custom, c.name AS city_name, e.event_type_id, et.name AS event_type_name,
+    e.location, e.duration,
+    e.status, e.visibility_status, e.created_at, e.updated_at,
                     COALESCE(g.confirmed_count, 0) AS confirmed_guests_count,
                     COALESCE(b.total, 0) AS total_estimated,
                     COALESCE(bg.total, 0) AS total_gastado
                 FROM events e
                 LEFT JOIN event_types et ON et.id = e.event_type_id
+                LEFT JOIN cities c ON c.id = e.city_id
                 LEFT JOIN (
                     SELECT event_id, COUNT(*) AS confirmed_count
                     FROM guests

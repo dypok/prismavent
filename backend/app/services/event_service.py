@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -8,25 +8,34 @@ from app.services import budget_service
 def auto_transition_event_status(event: dict, db: Session) -> dict:
     """
     Auto-advance event status based on dates:
-    - confirmado → in_progress when event_date <= today
-    - in_progress → done when event_date < today
+    - confirmado → in_progress when now >= event_date
+    - in_progress → done when now >= event_date + duration (or +24h if no duration)
     Returns the event dict with updated status (or unchanged).
     """
     current = event.get("status")
     event_date = event.get("event_date")
-    today = date.today()
+    duration = event.get("duration", 0) or 0
+    now = datetime.now(timezone.utc)
 
     if not event_date or not current:
         return event
 
     if isinstance(event_date, str):
-        event_date = datetime.strptime(event_date[:10], "%Y-%m-%d").date()
+        event_date = datetime.fromisoformat(event_date.replace('Z', '+00:00'))
+
+    if event_date.tzinfo is None:
+        event_date = event_date.replace(tzinfo=timezone.utc)
 
     new_status = None
-    if current == "confirmado" and event_date <= today:
+    if current == "confirmado" and now >= event_date:
         new_status = "in_progress"
-    elif current == "in_progress" and event_date < today:
-        new_status = "done"
+    elif current == "in_progress":
+        if duration and duration > 0:
+            end_time = event_date + timedelta(minutes=duration)
+        else:
+            end_time = event_date + timedelta(days=1)
+        if now >= end_time:
+            new_status = "done"
 
     if new_status and new_status != current:
         db.execute(
@@ -71,12 +80,17 @@ def validate_event_not_finalized(current_status: str) -> None:
     if current_status in ("finalizado", "done"):
         raise HTTPException(status_code=400, detail="No se puede modificar un evento finalizado")
 
-def validate_event_date_not_past(new_date: date | None) -> None:
+def validate_event_date_not_past(new_date: datetime | None) -> None:
     """
     Raises a 400 Bad Request error if the new event_date is in the past.
     """
-    if new_date is not None and new_date < date.today():
-        raise HTTPException(status_code=400, detail="event_date no puede ser una fecha en el pasado")
+    if new_date is not None:
+        if isinstance(new_date, str):
+            new_date = datetime.fromisoformat(new_date.replace('Z', '+00:00'))
+        if new_date.tzinfo is None:
+            new_date = new_date.replace(tzinfo=timezone.utc)
+        if new_date < datetime.now(timezone.utc):
+            raise HTTPException(status_code=400, detail="event_date no puede ser una fecha en el pasado")
 
 def validate_guest_count_editable(payload_guest_count: int | None, guest_tracking_enabled: bool) -> None:
     """
@@ -125,6 +139,17 @@ def get_event_detail(event_id: str, db: Session) -> dict:
         if et_res:
             event_type_name = et_res[0]
     event["event_type_name"] = event_type_name
+
+    # 1c. Fetch city name
+    city_name = None
+    if event.get("city_id"):
+        city_res = db.execute(
+            text("SELECT name FROM cities WHERE id = :id"),
+            {"id": event["city_id"]}
+        ).fetchone()
+        if city_res:
+            city_name = city_res[0]
+    event["city_name"] = city_name
     
     # 2. Fetch associated event items
     items_res = db.execute(

@@ -151,6 +151,10 @@ export async function getCategories() {
   return await apiFetch('/provider-categories');
 }
 
+export async function getCities() {
+  return await apiFetch('/cities');
+}
+
 // Proveedores (con filtros opcionales)
 export async function getProviders(params = {}) {
   const query = new URLSearchParams();
@@ -252,6 +256,7 @@ export default {
   getEventById,
   getTemplates,
   getCategories,
+  getCities,
   getProviders,
   getUserTemplates,
   createUserTemplate,

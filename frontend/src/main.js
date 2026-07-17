@@ -9,7 +9,7 @@ import { GuestsPage, initGuestsPage } from "./pages/GuestsPage.js";
 import { CustomEventFlow } from "./pages/CustomEventFlow.js";
 import { TemplateEventFlow } from "./pages/TemplateEventFlow.js";
 import { MyTemplates } from "./pages/MyTemplates.js";
-import { prefillCustomEventForm } from "./components/CustomEventForm.js";
+import { prefillCustomEventForm, loadCities } from "./components/CustomEventForm.js";
 import { deleteEvent } from "./service/api.js";
 import { showToast } from "./components/Toast.js";
 import { 
@@ -330,6 +330,7 @@ async function renderPage() {
     }
     document.querySelector("#app").innerHTML = CustomEventFlow();
     prefillCustomEventForm();
+    loadCities();
 
   // Flujo: evento desde plantilla
   } else if (path === "/events/new/template") {
