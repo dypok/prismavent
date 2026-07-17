@@ -9,7 +9,7 @@ export function Auth() {
             <!-- Logo -->
             <div class="flex flex-col items-center mb-5">
                 <img src="${logoIcon}" alt="Prismavent Logo" class="w-44 h-auto object-contain">
-                <p class="text-lg md:text-xl font-medium text-gray-600 tracking-wide text-center mt-2" style="font-family: 'Playfair Display', serif;">
+                <p class="text-lg md:text-xl font-medium text-gray-600 tracking-wide text-center mt-2">
                     From start to glow, we've got the flow
                 </p>
             </div>

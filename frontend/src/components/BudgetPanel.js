@@ -29,8 +29,7 @@ export function BudgetPanel(event) {
     <div class="bg-white rounded-2xl border border-gray-200 p-6" id="budget-panel">
 
       <h2
-        class="text-3xl font-bold mb-4"
-        style="font-family: 'Playfair Display', serif;"
+        class="font-display text-3xl font-bold mb-4"
       >
         Presupuesto
       </h2>

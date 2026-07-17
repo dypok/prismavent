@@ -27,8 +27,7 @@ export function CreateEvent() {
           <div class="w-full max-w-5xl">
 
             <div class="text-center mb-8 md:mb-12">
-              <h1 class="font-display text-4xl md:text-5xl text-[#1E1B15] leading-tight tracking-tight"
-                  style="font-family:'Playfair Display', serif;">
+              <h1 class="font-display text-4xl md:text-5xl text-[#1E1B15] leading-tight tracking-tight">
                 Crea tu próximo evento
               </h1>
               <p class="mt-4 text-[#4D4637] text-lg max-w-2xl mx-auto font-medium">

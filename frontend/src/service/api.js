@@ -63,6 +63,31 @@ export async function register(name, email, password, phone) {
   return data;
 }
 
+function showSessionModal(msg) {
+  const existing = document.getElementById("session-modal");
+  if (existing) return;
+
+  const overlay = document.createElement("div");
+  overlay.id = "session-modal";
+  overlay.className = "fixed inset-0 bg-black/40 flex items-center justify-center z-[200] animate-fade-in backdrop-blur-sm";
+  overlay.onclick = () => {};
+
+  overlay.innerHTML = `
+    <div class="bg-white rounded-3xl p-8 w-[400px] shadow-2xl animate-scale-in text-center">
+      <div class="w-14 h-14 bg-[#FEF3C7] rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#755B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h2 class="text-xl font-bold text-[#1E1B15] mb-2">Sesión expirada</h2>
+      <p class="text-sm text-[#4D4637] mb-6">${msg}</p>
+      <button onclick="document.getElementById('session-modal').remove(); window.history.pushState({},'','/login'); window.dispatchEvent(new PopStateEvent('popstate'))" class="w-full py-3 bg-[#755B00] text-white font-semibold rounded-xl text-sm hover:bg-[#5F4A00] transition shadow-sm">
+        Ir al inicio de sesión
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+}
+
 // --- Fetch autenticado ---
 
 export async function apiFetch(path, options = {}) {
@@ -87,9 +112,7 @@ export async function apiFetch(path, options = {}) {
     const msg = token
       ? "Tu sesión expiró. Redirigiendo al login..."
       : "Debes iniciar sesión para continuar.";
-    alert(msg);
-    window.history.pushState({}, "", "/login");
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    showSessionModal(msg);
     throw new Error(msg);
   }
 
