@@ -5,11 +5,8 @@ export function LandingPage() {
   <!-- ===== NAVBAR ===== -->
   <nav class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#E9E1D7]">
     <div class="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between h-16 lg:h-20">
-      <a onclick="window.scrollTo({top:0,behavior:'smooth'})" class="flex items-center gap-2.5 cursor-pointer shrink-0">
-        <svg width="32" height="32" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 45V34.375L33 1.4375C33.5 0.979167 34.0521 0.625 34.6562 0.375C35.2604 0.125 35.8958 0 36.5625 0C37.2292 0 37.875 0.125 38.5 0.375C39.125 0.625 39.6667 1 40.125 1.5L43.5625 5C44.0625 5.45833 44.4271 6 44.6562 6.625C44.8854 7.25 45 7.875 45 8.5C45 9.16667 44.8854 9.80208 44.6562 10.4062C44.4271 11.0104 44.0625 11.5625 43.5625 12.0625L10.625 45H0ZM36.5 12L40 8.5L36.5 5L33 8.5L36.5 12Z" fill="#376847"/>
-        </svg>
-        <span class="font-display text-xl font-bold text-[#1E1B15]">Prismavent</span>
+      <a onclick="window.scrollTo({top:0,behavior:'smooth'})" class="flex items-center cursor-pointer shrink-0">
+        <img src="/logo.png" alt="Prismavent" class="h-10 w-auto">
       </a>
       <div class="hidden md:flex items-center gap-8">
         <a href="#hero" class="text-sm text-[#4D4637] hover:text-[#755B00] transition-colors font-medium">Inicio</a>
@@ -53,10 +50,8 @@ export function LandingPage() {
         </div>
       </div>
       <div class="hidden lg:flex justify-center animate-fade-in-up">
-        <div class="w-80 h-80 rounded-3xl bg-gradient-to-br from-[#C9A84C]/20 to-[#755B00]/20 border border-[#E9E1D7] flex items-center justify-center">
-          <svg width="160" height="160" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg" class="opacity-30">
-            <path d="M0 45V34.375L33 1.4375C33.5 0.979167 34.0521 0.625 34.6562 0.375C35.2604 0.125 35.8958 0 36.5625 0C37.2292 0 37.875 0.125 38.5 0.375C39.125 0.625 39.6667 1 40.125 1.5L43.5625 5C44.0625 5.45833 44.4271 6 44.6562 6.625C44.8854 7.25 45 7.875 45 8.5C45 9.16667 44.8854 9.80208 44.6562 10.4062C44.4271 11.0104 44.0625 11.5625 43.5625 12.0625L10.625 45H0ZM36.5 12L40 8.5L36.5 5L33 8.5L36.5 12Z" fill="#376847"/>
-          </svg>
+        <div class="w-80 h-80 rounded-3xl bg-gradient-to-br from-[#C9A84C]/20 to-[#755B00]/20 border border-[#E9E1D7] flex items-center justify-center p-8">
+          <img src="/logo.png" alt="Prismavent" class="w-full h-full object-contain opacity-40">
         </div>
       </div>
     </div>
@@ -149,11 +144,8 @@ export function LandingPage() {
     <div class="max-w-7xl mx-auto px-4 lg:px-8">
       <div class="grid md:grid-cols-4 gap-8 lg:gap-12">
         <div>
-          <div class="flex items-center gap-2.5 mb-4">
-            <svg width="28" height="28" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 45V34.375L33 1.4375C33.5 0.979167 34.0521 0.625 34.6562 0.375C35.2604 0.125 35.8958 0 36.5625 0C37.2292 0 37.875 0.125 38.5 0.375C39.125 0.625 39.6667 1 40.125 1.5L43.5625 5C44.0625 5.45833 44.4271 6 44.6562 6.625C44.8854 7.25 45 7.875 45 8.5C45 9.16667 44.8854 9.80208 44.6562 10.4062C44.4271 11.0104 44.0625 11.5625 43.5625 12.0625L10.625 45H0ZM36.5 12L40 8.5L36.5 5L33 8.5L36.5 12Z" fill="#C9A84C"/>
-            </svg>
-            <span class="font-display text-lg font-bold">Prismavent</span>
+          <div class="mb-4">
+            <img src="/logo.png" alt="Prismavent" class="h-8 w-auto brightness-0 invert">
           </div>
           <p class="text-[#9E8E6E] text-sm leading-relaxed">La plataforma todo-en-uno para planificar y gestionar eventos inolvidables.</p>
         </div>
