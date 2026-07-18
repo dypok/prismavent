@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import text
+from sqlalchemy import text, func
 from app.schemas.provider import ProviderCreate, ProviderUpdate
 from typing import Optional
 
@@ -61,8 +61,8 @@ def create_provider(payload: ProviderCreate, db: Session) -> dict:
         
     insert_res = db.execute(
         text("""
-            INSERT INTO providers (category_id, city_id, name, description, phone, website, address, reference_price, price_unit, rating)
-            VALUES (:category_id, :city_id, :name, :description, :phone, :website, :address, :reference_price, :price_unit, :rating)
+            INSERT INTO providers (category_id, city_id, name, description, phone, email, website, address, image_url, reference_price, price_unit, rating)
+            VALUES (:category_id, :city_id, :name, :description, :phone, :email, :website, :address, :image_url, :reference_price, :price_unit, :rating)
             RETURNING *
         """),
         {
@@ -71,8 +71,10 @@ def create_provider(payload: ProviderCreate, db: Session) -> dict:
             "name": payload.name,
             "description": payload.description,
             "phone": payload.phone,
+            "email": payload.email,
             "website": payload.website,
             "address": payload.address,
+            "image_url": payload.image_url,
             "reference_price": payload.reference_price,
             "price_unit": payload.price_unit,
             "rating": payload.rating
@@ -128,14 +130,22 @@ def update_provider(provider_id: str, payload: ProviderUpdate, db: Session) -> d
     if payload.phone is not None:
         updates.append("phone = :phone")
         params["phone"] = payload.phone
-        
+
+    if payload.email is not None:
+        updates.append("email = :email")
+        params["email"] = payload.email
+
     if payload.website is not None:
         updates.append("website = :website")
         params["website"] = payload.website
-        
+
     if payload.address is not None:
         updates.append("address = :address")
         params["address"] = payload.address
+
+    if payload.image_url is not None:
+        updates.append("image_url = :image_url")
+        params["image_url"] = payload.image_url
         
     if payload.reference_price is not None:
         updates.append("reference_price = :reference_price")
@@ -176,6 +186,96 @@ def delete_provider(provider_id: str, db: Session) -> None:
     if not prov:
         raise HTTPException(status_code=404, detail="Proveedor no encontrado")
         
+    db.execute(
+        text("DELETE FROM providers WHERE id = :id"),
+        {"id": provider_id}
+    )
+    db.commit()
+
+def list_providers_paginated(db: Session, page: int = 1, per_page: int = 10, search: Optional[str] = None, category_id: Optional[str] = None) -> tuple:
+    """
+    Fetches providers with pagination, search, category filter, and calculated rating from reviews.
+    Returns (providers_list, total_count).
+    """
+    base_query = """
+        FROM providers p
+        LEFT JOIN provider_reviews r ON p.id = r.provider_id
+        WHERE 1=1
+    """
+    params = {}
+    count_params = {}
+
+    if category_id:
+        base_query += " AND p.category_id = :category_id"
+        params["category_id"] = category_id
+        count_params["category_id"] = category_id
+
+    if search:
+        base_query += " AND p.name ILIKE :search"
+        params["search"] = f"%{search}%"
+        count_params["search"] = f"%{search}%"
+
+    count_query = "SELECT COUNT(DISTINCT p.id) " + base_query
+    total = db.execute(text(count_query), count_params).scalar() or 0
+
+    offset = (page - 1) * per_page
+
+    data_query = """
+        SELECT p.*, COALESCE(AVG(r.rating)::numeric(2,1), p.rating) AS display_rating
+    """ + base_query + """
+        GROUP BY p.id
+        ORDER BY p.name ASC
+        LIMIT :limit OFFSET :offset
+    """
+    params["limit"] = per_page
+    params["offset"] = offset
+
+    res = db.execute(text(data_query), params).fetchall()
+    providers = [dict(row._mapping) for row in res] if res else []
+
+    return providers, total
+
+def get_provider_detail(provider_id: str, db: Session) -> dict:
+    """
+    Fetches a single provider with its reviews and calculated rating.
+    """
+    provider = get_provider_by_id(provider_id, db)
+
+    reviews_res = db.execute(
+        text("SELECT id, provider_id, user_id, rating, comment, created_at FROM provider_reviews WHERE provider_id = :pid ORDER BY created_at DESC"),
+        {"pid": provider_id}
+    ).fetchall()
+    provider["reviews"] = [dict(r._mapping) for r in reviews_res] if reviews_res else []
+
+    if provider["reviews"]:
+        avg_res = db.execute(
+            text("SELECT AVG(rating)::numeric(2,1) FROM provider_reviews WHERE provider_id = :pid"),
+            {"pid": provider_id}
+        ).scalar()
+        provider["display_rating"] = float(avg_res) if avg_res else provider.get("rating")
+    else:
+        provider["display_rating"] = provider.get("rating")
+
+    return provider
+
+def delete_provider_with_integrity(provider_id: str, db: Session) -> None:
+    """
+    Deletes a provider only if it has no reviews. Returns 409 if reviews exist.
+    """
+    prov = db.execute(
+        text("SELECT 1 FROM providers WHERE id = :id"),
+        {"id": provider_id}
+    ).fetchone()
+    if not prov:
+        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
+
+    review = db.execute(
+        text("SELECT 1 FROM provider_reviews WHERE provider_id = :pid LIMIT 1"),
+        {"pid": provider_id}
+    ).fetchone()
+    if review:
+        raise HTTPException(status_code=409, detail="No se puede eliminar: el proveedor tiene reseñas vinculadas")
+
     db.execute(
         text("DELETE FROM providers WHERE id = :id"),
         {"id": provider_id}
