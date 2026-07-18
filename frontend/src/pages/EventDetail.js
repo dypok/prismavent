@@ -8,8 +8,9 @@ import { icon } from "../components/Icons.js";
 
 const _fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
 
-function buildResourceCardHTML(item) {
+function buildResourceCardHTML(item, isFinalized = false) {
   const isConfirmed = item.confirmed;
+  const disabled = isFinalized ? 'opacity-50 pointer-events-none cursor-not-allowed' : '';
   return `
     <div class="bg-white rounded-xl p-4 flex items-center justify-between gap-2 flex-wrap shadow-sm ${isConfirmed ? 'border-2 border-[#C9A84C] border-l-4 border-[#C9A84C]' : 'border border-gray-200'}" data-item-id="${item.id}">
       <div class="flex-1 min-w-0">
@@ -19,15 +20,15 @@ function buildResourceCardHTML(item) {
       </div>
       <div class="flex items-center gap-2 ml-3">
         <span class="text-sm font-bold text-[#755B00] whitespace-nowrap">${_fmt(item.quantity * item.unit_price)}</span>
-        <button class="toggle-confirmed relative w-10 h-5 rounded-full transition-colors cursor-pointer border-none ${isConfirmed ? 'bg-[#C9A84C]' : 'bg-gray-300'}" data-id="${item.id}" title="${isConfirmed ? 'Marcar pendiente' : 'Marcar confirmado'}">
+        <button class="toggle-confirmed relative w-10 h-5 rounded-full transition-colors border-none ${isConfirmed ? 'bg-[#C9A84C]' : 'bg-gray-300'} ${disabled}" data-id="${item.id}" title="${isConfirmed ? 'Marcar pendiente' : 'Marcar confirmado'}">
           <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isConfirmed ? 'translate-x-5' : ''}"></span>
         </button>
-          <button class="edit-resource p-1.5 rounded-lg hover:bg-green-50 transition-colors cursor-pointer" data-id="${item.id}" data-name="${item.name.replace(/"/g, '&quot;')}" data-quantity="${item.quantity}" data-price="${item.unit_price}" data-notes="${(item.notes || '').replace(/"/g, '&quot;')}" title="Editar">
+          <button class="edit-resource p-1.5 rounded-lg hover:bg-green-50 transition-colors ${disabled}" data-id="${item.id}" data-name="${item.name.replace(/"/g, '&quot;')}" data-quantity="${item.quantity}" data-price="${item.unit_price}" data-notes="${(item.notes || '').replace(/"/g, '&quot;')}" title="Editar">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
             </svg>
         </button>
-        <button class="delete-resource p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" data-id="${item.id}" title="Eliminar">
+        <button class="delete-resource p-1.5 rounded-lg hover:bg-red-50 transition-colors ${disabled}" data-id="${item.id}" title="Eliminar">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 7L18.133 19.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"/>
           </svg>
@@ -206,7 +207,7 @@ export async function EventDetail(eventId) {
                 <div id="resources-canvas" class="rounded-xl border-2 border-dashed border-gray-300 bg-[#F8F5F0]/50 overflow-x-auto">
                   <div class="p-4 space-y-3" id="resources-list">
                     ${event.event_items && event.event_items.length > 0
-                      ? event.event_items.slice(0, 10).map(item => buildResourceCardHTML(item)).join('')
+                      ? event.event_items.slice(0, 5).map(item => buildResourceCardHTML(item, isFinalized)).join('')
                       : `
                         <div class="flex flex-col items-center justify-center py-12 text-[#9E8E6E]">
                           <svg class="w-16 h-16 mb-4 opacity-50 text-[#22C55E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -219,6 +220,7 @@ export async function EventDetail(eventId) {
                     }
                   </div>
 
+                  ${!isFinalized ? `
                   <form id="add-resource-form" class="hidden border-t border-dashed border-gray-300 p-4 bg-white/80 space-y-3">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <input type="text" id="res-name" placeholder="Nombre del recurso" required
@@ -238,18 +240,23 @@ export async function EventDetail(eventId) {
                         class="px-4 py-2 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00]">Guardar Recurso</button>
                     </div>
                   </form>
+                  ` : ''}
 
-                  <div class="border-t border-dashed border-gray-300 p-3 flex justify-center ${(event.event_items?.length || 0) > 10 ? 'hidden' : ''}" id="add-resource-btn-wrapper">
+                  <div class="border-t border-dashed border-gray-300 p-3 flex justify-center ${!isFinalized && (event.event_items?.length || 0) <= 5 ? '' : 'hidden'}" id="add-resource-btn-wrapper">
                     <button id="btn-add-resource"
                       class="px-5 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-[#4D4637] hover:border-[#755B00] hover:text-[#755B00] transition-all shadow-sm">+ Añadir Recurso</button>
                   </div>
-                  <div class="border-t border-dashed border-gray-300 p-3 flex justify-center ${(event.event_items?.length || 0) <= 10 ? 'hidden' : ''}">
+                  <div class="border-t border-dashed border-gray-300 p-3 flex justify-center ${(event.event_items?.length || 0) > 5 ? '' : 'hidden'}">
                     <button id="btn-view-all-resources" data-event-id="${event.id}"
                       class="px-5 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-[#755B00] hover:bg-[#FEF3C7] transition-all shadow-sm flex items-center gap-2">
                       ${icon('arrow-right', 16)}
                       Ver todos (${event.event_items?.length || 0})
                     </button>
                   </div>
+                </div>
+
+                <div class="mt-4">
+                  ${TasksPanel(event, tasks)}
                 </div>
               </div>
 
@@ -308,12 +315,12 @@ export async function EventDetail(eventId) {
                       <p class="text-sm text-[#1E1B15]" id="view-description">${event.description}</p>
                     </div>` : ''}
                     
-                    ${GuestsPanel(event)}
+                    ${GuestsPanel(event, isFinalized)}
 
                     <div class="flex flex-wrap gap-3" id="detail-actions">
 
                       ${
-                        nextButtonText
+                        nextButtonText && !isFinalized
                           ? `
                             <button
                               id="btn-next-status"
@@ -330,15 +337,17 @@ export async function EventDetail(eventId) {
                       <button
                         id="btn-edit"
                         onclick="toggleEdit()"
-                        class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm flex items-center gap-2"
+                        class="px-5 py-2.5 bg-[#755B00] text-white rounded-xl text-sm font-semibold hover:bg-[#5F4A00] transition-all shadow-sm flex items-center gap-2 ${isFinalized ? 'opacity-50 cursor-not-allowed' : ''}"
+                        ${isFinalized ? 'disabled' : ''}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                         Editar
                       </button>
 
                       <button
-                        onclick="window.__currentEventData && window.openSaveTemplateModal(window.__currentEventData)"
-                        class="px-5 py-2.5 bg-white border border-[#E9E1D7] text-[#755B00] rounded-xl text-sm font-semibold hover:bg-[#FEF3C7] transition-all shadow-sm flex items-center gap-2"
+                        onclick="${isFinalized ? '' : "window.__currentEventData && window.openSaveTemplateModal(window.__currentEventData)"}"
+                        class="px-5 py-2.5 bg-white border border-[#E9E1D7] text-[#755B00] rounded-xl text-sm font-semibold hover:bg-[#FEF3C7] transition-all shadow-sm flex items-center gap-2 ${isFinalized ? 'opacity-50 cursor-not-allowed' : ''}"
+                        ${isFinalized ? 'disabled' : ''}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                         Guardar como Plantilla
@@ -452,31 +461,26 @@ export async function EventDetail(eventId) {
                     </div>
                     <p id="edit-error" class="hidden text-sm text-red-600 text-center bg-red-50 rounded-xl py-2"></p>
                   </form>
+
+                  ${event?.status === "borrador" ? `
+                  <div class="mt-6 pt-6 border-t border-[#F5EDE0]">
+                    <div class="rounded-xl border border-red-200 bg-red-50/40 p-4">
+                      <div class="flex items-center gap-2 mb-2">
+                        ${icon('alert-triangle', 18, 'text-red-600')}
+                        <h3 class="text-sm font-semibold text-red-700">Delete Event</h3>
+                      </div>
+                      <p class="text-xs text-gray-600 mb-3">This action permanently deletes this event and cannot be undone.</p>
+                      <button id="open-delete-modal" class="w-full py-2.5 rounded-xl border border-red-300 bg-white text-red-600 font-medium hover:bg-red-100 hover:border-red-500 transition flex items-center justify-center gap-2 text-sm">
+                        ${icon('trash', 16)}
+                        Delete Event
+                      </button>
+                    </div>
+                  </div>
+                  ` : ''}
                 </div>
               </aside>
 
             </section>
-
-            <div class="flex flex-col lg:flex-row gap-6 mt-6">
-              <div class="w-full">
-                ${TasksPanel(event, tasks)}
-              </div>
-              ${event?.status === "borrador" ? `
-              <div class="w-full lg:w-2/5">
-                <div class="rounded-2xl border border-red-200 bg-red-50/40 p-5">
-                  <div class="flex items-center gap-2 mb-2">
-                    ${icon('alert-triangle', 18, 'text-red-600')}
-                    <h3 class="text-sm font-semibold text-red-700">Delete Event</h3>
-                  </div>
-                  <p class="text-sm text-gray-600 mb-4">This action permanently deletes this event and cannot be undone.</p>
-                  <button id="open-delete-modal" class="w-full py-3 rounded-xl border border-red-300 bg-white text-red-600 font-medium hover:bg-red-100 hover:border-red-500 transition flex items-center justify-center gap-2">
-                    ${icon('trash', 18)}
-                    Delete Event
-                  </button>
-                </div>
-              </div>
-              ` : ''}
-            </div>
 
           </div>
         </div>
@@ -530,6 +534,7 @@ window.loadEditCities = async function () {
 // ── Alternar entre vista y edición ──
 window.toggleEdit = function () {
   const { event, original } = window.__eventData;
+  if (event?.status === 'finalizado' || event?.status === 'done') return;
 
   const pad = (n) => String(n).padStart(2, '0');
 
@@ -635,6 +640,8 @@ window.cancelEdit = function () {
 // ── Submit del formulario de edición ──
 document.addEventListener("submit", async (e) => {
   if (e.target.id !== "detail-edit") return;
+  const _edEv = window.__eventData?.event;
+  if (_edEv?.status === 'finalizado' || _edEv?.status === 'done') return;
   e.preventDefault();
 
   const { eventId, original } = window.__eventData;
@@ -763,8 +770,10 @@ function renderResourceList() {
   const list = document.getElementById("resources-list");
   if (!list) return;
   const items = window.__eventData?.event?.event_items || [];
-  const maxVisible = 10;
+  const maxVisible = 5;
   const visible = items.slice(0, maxVisible);
+  const _ev = window.__eventData?.event;
+  const _isFin = _ev?.status === 'finalizado' || _ev?.status === 'done';
   if (visible.length === 0) {
     list.innerHTML = `
       <div class="flex flex-col items-center justify-center py-12 text-[#9E8E6E]">
@@ -772,11 +781,13 @@ function renderResourceList() {
           <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17a.75.75 0 01-.75-.75v-4.5a.75.75 0 011.5 0v4.5A.75.75 0 017 17z"/>
         </svg>
         <p class="text-lg font-medium">Lienzo de Recursos</p>
-        <p class="text-sm mt-1">Agrega recursos a tu evento</p>
+        <p class="text-sm mt-1">${_isFin ? 'No se agregaron recursos' : 'Agrega recursos a tu evento'}</p>
       </div>
     `;
   } else {
-    list.innerHTML = visible.map(item => buildResourceCardHTML(item)).join('');
+    const ev = window.__eventData?.event;
+    const isFin = ev?.status === 'finalizado' || ev?.status === 'done';
+    list.innerHTML = visible.map(item => buildResourceCardHTML(item, isFin)).join('');
   }
   const event = window.__eventData?.event;
   const hasMoreThanMax = (event?.event_items?.length || 0) > maxVisible;
@@ -813,6 +824,8 @@ document.addEventListener("click", (e) => {
   const errorEl = document.getElementById("res-error");
 
   if (btnAdd && e.target.closest("#btn-add-resource")) {
+    const ev = window.__eventData?.event;
+    if (ev?.status === 'finalizado' || ev?.status === 'done') return;
     form.classList.remove("hidden");
     btnAdd.classList.add("hidden");
     errorEl.classList.add("hidden");
@@ -826,9 +839,13 @@ document.addEventListener("click", (e) => {
     errorEl.classList.add("hidden");
   }
 
+  const ev = window.__eventData?.event;
+  const isFin = ev?.status === 'finalizado' || ev?.status === 'done';
+
   // ── Editar inline ──
   const editBtn = e.target.closest(".edit-resource");
   if (editBtn) {
+    if (isFin) return;
     const list = document.getElementById("resources-list");
     if (list.querySelector(".is-editing")) return;
     const card = editBtn.closest('[data-item-id]');
@@ -843,6 +860,7 @@ document.addEventListener("click", (e) => {
   // ── Guardar ediciOn inline ──
   const saveBtn = e.target.closest(".save-edit-resource");
   if (saveBtn) {
+    if (isFin) return;
     const card = saveBtn.closest('[data-item-id].is-editing');
     if (card) saveInlineEdit(card);
   }
@@ -857,6 +875,7 @@ document.addEventListener("click", (e) => {
   // ── Toggle confirmado ──
   const toggleBtn = e.target.closest(".toggle-confirmed");
   if (toggleBtn) {
+    if (isFin) return;
     e.preventDefault();
     const itemId = toggleBtn.dataset.id;
     const item = window.__eventData.event.event_items.find(i => i.id === itemId);
@@ -878,6 +897,7 @@ document.addEventListener("click", (e) => {
   // ── Eliminar ──
   const delBtn = e.target.closest(".delete-resource");
   if (delBtn) {
+    if (isFin) return;
     const modal = document.getElementById("resource-delete-modal");
     if (modal) {
       modal.dataset.pendingDeleteId = delBtn.dataset.id;
@@ -892,6 +912,8 @@ document.addEventListener("click", (e) => {
 // ── Enter / Escape en edicion inline ──
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Enter" && e.key !== "Escape") return;
+  const ev = window.__eventData?.event;
+  if (ev?.status === 'finalizado' || ev?.status === 'done') return;
   const card = e.target.closest(".is-editing");
   if (!card) return;
   e.preventDefault();
@@ -905,6 +927,8 @@ document.addEventListener("keydown", (e) => {
 // ── Submit del formulario de agregar recurso ──
 document.addEventListener("submit", async (e) => {
   if (e.target.id !== "add-resource-form") return;
+  const ev = window.__eventData?.event;
+  if (ev?.status === 'finalizado' || ev?.status === 'done') return;
   e.preventDefault();
 
   const { eventId } = window.__eventData;
@@ -952,6 +976,17 @@ document.addEventListener("submit", async (e) => {
 document.addEventListener("click", async (e) => {
   const modal = document.getElementById("resource-delete-modal");
   if (!modal) return;
+
+  if (e.target === modal || e.target.closest("#cancel-resource-delete") || e.target.closest("#confirm-resource-delete")) {
+    const ev = window.__eventData?.event;
+    if (ev?.status === 'finalizado' || ev?.status === 'done') {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      delete modal.dataset.pendingDeleteId;
+      delete modal.dataset.pendingDeleteCard;
+      return;
+    }
+  }
 
   if (e.target.closest("#cancel-resource-delete")) {
     modal.classList.add("hidden");

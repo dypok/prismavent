@@ -28,6 +28,7 @@ import MyEvents from "./pages/MyEvents.js";
 import { ProvidersPage, initProvidersPage } from "./pages/Providers.js";
 import { initDashboard } from "./pages/Dashboard.js";
 import { LandingPage, initLandingPage } from "./pages/LandingPage.js";
+import { HistoryPage, initHistory } from "./pages/History.js";
 
 console.log("Main.js cargado - Ruta:", window.location.pathname);
 
@@ -178,6 +179,8 @@ async function renderPage() {
 
     if (addGuestButton && guestModal) {
       addGuestButton.addEventListener("click", () => {
+        const ev = window.__eventData?.event;
+        if (ev?.status === 'finalizado' || ev?.status === 'done') return;
         guestModal.classList.remove("hidden");
         guestModal.classList.add("flex");
       });
@@ -227,6 +230,8 @@ async function renderPage() {
         if (guestForm) {
           guestForm.addEventListener("submit", async (e) => {
             e.preventDefault();
+            const ev = window.__eventData?.event;
+            if (ev?.status === 'finalizado' || ev?.status === 'done') return;
 
             const submitBtn = guestForm.querySelector('button[type="submit"]');
             const guestData = {
@@ -297,6 +302,8 @@ async function renderPage() {
 
     document.querySelectorAll(".delete-guest").forEach((button) => {
       button.addEventListener("click", async () => {
+        const ev = window.__eventData?.event;
+        if (ev?.status === 'finalizado' || ev?.status === 'done') return;
         const guestId = button.dataset.id;
 
         if (!confirm("Delete this guest?")) return;
@@ -318,6 +325,8 @@ async function renderPage() {
     document.querySelectorAll(".edit-guest").forEach((button) => {
 
       button.addEventListener("click", () => {
+        const ev = window.__eventData?.event;
+        if (ev?.status === 'finalizado' || ev?.status === 'done') return;
 
         guestModal.classList.remove("hidden");
         guestModal.classList.add("flex");
@@ -399,8 +408,21 @@ async function renderPage() {
       renderPage();
       return;
     }
-    document.querySelector("#app").innerHTML = await ProvidersPage();
-    initProvidersPage();
+    try {
+      document.querySelector("#app").innerHTML = await ProvidersPage();
+      initProvidersPage();
+    } catch (err) {
+      console.error("Error al cargar ProvidersPage:", err);
+      document.querySelector("#app").innerHTML = `
+        <div class="flex items-center justify-center min-h-screen bg-[#FFF8F1]">
+          <div class="text-center p-8">
+            <h2 class="text-xl font-bold text-red-600 mb-2">Error al cargar proveedores</h2>
+            <p class="text-[#9E8E6E] text-sm">${err.message}</p>
+            <button onclick="navigateTo('/dashboard')" class="mt-4 px-6 py-2 bg-[#755B00] text-white rounded-xl">Volver al inicio</button>
+          </div>
+        </div>
+      `;
+    }
 
   // Ruta Mis Plantillas
   } else if (path === "/my-templates") {
@@ -411,6 +433,16 @@ async function renderPage() {
     }
     const myTemplatesPage = new MyTemplates();
     await myTemplatesPage.init();
+
+  // Ruta Historial
+  } else if (path === "/history") {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    document.querySelector("#app").innerHTML = HistoryPage();
+    initHistory();
 
   // 404
   } else {
@@ -431,3 +463,6 @@ renderPage();
 
 // Soporte para botones atrás/adelante
 window.addEventListener('popstate', renderPage);
+
+// Exponer para navegación programática desde navigateTo()
+window.renderPage = renderPage;

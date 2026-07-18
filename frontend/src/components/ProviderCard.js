@@ -18,7 +18,7 @@ export function ProviderCard(provider, categoryName) {
   return `
     <div class="bg-white rounded-2xl border border-[#E9E1D7] overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col" data-provider-id="${provider.id}">
       <div class="h-40 bg-gradient-to-br from-[#FEF3C7] to-[#F8F5F0] flex items-center justify-center shrink-0">
-        <span class="text-5xl opacity-30">🏢</span>
+        ${icon('store', 48, 'opacity-30 text-[#755B00]')}
       </div>
       <div class="p-5 flex-1 flex flex-col gap-3">
         <div>
@@ -48,11 +48,16 @@ export function ProviderCard(provider, categoryName) {
           ` : ''}
         </div>
 
-        <div class="flex gap-2 pt-2">
-          <button class="view-provider-profile flex-1 py-2.5 rounded-xl border border-[#755B00] text-[#755B00] text-sm font-semibold hover:bg-[#FEF3C7] transition-all cursor-pointer" data-id="${provider.id}">
-            Ver perfil
-          </button>
-          <button class="quote-provider flex-1 py-2.5 rounded-xl bg-[#755B00] text-white text-sm font-semibold hover:bg-[#5F4A00] transition-all cursor-pointer" data-id="${provider.id}">
+        <div class="flex flex-col gap-2 pt-2">
+          <div class="flex gap-2">
+            <button class="view-provider-profile flex-1 py-2.5 rounded-xl border border-[#755B00] text-[#755B00] text-sm font-semibold hover:bg-[#FEF3C7] transition-all cursor-pointer" data-id="${provider.id}">
+              Ver perfil
+            </button>
+            <button class="add-to-event flex-1 py-2.5 rounded-xl bg-[#755B00] text-white text-sm font-semibold hover:bg-[#5F4A00] transition-all cursor-pointer" data-provider-name="${provider.name.replace(/"/g, '&quot;')}" data-provider-price="${provider.reference_price ?? ''}">
+              A\u00f1adir a mi evento
+            </button>
+          </div>
+          <button onclick="window.showQuoteModal()" class="w-full py-2 rounded-xl border border-gray-200 text-[#9E8E6E] text-xs font-medium hover:bg-[#F8F5F0] transition-all cursor-pointer">
             Cotizar
           </button>
         </div>

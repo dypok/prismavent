@@ -303,6 +303,10 @@ export async function deleteEventTask(eventId, taskId) {
   });
 }
 
+export async function getEventWeather(eventId) {
+  return await apiFetch(`/events/${eventId}/weather`);
+}
+
 export default {
   updateProfile,
   login,
@@ -334,5 +338,6 @@ export default {
   createEventTask,
   updateEventTask,
   moveEventTask,
-  deleteEventTask
+  deleteEventTask,
+  getEventWeather
 };
