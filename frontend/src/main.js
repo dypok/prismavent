@@ -27,6 +27,7 @@ import {
 import MyEvents from "./pages/MyEvents.js";
 import { ProvidersPage, initProvidersPage } from "./pages/Providers.js";
 import { initDashboard } from "./pages/Dashboard.js";
+import { LandingPage, initLandingPage } from "./pages/LandingPage.js";
 import { HistoryPage, initHistory } from "./pages/History.js";
 
 console.log("Main.js cargado - Ruta:", window.location.pathname);
@@ -43,8 +44,12 @@ async function renderPage() {
     return;
   }
 
+  // Landing page
+  if (path === '/') {
+    document.querySelector("#app").innerHTML = LandingPage();
+    initLandingPage();
   // Rutas de autenticación
-  if (path === '/auth' || path === '/login' || path === '/register' || path === '/') {
+  } else if (path === '/auth' || path === '/login' || path === '/register') {
     document.querySelector("#app").innerHTML = Auth();
 
   // Rutas del Dashboard
