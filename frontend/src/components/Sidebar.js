@@ -83,8 +83,8 @@ export function Sidebar(active = "new-event") {
           <li onclick="navigateTo('/admin/providers')" 
               class="nav-item hover:bg-white hover:text-[#755B00]
               ${isActive('/admin/providers') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
-            <span class="icon-wrap">${icon('shield', 20)}</span>
-            <span class="nav-label">Panel Admin</span>
+            <span class="icon-wrap">${icon('settings', 20)}</span>
+            <span class="nav-label">Administrar</span>
           </li>
           ` : `
           <!-- User menu -->
