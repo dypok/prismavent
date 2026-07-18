@@ -244,72 +244,135 @@ function renderAdminMetricsSection(metrics) {
   const best = metrics.top_rated?.[0];
   const bestLabel = best ? `${best.name} (${best.display_rating})` : 'N/A';
 
-  return `
-    <div class="bg-[#F5EDE0] rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-[#755B00] mb-4">Panel Admin — Métricas de Proveedores</h3>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Total Proveedores</p>
-              <p class="text-2xl font-bold text-[#1E1B15] mt-1">${metrics.total_providers}</p>
-            </div>
-            <div class="w-10 h-10 bg-[#FEF3C7] rounded-xl flex items-center justify-center">${icon('store', 20, 'text-[#755B00]')}</div>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Categorías</p>
-              <p class="text-2xl font-bold text-[#1E1B15] mt-1">${metrics.total_categories}</p>
-            </div>
-            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">${icon('layout', 20, 'text-[#3B82F6]')}</div>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Mejor Rating</p>
-              <p class="text-lg font-bold text-[#1E1B15] mt-1 truncate" title="${bestLabel}">${bestLabel}</p>
-            </div>
-            <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">${icon('star', 20, 'text-[#D97706]')}</div>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Sin Reseñas</p>
-              <p class="text-2xl font-bold text-[#1E1B15] mt-1">${metrics.providers_without_reviews_count}</p>
-            </div>
-            <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">${icon('alert-circle', 20, 'text-[#DC2626]')}</div>
-          </div>
-        </div>
-      </div>
+  const statusLabels = { borrador: 'Borrador', confirmado: 'Confirmado', in_progress: 'En Progreso', done: 'Realizado', finalizado: 'Finalizado' };
+  const statusColors = { borrador: 'bg-gray-100', confirmado: 'bg-emerald-100', in_progress: 'bg-blue-100', done: 'bg-gray-200', finalizado: 'bg-gray-200' };
+  const maxStatusCount = Math.max(...(metrics.events_by_status?.map(s => s.count) || [1]), 1);
 
-      ${metrics.categories_with_counts?.length > 0 ? `
-      <div class="mt-4">
-        <h4 class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E] mb-3">Proveedores por Categoría</h4>
-        <div class="space-y-2">
-          ${(() => {
-            const maxCount = Math.max(...metrics.categories_with_counts.map(c => c.count), 1);
-            return metrics.categories_with_counts.map(cat => {
-              const pct = Math.round((cat.count / maxCount) * 100);
+  return `
+    <div class="space-y-6">
+      <!-- Platform metrics -->
+      <div class="bg-[#F5EDE0] rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-[#755B00] mb-4">Panel de Administración</h3>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Total Eventos</p>
+                <p class="text-2xl font-bold text-[#1E1B15] mt-1">${metrics.total_events}</p>
+              </div>
+              <div class="w-10 h-10 bg-[#FEF3C7] rounded-xl flex items-center justify-center">${icon('calendar', 20, 'text-[#755B00]')}</div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Invitados</p>
+                <p class="text-2xl font-bold text-[#1E1B15] mt-1">${metrics.total_guests.toLocaleString()}</p>
+              </div>
+              <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">${icon('users', 20, 'text-[#22C55E]')}</div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Usuarios</p>
+                <p class="text-2xl font-bold text-[#1E1B15] mt-1">${metrics.total_users}</p>
+              </div>
+              <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">${icon('user', 20, 'text-[#7C3AED]')}</div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Proveedores</p>
+                <p class="text-2xl font-bold text-[#1E1B15] mt-1">${metrics.total_providers}</p>
+              </div>
+              <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">${icon('store', 20, 'text-[#D97706]')}</div>
+            </div>
+          </div>
+        </div>
+
+        ${metrics.events_by_status?.length > 0 ? `
+        <div class="mt-4">
+          <h4 class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E] mb-3">Eventos por Estado</h4>
+          <div class="space-y-2">
+            ${metrics.events_by_status.map(s => {
+              const pct = Math.round((s.count / maxStatusCount) * 100);
               return `
                 <div>
                   <div class="flex justify-between text-xs mb-1">
-                    <span class="font-medium text-[#4D4637]">${cat.name}</span>
-                    <span class="font-semibold text-[#1E1B15]">${cat.count}</span>
+                    <span class="font-medium text-[#4D4637]">${statusLabels[s.status] || s.status}</span>
+                    <span class="font-semibold text-[#1E1B15]">${s.count}</span>
                   </div>
                   <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                     <div class="h-2 rounded-full bg-[#755B00] transition-all duration-500" style="width: ${pct}%"></div>
                   </div>
                 </div>
               `;
-            }).join('');
-          })()}
+            }).join('')}
+          </div>
         </div>
+        ` : ''}
       </div>
-      ` : ''}
+
+      <!-- Provider metrics -->
+      <div class="bg-[#F5EDE0] rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-[#755B00] mb-4">Proveedores</h3>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Categorías</p>
+                <p class="text-2xl font-bold text-[#1E1B15] mt-1">${metrics.total_categories}</p>
+              </div>
+              <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">${icon('layout', 20, 'text-[#3B82F6]')}</div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Mejor Rating</p>
+                <p class="text-sm font-bold text-[#1E1B15] mt-1 truncate" title="${bestLabel}">${bestLabel}</p>
+              </div>
+              <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">${icon('star', 20, 'text-[#D97706]')}</div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-[#E9E1D7] p-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E]">Sin Reseñas</p>
+                <p class="text-2xl font-bold text-[#1E1B15] mt-1">${metrics.providers_without_reviews_count}</p>
+              </div>
+              <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">${icon('alert-circle', 20, 'text-[#DC2626]')}</div>
+            </div>
+          </div>
+        </div>
+
+        ${metrics.categories_with_counts?.length > 0 ? `
+        <div class="mt-4">
+          <h4 class="text-[10px] font-semibold uppercase tracking-wider text-[#9E8E6E] mb-3">Proveedores por Categoría</h4>
+          <div class="space-y-2">
+            ${(() => {
+              const maxCount = Math.max(...metrics.categories_with_counts.map(c => c.count), 1);
+              return metrics.categories_with_counts.map(cat => {
+                const pct = Math.round((cat.count / maxCount) * 100);
+                return `
+                  <div>
+                    <div class="flex justify-between text-xs mb-1">
+                      <span class="font-medium text-[#4D4637]">${cat.name}</span>
+                      <span class="font-semibold text-[#1E1B15]">${cat.count}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                      <div class="h-2 rounded-full bg-[#755B00] transition-all duration-500" style="width: ${pct}%"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('');
+            })()}
+          </div>
+        </div>
+        ` : ''}
+      </div>
     </div>
   `;
 }

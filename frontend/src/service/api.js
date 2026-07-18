@@ -320,6 +320,10 @@ export async function getAdminMetrics() {
   return await apiFetch("/admin/metrics");
 }
 
+export async function getPublicStats() {
+  return await apiFetch("/stats");
+}
+
 export default {
   updateProfile,
   login,
@@ -353,5 +357,6 @@ export default {
   moveEventTask,
   deleteEventTask,
   getEventWeather,
-  getAdminMetrics
+  getAdminMetrics,
+  getPublicStats
 };

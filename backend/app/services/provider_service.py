@@ -285,6 +285,9 @@ def delete_provider_with_integrity(provider_id: str, db: Session) -> None:
 def get_admin_metrics(db: Session) -> dict:
     total_providers = db.execute(text("SELECT COUNT(*) FROM providers")).scalar() or 0
     total_categories = db.execute(text("SELECT COUNT(*) FROM provider_categories")).scalar() or 0
+    total_events = db.execute(text("SELECT COUNT(*) FROM events")).scalar() or 0
+    total_guests = db.execute(text("SELECT COALESCE(SUM(guest_count), 0) FROM events")).scalar() or 0
+    total_users = db.execute(text("SELECT COUNT(*) FROM profiles")).scalar() or 0
 
     providers_without_reviews_count = db.execute(
         text("SELECT COUNT(*) FROM providers p WHERE NOT EXISTS (SELECT 1 FROM provider_reviews r WHERE r.provider_id = p.id)")
@@ -316,10 +319,36 @@ def get_admin_metrics(db: Session) -> dict:
     ).fetchall()
     categories_with_counts = [dict(row._mapping) for row in categories_rows] if categories_rows else []
 
+    events_status_rows = db.execute(
+        text("""
+            SELECT status, COUNT(*) AS count
+            FROM events
+            GROUP BY status
+            ORDER BY status
+        """)
+    ).fetchall()
+    events_by_status = [dict(row._mapping) for row in events_status_rows] if events_status_rows else []
+
     return {
         "total_providers": total_providers,
         "total_categories": total_categories,
         "top_rated": top_rated,
         "categories_with_counts": categories_with_counts,
-        "providers_without_reviews_count": providers_without_reviews_count
+        "providers_without_reviews_count": providers_without_reviews_count,
+        "total_events": total_events,
+        "total_guests": total_guests,
+        "total_users": total_users,
+        "events_by_status": events_by_status
+    }
+
+def get_public_stats(db: Session) -> dict:
+    total_events = db.execute(text("SELECT COUNT(*) FROM events")).scalar() or 0
+    total_guests = db.execute(text("SELECT COALESCE(SUM(guest_count), 0) FROM events")).scalar() or 0
+    total_providers = db.execute(text("SELECT COUNT(*) FROM providers")).scalar() or 0
+    total_users = db.execute(text("SELECT COUNT(*) FROM profiles")).scalar() or 0
+    return {
+        "total_events": total_events,
+        "total_guests": total_guests,
+        "total_providers": total_providers,
+        "total_users": total_users,
     }

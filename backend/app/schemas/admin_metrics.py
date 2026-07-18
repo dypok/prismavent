@@ -15,9 +15,17 @@ class AdminMetricsCategoryCount(BaseModel):
     name: str
     count: int
 
+class AdminMetricsEventStatus(BaseModel):
+    status: str
+    count: int
+
 class AdminMetricsResponse(BaseModel):
     total_providers: int
     total_categories: int
     top_rated: List[AdminMetricsTopProvider]
     categories_with_counts: List[AdminMetricsCategoryCount]
     providers_without_reviews_count: int
+    total_events: int
+    total_guests: int
+    total_users: int
+    events_by_status: List[AdminMetricsEventStatus]

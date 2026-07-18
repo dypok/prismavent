@@ -12,6 +12,7 @@ from app.routers.provider_categories import router as provider_categories_router
 from app.routers.user_templates import router as user_templates_router
 from app.routers.event_tasks import router as event_tasks_router
 from app.routers.cities import router as cities_router
+from app.routers.public_stats import router as public_stats_router
 from app.routers.admin_providers import router as admin_providers_router
 from app.routers.admin_metrics import router as admin_metrics_router
 from app.middlewares.auth_middleware import SupabaseAuthMiddleware
@@ -41,6 +42,7 @@ app.include_router(provider_categories_router)
 app.include_router(user_templates_router)
 app.include_router(event_tasks_router)
 app.include_router(cities_router)
+app.include_router(public_stats_router)
 app.include_router(admin_provider_categories_router)
 app.include_router(admin_providers_router)
 app.include_router(admin_metrics_router)
