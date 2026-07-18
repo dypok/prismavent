@@ -2,6 +2,7 @@ import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { ProviderCard } from "../components/ProviderCard.js";
 import { getProviders, getCategories } from "../service/api.js";
+import { icon } from "../components/Icons.js";
 
 let state = {
   providers: [],

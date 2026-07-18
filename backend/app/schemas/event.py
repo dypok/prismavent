@@ -33,7 +33,8 @@ class EventCreate(BaseModel):
     @field_validator("event_date")
     @classmethod
     def event_date_must_be_future(cls, value: datetime) -> datetime:
-        if value < datetime.now():
+        now = datetime.now(value.tzinfo) if value.tzinfo else datetime.now()
+        if value < now:
             raise ValueError("event_date debe ser una fecha futura")
         return value
 

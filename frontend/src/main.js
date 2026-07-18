@@ -27,6 +27,7 @@ import {
 import MyEvents from "./pages/MyEvents.js";
 import { ProvidersPage, initProvidersPage } from "./pages/Providers.js";
 import { initDashboard } from "./pages/Dashboard.js";
+import { HistoryPage, initHistory } from "./pages/History.js";
 
 console.log("Main.js cargado - Ruta:", window.location.pathname);
 
@@ -173,6 +174,8 @@ async function renderPage() {
 
     if (addGuestButton && guestModal) {
       addGuestButton.addEventListener("click", () => {
+        const ev = window.__eventData?.event;
+        if (ev?.status === 'finalizado' || ev?.status === 'done') return;
         guestModal.classList.remove("hidden");
         guestModal.classList.add("flex");
       });
@@ -222,6 +225,8 @@ async function renderPage() {
         if (guestForm) {
           guestForm.addEventListener("submit", async (e) => {
             e.preventDefault();
+            const ev = window.__eventData?.event;
+            if (ev?.status === 'finalizado' || ev?.status === 'done') return;
 
             const submitBtn = guestForm.querySelector('button[type="submit"]');
             const guestData = {
@@ -292,6 +297,8 @@ async function renderPage() {
 
     document.querySelectorAll(".delete-guest").forEach((button) => {
       button.addEventListener("click", async () => {
+        const ev = window.__eventData?.event;
+        if (ev?.status === 'finalizado' || ev?.status === 'done') return;
         const guestId = button.dataset.id;
 
         if (!confirm("Delete this guest?")) return;
@@ -313,6 +320,8 @@ async function renderPage() {
     document.querySelectorAll(".edit-guest").forEach((button) => {
 
       button.addEventListener("click", () => {
+        const ev = window.__eventData?.event;
+        if (ev?.status === 'finalizado' || ev?.status === 'done') return;
 
         guestModal.classList.remove("hidden");
         guestModal.classList.add("flex");
@@ -406,6 +415,16 @@ async function renderPage() {
     }
     const myTemplatesPage = new MyTemplates();
     await myTemplatesPage.init();
+
+  // Ruta Historial
+  } else if (path === "/history") {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    document.querySelector("#app").innerHTML = HistoryPage();
+    initHistory();
 
   // 404
   } else {

@@ -39,6 +39,8 @@ def get_weather_forecast(city: str, forecast_date: date) -> dict[str, Union[floa
     Returns a dictionary matching the WeatherResponse schema.
     """
     today = date.today()  # Use server's local date as reference
+    if isinstance(forecast_date, datetime):
+        forecast_date = forecast_date.date()
     delta_days = (forecast_date - today).days
     
     if delta_days < 0:
