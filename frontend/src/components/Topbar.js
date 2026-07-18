@@ -1,4 +1,4 @@
-import { getUserName } from "../utils/authUtils.js";
+import { getUserName, isAdmin } from "../utils/authUtils.js";
 import api from "../service/api.js";
 import { showToast } from "./Toast.js";
 import { icon } from "./Icons.js";
@@ -95,6 +95,7 @@ export function Topbar(leftContent = "") {
       <div class="flex items-center gap-2 lg:gap-4 shrink-0">
         <p class="text-xs lg:text-sm text-[#4D4637] hidden sm:block">
           ${greeting}, <span id="topbar-user-name" class="font-semibold text-[#1E1B15]">${userName}</span>
+          ${isAdmin() ? `<span class="ml-2 px-1.5 py-0.5 bg-[#755B00] text-white text-[10px] font-bold rounded-md uppercase tracking-wider">Admin</span>` : ''}
         </p>
 
         <div class="relative">

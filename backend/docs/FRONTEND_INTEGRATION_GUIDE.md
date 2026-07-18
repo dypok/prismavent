@@ -739,3 +739,116 @@ Permite gestionar un tablero Kanban de tareas para cada evento. Cada tarea tiene
 | `400` | Evento finalizado | `"Cannot modify a finalized event"` |
 | `400` | `due_date` posterior a `event_date` | `"Task due date cannot be after the event date."` |
 | `422` | Status inválido en `/move` | Error de validación de Pydantic |
+
+---
+
+## 11. Admin Providers (`/admin/providers`)
+
+Todos los endpoints de esta sección requieren rol `admin`. Si el usuario no es administrador, el backend retorna `HTTP 403 Forbidden`.
+
+### 11.1 Listar Proveedores (Paginado)
+* **Endpoint:** `GET /admin/providers`
+* **Seguridad:** `require_admin` (HTTP 403 si no es admin)
+* **Parámetros Query:**
+  * `page` (int, default 1): Número de página.
+  * `per_page` (int, default 10, max 100): Resultados por página.
+  * `search` (str, opcional): Búsqueda por nombre (ILIKE).
+  * `category_id` (UUID, opcional): Filtrar por categoría.
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "providers": [
+      {
+        "id": "uuid",
+        "category_id": "uuid",
+        "city_id": "uuid",
+        "name": "Proveedor Ejemplo",
+        "description": "Descripción...",
+        "phone": "3001234567",
+        "email": "contacto@proveedor.com",
+        "website": "https://ejemplo.com",
+        "address": "Calle 123",
+        "image_url": "https://...",
+        "reference_price": 45000.00,
+        "price_unit": "por persona",
+        "rating": 4.5,
+        "display_rating": 4.5,
+        "created_at": "2024-01-01T00:00:00Z",
+        "can_edit": true
+      }
+    ],
+    "total": 25,
+    "page": 1,
+    "per_page": 10,
+    "pages": 3
+  }
+  ```
+* **Nota:** `display_rating` se calcula como el promedio de `provider_reviews.rating` si existen reseñas; de lo contrario usa `providers.rating` (valor semilla).
+
+### 11.2 Obtener Detalle de Proveedor
+* **Endpoint:** `GET /admin/providers/{provider_id}`
+* **Seguridad:** `require_admin`
+* **Respuesta Exitosa (HTTP 200 OK):**
+  ```json
+  {
+    "id": "uuid",
+    "name": "Proveedor Ejemplo",
+    "reviews": [
+      {
+        "id": "uuid",
+        "provider_id": "uuid",
+        "user_id": "uuid",
+        "rating": 4.5,
+        "comment": "Excelente servicio",
+        "created_at": "2024-01-01T00:00:00Z"
+      }
+    ],
+    "can_edit": true
+  }
+  ```
+  Incluye todos los campos de `ProviderResponse` más el array `reviews`.
+
+### 11.3 Crear Proveedor
+* **Endpoint:** `POST /admin/providers`
+* **Seguridad:** `require_admin`
+* **Cuerpo de la Petición:**
+  ```json
+  {
+    "category_id": "uuid",
+    "city_id": "uuid",
+    "name": "Nuevo Proveedor",
+    "description": "Descripción opcional",
+    "phone": "3001234567",
+    "email": "contacto@proveedor.com",
+    "website": "https://ejemplo.com",
+    "address": "Calle 123",
+    "image_url": "https://...",
+    "reference_price": 45000.00,
+    "price_unit": "por persona",
+    "rating": 4.0
+  }
+  ```
+* **Validaciones:** `name` requerido, `category_id` y `city_id` deben existir en DB, `rating` entre 0 y 5, `reference_price` >= 0.
+* **Respuesta Exitosa (HTTP 201 Created):** Retorna el objeto completo del proveedor creado.
+
+### 11.4 Actualizar Proveedor
+* **Endpoint:** `PUT /admin/providers/{provider_id}`
+* **Seguridad:** `require_admin`
+* **Descripción:** Reemplazo completo del proveedor. Se envían todos los campos (mismos que creación).
+* **Respuesta Exitosa (HTTP 200 OK):** Retorna el objeto completo del proveedor actualizado.
+* **HTTP 404:** Si el proveedor no existe.
+
+### 11.5 Eliminar Proveedor
+* **Endpoint:** `DELETE /admin/providers/{provider_id}`
+* **Seguridad:** `require_admin`
+* **Respuesta Exitosa (HTTP 204 No Content):** Proveedor eliminado.
+* **HTTP 404:** Si el proveedor no existe.
+* **HTTP 409:** Si el proveedor tiene reseñas vinculadas (`provider_reviews`). La eliminación se bloquea para mantener integridad referencial.
+
+### Códigos de Error
+| Código | Escenario | Detail |
+|---|---|---|
+| `403` | Usuario no es admin | `"Forbidden"` |
+| `404` | Proveedor no encontrado | `"Proveedor no encontrado"` |
+| `409` | Proveedor con reseñas | `"No se puede eliminar: el proveedor tiene reseñas vinculadas"` |
+| `400` | Categoría o ciudad inválida | `"Categoría no encontrada"` / `"Ciudad no encontrada"` |

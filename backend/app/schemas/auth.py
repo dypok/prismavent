@@ -6,6 +6,7 @@ class RegisterRequest(BaseModel):
     password: str
     name: Optional[str] = None
     phone: Optional[str] = None
+    city_id: Optional[str] = None
 
 class LoginRequest(BaseModel):
     email: str
@@ -14,4 +15,9 @@ class LoginRequest(BaseModel):
 class UpdateProfileRequest(BaseModel):
     name: Optional[str] = None
     password: Optional[str] = None
+
+class UserMeResponse(BaseModel):
+    id: str
+    full_name: Optional[str] = None
+    role: str = "user"
 
