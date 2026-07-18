@@ -62,13 +62,19 @@ export async function initDashboard() {
     </div>
   `;
 
-  let metrics = null;
-  if (isAdmin()) {
+if (isAdmin()) {
     try {
-      metrics = await getAdminMetrics();
+      const metrics = await getAdminMetrics();
+      main.innerHTML = `
+        <div class="space-y-4 lg:space-y-6 animate-fade-in">
+          ${renderAdminMetricsSection(metrics)}
+        </div>
+      `;
     } catch (err) {
       console.error("Error loading admin metrics:", err);
+      main.innerHTML = `<div class="text-center py-16 text-[#9E8E6E]"><p>Error al cargar métricas del panel</p></div>`;
     }
+    return;
   }
 
   try {
@@ -92,8 +98,6 @@ export async function initDashboard() {
 
     main.innerHTML = `
       <div class="space-y-4 lg:space-y-6 animate-fade-in">
-
-        ${metrics ? renderAdminMetricsSection(metrics) : ''}
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="bg-white rounded-2xl border border-[#E9E1D7] p-4 lg:p-6 shadow-sm">
