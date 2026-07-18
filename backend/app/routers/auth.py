@@ -31,10 +31,10 @@ def register(payload: RegisterRequest):
         try:
             db.execute(
                 text("""
-                    INSERT INTO profiles (id, full_name, phone, role)
-                    VALUES (:id, :full_name, :phone, 'user')
+                    INSERT INTO profiles (id, full_name, phone, city_id, role)
+                    VALUES (:id, :full_name, :phone, :city_id, 'user')
                 """),
-                {"id": user_id, "full_name": payload.name, "phone": payload.phone}
+                {"id": user_id, "full_name": payload.name, "phone": payload.phone, "city_id": payload.city_id}
             )
             db.commit()
         except Exception as profile_error:

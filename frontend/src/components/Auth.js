@@ -1,4 +1,4 @@
-import { login, register } from "../service/api.js";
+import { login, register, getCities } from "../service/api.js";
 import logoIcon from "../assets/icons/logo.png";
 
 export function Auth() {
@@ -101,6 +101,13 @@ export function Auth() {
                     </div>
                     </div>
 
+                    <div>
+                    <label class="block text-xs tracking-widest text-gray-500 mb-1">CITY</label>
+                    <select id="signup-city" class="w-full px-5 py-2.5 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#C9A84C] text-base bg-white">
+                        <option value="">Select a city</option>
+                    </select>
+                    </div>
+
                     <button type="submit" 
                             class="w-full bg-[#C9A84C] hover:bg-[#B8963A] text-white font-semibold py-3 rounded-2xl text-base tracking-wider mt-2">
                     CREATE ACCOUNT &rarr;
@@ -139,7 +146,26 @@ window.switchToSignup = function() {
         loginSide.style.transform = 'rotateY(-180deg)';
         signupSide.style.transform = 'rotateY(0deg)';
     }
+    loadCitiesDropdown();
 };
+
+async function loadCitiesDropdown() {
+    const select = document.getElementById('signup-city');
+    if (!select || select.dataset.loaded) return;
+    try {
+        const cities = await getCities();
+        select.innerHTML = '<option value="">Select a city</option>';
+        cities.forEach(city => {
+            const opt = document.createElement('option');
+            opt.value = city.id;
+            opt.textContent = city.name;
+            select.appendChild(opt);
+        });
+        select.dataset.loaded = 'true';
+    } catch (err) {
+        console.error('Could not load cities:', err);
+    }
+}
 
 window.switchToLogin = function() {
     const loginSide = document.getElementById('login-side');
@@ -202,6 +228,7 @@ document.addEventListener("submit", async (e) => {
     const email = document.getElementById("signup-email").value;
     const password = document.getElementById("signup-password").value;
     const phone = document.getElementById("signup-phone").value;
+    const city_id = document.getElementById("signup-city").value;
     const errorEl = document.getElementById("signup-error");
     const submitBtn = e.target.querySelector('button[type="submit"]');
 
@@ -210,7 +237,7 @@ document.addEventListener("submit", async (e) => {
     submitBtn.textContent = "Creando cuenta...";
 
     try {
-      await register(name, email, password, phone);
+      await register(name, email, password, phone, city_id || null);
       // Mostrar modal
       document.getElementById("confirmation-modal").classList.remove("hidden");
       // Auto cerrar después de 2.5 segundos

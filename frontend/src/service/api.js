@@ -48,7 +48,7 @@ export async function login(email, password) {
   return data;
 }
 
-export async function register(name, email, password, phone) {
+export async function register(name, email, password, phone, city_id) {
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
     headers: {
@@ -58,7 +58,8 @@ export async function register(name, email, password, phone) {
       name,
       email,
       password,
-      phone
+      phone,
+      city_id
     })
   });
 
