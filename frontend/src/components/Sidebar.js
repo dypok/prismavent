@@ -48,6 +48,7 @@ export function Sidebar(active = "new-event") {
     if (path === '/events/new' && currentPath === '/events/new') return true;
     if (path === '/providers' && currentPath === '/providers') return true;
     if (path === '/history' && currentPath === '/history') return true;
+    if (path === '/admin/providers' && (currentPath === '/admin/providers' || currentPath === '/admin/categories')) return true;
     if (path === '/admin/providers' && currentPath === '/admin/providers') return true;
     return false;
   };

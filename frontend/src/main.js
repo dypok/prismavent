@@ -30,6 +30,7 @@ import { AdminProvidersPage } from "./pages/AdminProvidersPage.js";
 import { initDashboard } from "./pages/Dashboard.js";
 import { LandingPage, initLandingPage } from "./pages/LandingPage.js";
 import { HistoryPage, initHistory } from "./pages/History.js";
+import { AdminCategoriesPage } from "./pages/AdminCategoriesPage.js";
 
 async function renderPage() {
   const path = window.location.pathname;
@@ -463,6 +464,33 @@ async function renderPage() {
         <div class="flex items-center justify-center min-h-screen bg-[#FFF8F1]">
           <div class="text-center p-8">
             <h2 class="text-xl font-bold text-red-600 mb-2">Error al cargar proveedores</h2>
+            <p class="text-[#9E8E6E] text-sm">${err.message}</p>
+            <button onclick="navigateTo('/dashboard')" class="mt-4 px-6 py-2 bg-[#755B00] text-white rounded-xl">Volver al inicio</button>
+          </div>
+        </div>
+      `;
+    }
+
+  // Ruta Admin - Categorías (solo admin)
+  } else if (path === "/admin/categories") {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    if (!isAdmin()) {
+      window.history.replaceState({}, "", "/providers");
+      renderPage();
+      return;
+    }
+    try {
+      document.querySelector("#app").innerHTML = await AdminCategoriesPage();
+    } catch (err) {
+      console.error("Error al cargar Admin CategoriesPage:", err);
+      document.querySelector("#app").innerHTML = `
+        <div class="flex items-center justify-center min-h-screen bg-[#FFF8F1]">
+          <div class="text-center p-8">
+            <h2 class="text-xl font-bold text-red-600 mb-2">Error al cargar categorías</h2>
             <p class="text-[#9E8E6E] text-sm">${err.message}</p>
             <button onclick="navigateTo('/dashboard')" class="mt-4 px-6 py-2 bg-[#755B00] text-white rounded-xl">Volver al inicio</button>
           </div>

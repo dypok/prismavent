@@ -52,14 +52,11 @@ async function loadProviders() {
   }
 }
 
-function renderTable() {
-  const container = document.getElementById("admin-providers-content");
-  if (!container) return;
-
+function tableHTML() {
   const start = state.total === 0 ? 0 : (state.page - 1) * state.perPage + 1;
   const end = Math.min(state.page * state.perPage, state.total);
 
-  container.innerHTML = `
+  return `
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
       <div>
         <h1 class="text-3xl lg:text-4xl font-bold text-[#1E1B15] tracking-tight">Proveedores</h1>
@@ -77,9 +74,7 @@ function renderTable() {
       </div>
       <select id="admin-category-filter" class="px-4 py-2.5 bg-white border border-[#E9E1D7] rounded-xl text-sm text-[#1E1B15] focus:outline-none focus:border-[#755B00] transition-all cursor-pointer">
         <option value="">Todas las categorías</option>
-        ${state.categories.map(c => `
-          <option value="${c.id}" ${state.selectedCategory === c.id ? 'selected' : ''}>${c.name}</option>
-        `).join('')}
+        ${state.categories.map(c => `<option value="${c.id}" ${state.selectedCategory === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
       </select>
     </div>
 
@@ -107,25 +102,15 @@ function renderTable() {
               ${state.providers.map(p => `
                 <tr class="border-b border-[#E9E1D7] hover:bg-[#FEF3C7]/30 transition-colors" data-provider-id="${p.id}">
                   <td class="px-4 py-3">
-                    <div class="flex items-center gap-3">
-                      <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FEF3C7] to-[#F8F5F0] flex items-center justify-center shrink-0">
-                        ${icon('store', 16, 'text-[#755B00] opacity-60')}
-                      </div>
-                      <div class="min-w-0">
-                        <p class="font-semibold text-[#1E1B15] truncate max-w-[180px]">${p.name}</p>
-                        <p class="text-xs text-[#9E8E6E] truncate max-w-[180px]">${p.phone || ''}</p>
-                      </div>
+                    <div>
+                      <p class="font-semibold text-[#1E1B15] truncate max-w-[180px]">${p.name}</p>
+                      <p class="text-xs text-[#9E8E6E] truncate max-w-[180px]">${p.phone || ''}</p>
                     </div>
                   </td>
-                  <td class="px-4 py-3 hidden md:table-cell">
-                    <span class="inline-block px-3 py-0.5 text-xs font-medium bg-[#FEF3C7] text-[#755B00] rounded-full">${state.categoryMap[p.category_id] || 'General'}</span>
-                  </td>
+                  <td class="px-4 py-3 hidden md:table-cell"><span class="inline-block px-3 py-0.5 text-xs font-medium bg-[#FEF3C7] text-[#755B00] rounded-full">${state.categoryMap[p.category_id] || 'General'}</span></td>
                   <td class="px-4 py-3 text-[#4D4637] hidden lg:table-cell">${p.address || '-'}</td>
                   <td class="px-4 py-3 text-center hidden sm:table-cell">
-                    <div class="flex items-center justify-center gap-1">
-                      ${starsHtml(p.display_rating || p.rating)}
-                      <span class="text-xs text-[#9E8E6E] ml-0.5">(${Number(p.display_rating || p.rating) || 0})</span>
-                    </div>
+                    <div class="flex items-center justify-center gap-1">${starsHtml(p.display_rating || p.rating)}<span class="text-xs text-[#9E8E6E] ml-0.5">(${Number(p.display_rating || p.rating) || 0})</span></div>
                   </td>
                   <td class="px-4 py-3 text-right hidden sm:table-cell">
                     <span class="font-semibold text-[#755B00]">${p.reference_price != null ? `$${Number(p.reference_price).toLocaleString()}` : '-'}</span>
@@ -133,12 +118,8 @@ function renderTable() {
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center justify-center gap-2">
-                      <button onclick="window.openEditModal('${p.id}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] transition-all cursor-pointer" title="Editar">
-                        ${icon('pencil', 16)}
-                      </button>
-                      <button onclick="window.openDeleteModal('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-[#9E8E6E] hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer" title="Eliminar">
-                        ${icon('trash-2', 16)}
-                      </button>
+                      <button onclick="window.openEditModal('${p.id}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] transition-all cursor-pointer" title="Editar">${icon('pencil', 16)}</button>
+                      <button onclick="window.openDeleteModal('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-[#9E8E6E] hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer" title="Eliminar">${icon('trash-2', 16)}</button>
                     </div>
                   </td>
                 </tr>
@@ -146,28 +127,23 @@ function renderTable() {
             </tbody>
           </table>
         </div>
-
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t border-[#E9E1D7] bg-[#F8F5F0]">
-          <p class="text-xs text-[#9E8E6E]">
-            Mostrando ${start}-${end} de ${state.total} proveedores
-          </p>
+          <p class="text-xs text-[#9E8E6E]">Mostrando ${start}-${end} de ${state.total} proveedores</p>
           <div class="flex items-center gap-2">
-            <button onclick="window.goToPage(${state.page - 1})" ${state.page <= 1 ? 'disabled' : ''} class="px-3 py-1.5 text-xs font-medium rounded-lg border border-[#E9E1D7] bg-white text-[#4D4637] hover:bg-[#FEF3C7] hover:border-[#755B00] transition-all ${state.page <= 1 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}">
-              Anterior
-            </button>
+            <button onclick="window.goToPage(${state.page - 1})" ${state.page <= 1 ? 'disabled' : ''} class="px-3 py-1.5 text-xs font-medium rounded-lg border border-[#E9E1D7] bg-white text-[#4D4637] hover:bg-[#FEF3C7] hover:border-[#755B00] transition-all ${state.page <= 1 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}">Anterior</button>
             <span class="text-xs text-[#4D4637] font-medium">Página ${state.page} de ${state.pages || 1}</span>
-            <button onclick="window.goToPage(${state.page + 1})" ${state.page >= state.pages ? 'disabled' : ''} class="px-3 py-1.5 text-xs font-medium rounded-lg border border-[#E9E1D7] bg-white text-[#4D4637] hover:bg-[#FEF3C7] hover:border-[#755B00] transition-all ${state.page >= state.pages ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}">
-              Siguiente
-            </button>
+            <button onclick="window.goToPage(${state.page + 1})" ${state.page >= state.pages ? 'disabled' : ''} class="px-3 py-1.5 text-xs font-medium rounded-lg border border-[#E9E1D7] bg-white text-[#4D4637] hover:bg-[#FEF3C7] hover:border-[#755B00] transition-all ${state.page >= state.pages ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}">Siguiente</button>
           </div>
         </div>
       </div>
     `}
-
-    ${state.modalMode ? renderFormModal() : ''}
-    ${state.deleteTarget ? renderDeleteModal() : ''}
   `;
+}
 
+function renderTable() {
+  const container = document.getElementById("admin-providers-content");
+  if (!container) return;
+  container.innerHTML = tableHTML() + (state.modalMode ? renderFormModal() : '') + (state.deleteTarget ? renderDeleteModal() : '');
   attachFormListeners();
 }
 
@@ -443,7 +419,7 @@ export async function AdminProvidersPage() {
     console.error("Error loading categories:", err);
   }
 
-  await refresh();
+  await loadProviders();
 
   return `
     <div class="flex min-h-screen bg-[#FFF8F1]">
@@ -451,7 +427,12 @@ export async function AdminProvidersPage() {
       <main class="flex-1 flex flex-col overflow-hidden">
         ${Topbar()}
         <div class="flex-1 overflow-auto">
-          <div class="px-6 lg:px-10 py-8 lg:py-10 max-w-[1600px] mx-auto" id="admin-providers-content">
+          <div class="px-6 lg:px-10 py-8 lg:py-10 max-w-[1600px] mx-auto">
+            <div class="flex items-center gap-4 mb-8 border-b border-[#E9E1D7] pb-4">
+              <a href="/admin/providers" onclick="event.preventDefault(); navigateTo('/admin/providers')" class="px-4 py-2 text-sm font-medium rounded-lg bg-[#755B00] text-white transition-all">Proveedores</a>
+              <a href="/admin/categories" onclick="event.preventDefault(); navigateTo('/admin/categories')" class="px-4 py-2 text-sm font-medium rounded-lg text-[#4D4637] hover:bg-[#FEF3C7] hover:text-[#755B00] transition-all">Categorías</a>
+            </div>
+            <div id="admin-providers-content">${tableHTML()}</div>
           </div>
         </div>
       </main>

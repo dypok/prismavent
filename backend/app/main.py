@@ -14,6 +14,7 @@ from app.routers.event_tasks import router as event_tasks_router
 from app.routers.cities import router as cities_router
 from app.routers.admin_providers import router as admin_providers_router
 from app.middlewares.auth_middleware import SupabaseAuthMiddleware
+from app.routers.admin_provider_categories import router as admin_provider_categories_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -39,6 +40,7 @@ app.include_router(provider_categories_router)
 app.include_router(user_templates_router)
 app.include_router(event_tasks_router)
 app.include_router(cities_router)
+app.include_router(admin_provider_categories_router)
 app.include_router(admin_providers_router)
 
 @app.get("/")
