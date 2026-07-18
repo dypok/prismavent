@@ -424,6 +424,16 @@ async function renderPage() {
       `;
     }
 
+  // Ruta Historial
+  } else if (path === '/history') {
+    if (!isAuthenticated()) {
+      window.history.replaceState({}, "", "/login");
+      renderPage();
+      return;
+    }
+    document.querySelector("#app").innerHTML = HistoryPage();
+    initHistory();
+
   // Ruta Mis Plantillas
   } else if (path === "/my-templates") {
     if (!isAuthenticated()) {
@@ -433,16 +443,6 @@ async function renderPage() {
     }
     const myTemplatesPage = new MyTemplates();
     await myTemplatesPage.init();
-
-  // Ruta Historial
-  } else if (path === "/history") {
-    if (!isAuthenticated()) {
-      window.history.replaceState({}, "", "/login");
-      renderPage();
-      return;
-    }
-    document.querySelector("#app").innerHTML = HistoryPage();
-    initHistory();
 
   // 404
   } else {

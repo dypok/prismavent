@@ -110,12 +110,12 @@ function buildHistoryCard(event) {
 
 function renderEmptyState() {
   return `
-    <div class="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in-up">
+    <div class="col-span-full flex flex-col items-center justify-center min-h-[50vh] animate-fade-in-up">
       <div class="w-24 h-24 bg-[#FEF3C7] rounded-3xl flex items-center justify-center text-[#755B00] mb-6">
         ${icon('clock', 48)}
       </div>
       <h2 class="font-display text-3xl text-[#1E1B15] mb-2 text-center">Aún no tienes eventos finalizados.</h2>
-      <p class="text-[#4D4637] text-center max-w-md leading-relaxed">Los eventos que finalicen aparecerán aquí para que puedas consultar su resumen.</p>
+      <p class="text-[#9E8E6E] text-center max-w-md leading-relaxed">Los eventos que finalicen aparecerán aquí para que puedas consultar su resumen.</p>
     </div>
   `;
 }
@@ -126,25 +126,45 @@ export async function initHistory() {
 
   main.innerHTML = `
     <div class="space-y-6 animate-fade-in">
-      <div id="history-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      <div id="history-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        ${skeletonGrid()}
+      </div>
     </div>
   `;
 
   try {
-    const events = await getEvents();
-    const finalizedEvents = events.filter(e => e.status === 'finalizado' || e.status === 'done');
+    const allEvents = await getEvents();
+    const events = allEvents.filter(e => e.status === 'done' || e.status === 'finalizado');
 
     const grid = document.getElementById("history-grid");
-    if (finalizedEvents.length === 0) {
+    if (events.length === 0) {
       grid.innerHTML = renderEmptyState();
     } else {
-      grid.innerHTML = finalizedEvents.map(buildHistoryCard).join('');
+      grid.innerHTML = events.map(buildHistoryCard).join('');
     }
   } catch (err) {
     console.error(err);
     const grid = document.getElementById("history-grid");
     grid.innerHTML = `<p class="col-span-full text-red-600 text-center py-12">Error al cargar el historial</p>`;
   }
+}
+
+function skeletonGrid() {
+  return Array(3).fill(0).map(() => `
+    <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 animate-pulse">
+      <div class="flex items-start justify-between mb-3">
+        <div class="w-10 h-10 bg-[#E9E1D7] rounded-xl"></div>
+        <div class="w-20 h-5 bg-[#E9E1D7] rounded-full"></div>
+      </div>
+      <div class="h-5 bg-[#E9E1D7] rounded w-3/4 mb-2"></div>
+      <div class="h-3 bg-[#E9E1D7] rounded w-1/2 mb-4"></div>
+      <div class="flex gap-4 mb-5">
+        <div class="h-4 bg-[#E9E1D7] rounded w-24"></div>
+        <div class="h-4 bg-[#E9E1D7] rounded w-20"></div>
+      </div>
+      <div class="h-10 bg-[#E9E1D7] rounded-xl w-full"></div>
+    </div>
+  `).join('');
 }
 
 export function HistoryPage() {
