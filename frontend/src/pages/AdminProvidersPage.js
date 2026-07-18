@@ -155,7 +155,10 @@ function renderFormModal() {
     <div id="provider-form-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-12 overflow-y-auto" onclick="if(event.target===this)window.closeFormModal()">
       <div class="bg-white rounded-2xl shadow-2xl border border-[#E9E1D7] w-full max-w-2xl animate-scale-in my-4" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between p-5 border-b border-[#E9E1D7]">
-          <h3 class="text-lg font-bold text-[#1E1B15]">${isEdit ? 'Editar proveedor' : 'Nuevo proveedor'}</h3>
+          <div class="flex items-center gap-3">
+            <h3 class="text-lg font-bold text-[#1E1B15]">${isEdit ? 'Editar proveedor' : 'Nuevo proveedor'}</h3>
+            ${!isEdit ? `<button onclick="window.clearForm()" class="text-[10px] text-[#9E8E6E] hover:text-red-500 transition-colors underline underline-offset-2 cursor-pointer" title="Limpiar formulario">Limpiar</button>` : ''}
+          </div>
           <button onclick="window.closeFormModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F8F5F0] transition-colors cursor-pointer">
             ${icon('x', 18)}
           </button>
@@ -348,12 +351,6 @@ async function refresh() {
 }
 
 // Global handlers
-window.openCreateModal = function () {
-  state.modalMode = "create";
-  state.editingProvider = null;
-  renderTable();
-};
-
 window.openEditModal = async function (providerId) {
   try {
     const provider = await apiFetch(`/admin/providers/${providerId}`);
@@ -365,9 +362,39 @@ window.openEditModal = async function (providerId) {
   }
 };
 
+window.clearForm = function () {
+  state.editingProvider = {};
+  state.modalMode = "create";
+  renderTable();
+};
+
+function saveFormData() {
+  state.editingProvider = {
+    name: document.getElementById("pf-name")?.value || '',
+    category_id: document.getElementById("pf-category")?.value || '',
+    address: document.getElementById("pf-address")?.value || '',
+    phone: document.getElementById("pf-phone")?.value || '',
+    email: document.getElementById("pf-email")?.value || '',
+    website: document.getElementById("pf-website")?.value || '',
+    description: document.getElementById("pf-description")?.value || '',
+    reference_price: document.getElementById("pf-price")?.value || '',
+    price_unit: document.getElementById("pf-price-unit")?.value || '',
+    rating: document.getElementById("pf-rating")?.value || '',
+    image_url: document.getElementById("pf-image")?.value || '',
+  };
+}
+
 window.closeFormModal = function () {
+  saveFormData();
   state.modalMode = null;
-  state.editingProvider = null;
+  renderTable();
+};
+
+window.openCreateModal = function () {
+  state.modalMode = "create";
+  if (!state.editingProvider || Object.keys(state.editingProvider).length === 0) {
+    state.editingProvider = {};
+  }
   renderTable();
 };
 

@@ -95,7 +95,10 @@ function renderFormModal() {
     <div id="category-form-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onclick="if(event.target===this)window.closeCategoryFormModal()">
       <div class="bg-white rounded-2xl shadow-2xl border border-[#E9E1D7] w-full max-w-md animate-scale-in" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between p-5 border-b border-[#E9E1D7]">
-          <h3 class="text-lg font-bold text-[#1E1B15]">${isEdit ? 'Editar categoría' : 'Nueva categoría'}</h3>
+          <div class="flex items-center gap-3">
+            <h3 class="text-lg font-bold text-[#1E1B15]">${isEdit ? 'Editar categoría' : 'Nueva categoría'}</h3>
+            ${!isEdit ? `<button onclick="window.clearCategoryForm()" class="text-[10px] text-[#9E8E6E] hover:text-red-500 transition-colors underline underline-offset-2 cursor-pointer" title="Limpiar formulario">Limpiar</button>` : ''}
+          </div>
           <button onclick="window.closeCategoryFormModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F8F5F0] transition-colors cursor-pointer">
             ${icon('x', 18)}
           </button>
@@ -182,8 +185,18 @@ async function handleFormSubmit(e) {
   }
 }
 
+window.clearCategoryForm = function () {
+  state.editingCategory = {};
+  state.modalMode = "create";
+  render();
+};
+
 window.openCreateCategoryModal = function () {
-  state.modalMode = "create"; state.editingCategory = null; render();
+  state.modalMode = "create";
+  if (!state.editingCategory || !state.editingCategory.name) {
+    state.editingCategory = {};
+  }
+  render();
 };
 
 window.openEditCategoryModal = async function (id) {
@@ -193,7 +206,9 @@ window.openEditCategoryModal = async function (id) {
 };
 
 window.closeCategoryFormModal = function () {
-  state.modalMode = null; state.editingCategory = null; render();
+  const nameEl = document.getElementById("cf-name");
+  if (nameEl) state.editingCategory = { ...(state.editingCategory || {}), name: nameEl.value };
+  state.modalMode = null; render();
 };
 
 window.openDeleteCategoryModal = function (id, name) {
