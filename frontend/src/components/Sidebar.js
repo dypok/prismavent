@@ -88,21 +88,21 @@ export function Sidebar(active = "new-event") {
               class="nav-item hover:bg-white hover:text-[#755B00] 
               ${isActive('/events/new') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
             <span class="icon-wrap">${icon('plus', 20)}</span>
-            <span class="nav-label">New Event</span>
+            <span class="nav-label">Nuevo evento</span>
           </li>
 
           <li onclick="navigateTo('/providers')" 
               class="nav-item hover:bg-white hover:text-[#755B00] 
               ${isActive('/providers') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
             <span class="icon-wrap">${icon('store', 20)}</span>
-            <span class="nav-label">Providers</span>
+            <span class="nav-label">Proovedores</span>
           </li>
 
           <li onclick="navigateTo('/history')" 
               class="nav-item hover:bg-white hover:text-[#755B00] 
               ${isActive('/history') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
             <span class="icon-wrap">${icon('clock', 20)}</span>
-            <span class="nav-label">History</span>
+            <span class="nav-label">Historial</span>
           </li>
         </ul>
       </nav>
@@ -120,5 +120,7 @@ export function Sidebar(active = "new-event") {
 
 window.navigateTo = function(path) {
   window.history.pushState({}, "", path);
-  window.dispatchEvent(new PopStateEvent("popstate"));
+  if (typeof window.renderPage === 'function') {
+    window.renderPage();
+  }
 };

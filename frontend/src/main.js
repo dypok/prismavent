@@ -403,8 +403,21 @@ async function renderPage() {
       renderPage();
       return;
     }
-    document.querySelector("#app").innerHTML = await ProvidersPage();
-    initProvidersPage();
+    try {
+      document.querySelector("#app").innerHTML = await ProvidersPage();
+      initProvidersPage();
+    } catch (err) {
+      console.error("Error al cargar ProvidersPage:", err);
+      document.querySelector("#app").innerHTML = `
+        <div class="flex items-center justify-center min-h-screen bg-[#FFF8F1]">
+          <div class="text-center p-8">
+            <h2 class="text-xl font-bold text-red-600 mb-2">Error al cargar proveedores</h2>
+            <p class="text-[#9E8E6E] text-sm">${err.message}</p>
+            <button onclick="navigateTo('/dashboard')" class="mt-4 px-6 py-2 bg-[#755B00] text-white rounded-xl">Volver al inicio</button>
+          </div>
+        </div>
+      `;
+    }
 
   // Ruta Mis Plantillas
   } else if (path === "/my-templates") {
@@ -445,3 +458,6 @@ renderPage();
 
 // Soporte para botones atrás/adelante
 window.addEventListener('popstate', renderPage);
+
+// Exponer para navegación programática desde navigateTo()
+window.renderPage = renderPage;
