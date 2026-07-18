@@ -57,7 +57,7 @@ export function ProviderCard(provider, categoryName) {
               A\u00f1adir a mi evento
             </button>
           </div>
-          <button class="quote-provider w-full py-2 rounded-xl border border-gray-200 text-[#9E8E6E] text-xs font-medium hover:bg-[#F8F5F0] transition-all cursor-pointer" data-id="${provider.id}">
+          <button onclick="window.showQuoteModal()" class="w-full py-2 rounded-xl border border-gray-200 text-[#9E8E6E] text-xs font-medium hover:bg-[#F8F5F0] transition-all cursor-pointer">
             Cotizar
           </button>
         </div>

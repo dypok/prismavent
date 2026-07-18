@@ -141,8 +141,38 @@ export async function ProvidersPage() {
     </div>
     ${ProviderDrawer()}
     ${AddToEventModal()}
+    ${QuoteModal()}
   `;
 }
+
+function QuoteModal() {
+  return `
+    <div id="quote-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl shadow-2xl border border-[#E9E1D7] w-full max-w-sm p-6 text-center animate-scale-in">
+        <div class="w-16 h-16 rounded-full bg-[#FEF3C7] flex items-center justify-center mx-auto mb-4">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#755B00" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </div>
+        <h3 class="text-xl font-bold text-[#1E1B15] mb-2">Cotización</h3>
+        <p class="text-sm text-[#9E8E6E] mb-6 leading-relaxed">Esta función estará disponible próximamente. Estamos trabajando para que puedas solicitar cotizaciones directamente desde la plataforma.</p>
+        <button onclick="hideQuoteModal()" class="w-full py-3 bg-[#755B00] hover:bg-[#5A4700] text-white font-semibold rounded-xl transition-all cursor-pointer">Entendido</button>
+      </div>
+    </div>
+  `;
+}
+
+window.showQuoteModal = function () {
+  const modal = document.getElementById("quote-modal");
+  if (!modal) return;
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+};
+
+window.hideQuoteModal = function () {
+  const modal = document.getElementById("quote-modal");
+  if (!modal) return;
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+};
 
 export function initProvidersPage() {
   document.getElementById("provider-search")?.addEventListener("input", (e) => {
