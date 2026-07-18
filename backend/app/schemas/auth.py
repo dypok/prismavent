@@ -15,3 +15,8 @@ class UpdateProfileRequest(BaseModel):
     name: Optional[str] = None
     password: Optional[str] = None
 
+class UserMeResponse(BaseModel):
+    id: str
+    full_name: Optional[str] = None
+    role: str = "user"
+

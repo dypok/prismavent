@@ -1,5 +1,5 @@
 import logoIcon from "../assets/icons/logo.png";
-import { logout } from "../utils/authUtils.js";
+import { logout, isAdmin } from "../utils/authUtils.js";
 import { icon } from "./Icons.js";
 
 window.handleLogout = function () {
@@ -48,6 +48,7 @@ export function Sidebar(active = "new-event") {
     if (path === '/events/new' && currentPath === '/events/new') return true;
     if (path === '/providers' && currentPath === '/providers') return true;
     if (path === '/history' && currentPath === '/history') return true;
+    if (path === '/admin/providers' && currentPath === '/admin/providers') return true;
     return false;
   };
 
@@ -104,6 +105,15 @@ export function Sidebar(active = "new-event") {
             <span class="icon-wrap">${icon('clock', 20)}</span>
             <span class="nav-label">Historial</span>
           </li>
+
+          ${isAdmin() ? `
+          <li onclick="navigateTo('/admin/providers')" 
+              class="nav-item hover:bg-white hover:text-[#755B00] border-l-2 border-[#755B00]
+              ${isActive('/admin/providers') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
+            <span class="icon-wrap">${icon('shield', 20)}</span>
+            <span class="nav-label">Panel Admin</span>
+          </li>
+          ` : ''}
         </ul>
       </nav>
 
