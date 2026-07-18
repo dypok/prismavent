@@ -26,6 +26,7 @@ import {
 // === NUEVA IMPORTACIÓN ===
 import MyEvents from "./pages/MyEvents.js";
 import { ProvidersPage, initProvidersPage } from "./pages/Providers.js";
+import { AdminProvidersPage } from "./pages/AdminProvidersPage.js";
 import { initDashboard } from "./pages/Dashboard.js";
 import { LandingPage, initLandingPage } from "./pages/LandingPage.js";
 import { HistoryPage, initHistory } from "./pages/History.js";
@@ -455,8 +456,7 @@ async function renderPage() {
       return;
     }
     try {
-      document.querySelector("#app").innerHTML = await ProvidersPage();
-      initProvidersPage();
+      document.querySelector("#app").innerHTML = await AdminProvidersPage();
     } catch (err) {
       console.error("Error al cargar Admin ProvidersPage:", err);
       document.querySelector("#app").innerHTML = `
