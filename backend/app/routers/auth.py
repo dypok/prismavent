@@ -1,7 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.core.supabase import get_supabase_client
-from app.schemas.auth import RegisterRequest, LoginRequest, UpdateProfileRequest
+from app.schemas.auth import RegisterRequest, LoginRequest, UpdateProfileRequest, UserMeResponse
+from app.dependencies import get_current_user
 from fastapi import Request
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from app.database import SessionLocal, get_db
 import httpx
 import os
 
@@ -21,6 +25,23 @@ def register(payload: RegisterRequest):
                 }
             }
         })
+        user_id = response.user.id
+        # Create profile row for the new user
+        db = SessionLocal()
+        try:
+            db.execute(
+                text("""
+                    INSERT INTO profiles (id, full_name, phone, city_id, role)
+                    VALUES (:id, :full_name, :phone, :city_id, 'user')
+                """),
+                {"id": user_id, "full_name": payload.name, "phone": payload.phone, "city_id": payload.city_id}
+            )
+            db.commit()
+        except Exception as profile_error:
+            db.rollback()
+            print(f"Warning: Could not create profile for user {user_id}: {profile_error}")
+        finally:
+            db.close()
         return {
             "message": "Registration successful. Please check your email for verification.",
             "user": response.user
@@ -54,6 +75,29 @@ def logout():
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/me", response_model=UserMeResponse)
+def get_me(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns the authenticated user's profile including role.
+    Used by the frontend to determine admin access.
+    """
+    profile = db.execute(
+        text("SELECT id, full_name, role FROM profiles WHERE id = :id"),
+        {"id": current_user.id}
+    ).fetchone()
+    
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    
+    return {
+        "id": str(profile[0]),
+        "full_name": profile[1],
+        "role": profile[2]
+    }
 
 
 @router.put("/profile")
