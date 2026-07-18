@@ -1,7 +1,7 @@
 -- ============================================================
--- PRISMAVENT — SQL FINAL v5 (unificado)
+-- PRISMAVENT — SQL FINAL v6 (unificado)
 -- PostgreSQL 15+ (Supabase)
--- guests + event_tasks en un solo esquema
+-- guests + event_tasks + provider_reviews en un solo esquema
 -- ============================================================
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -109,8 +109,10 @@ CREATE TABLE IF NOT EXISTS providers (
   name TEXT NOT NULL,
   description TEXT,
   phone VARCHAR(20),
+  email VARCHAR(255),
   website TEXT,
   address TEXT,
+  image_url TEXT,
   reference_price DECIMAL(12,2) CHECK (reference_price >= 0),
   price_unit VARCHAR(30),
   rating DECIMAL(2,1) CHECK (rating BETWEEN 0 AND 5),
@@ -216,8 +218,40 @@ CREATE TABLE IF NOT EXISTS event_tasks (
 );
 
 -- ============================
+-- RESEÑAS DE PROVEEDORES (provider_reviews)
+-- ============================
+
+CREATE TABLE IF NOT EXISTS provider_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  provider_id UUID NOT NULL REFERENCES providers(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  rating DECIMAL(2,1) NOT NULL CHECK (rating BETWEEN 0 AND 5),
+  comment TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ============================
 -- FUNCIONES / TRIGGERS
 -- ============================
+
+CREATE OR REPLACE FUNCTION update_provider_rating()
+RETURNS TRIGGER AS $$
+DECLARE
+  target_id UUID;
+BEGIN
+  target_id := COALESCE(NEW.provider_id, OLD.provider_id);
+
+  UPDATE providers p
+  SET rating = (
+    SELECT COALESCE(AVG(rating), 0)
+    FROM provider_reviews
+    WHERE provider_id = target_id
+  )
+  WHERE p.id = target_id;
+
+  RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION validate_user_template_owner()
 RETURNS TRIGGER AS $$
@@ -274,6 +308,13 @@ CREATE TRIGGER trg_events_validate_user_template_owner
 BEFORE INSERT OR UPDATE ON events
 FOR EACH ROW EXECUTE FUNCTION validate_user_template_owner();
 
+-- Trigger de actualización de rating al crear/editar/eliminar reseña
+DROP TRIGGER IF EXISTS trg_provider_reviews_update_rating ON provider_reviews;
+CREATE TRIGGER trg_provider_reviews_update_rating
+AFTER INSERT OR UPDATE OR DELETE ON provider_reviews
+FOR EACH ROW
+EXECUTE FUNCTION update_provider_rating();
+
 -- ============================
 -- ÍNDICES
 -- ============================
@@ -303,3 +344,10 @@ CREATE INDEX IF NOT EXISTS idx_guests_full_name ON guests(full_name);
 CREATE INDEX IF NOT EXISTS idx_event_tasks_event_id ON event_tasks(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_tasks_status ON event_tasks(status);
 CREATE INDEX IF NOT EXISTS idx_event_tasks_event_status ON event_tasks(event_id, status);
+
+CREATE INDEX IF NOT EXISTS idx_provider_reviews_provider_id
+  ON provider_reviews(provider_id);
+CREATE INDEX IF NOT EXISTS idx_provider_reviews_user_id
+  ON provider_reviews(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_provider_reviews_provider_user_unique
+  ON provider_reviews(provider_id, user_id);
