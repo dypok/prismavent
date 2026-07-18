@@ -36,6 +36,7 @@ class ProviderResponse(BaseModel):
     id: UUID
     category_id: UUID
     city_id: UUID
+    city_name: Optional[str] = None
     name: str
     description: Optional[str] = None
     phone: Optional[str] = None

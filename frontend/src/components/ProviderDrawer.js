@@ -57,12 +57,12 @@ export function openProviderDrawer(provider, categoryName) {
           </div>
         ` : ''}
 
-        ${provider.address ? `
+        ${provider.city_name || provider.address ? `
           <div>
             <h3 class="text-xs font-semibold tracking-widest text-[#9E8E6E] uppercase mb-2">Ubicación</h3>
             <div class="flex items-center gap-2 text-sm text-[#4D4637]">
               ${icon('map-pin', 16, 'text-[#9E8E6E] shrink-0')}
-              <span>${provider.address}</span>
+              <span>${[provider.city_name, provider.address].filter(Boolean).join(', ')}</span>
             </div>
           </div>
         ` : ''}

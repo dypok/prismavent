@@ -35,6 +35,21 @@ async function loadProviders() {
   }
 }
 
+function renderCategoriesPills() {
+  const container = document.getElementById("categories-container");
+  if (!container) return;
+  container.innerHTML = `
+    <button class="category-pill shrink-0 px-5 py-2 rounded-full text-sm font-medium transition-all cursor-pointer bg-[#755B00] text-white" data-category-id="null">
+      Todos
+    </button>
+    ${state.categories.map(cat => `
+      <button class="category-pill shrink-0 px-5 py-2 rounded-full text-sm font-medium transition-all cursor-pointer bg-[#F8F5F0] text-[#4D4637] hover:bg-[#FEF3C7]" data-category-id="${cat.id}">
+        ${cat.name}
+      </button>
+    `).join('')}
+  `;
+}
+
 function renderProvidersGrid() {
   const grid = document.getElementById("providers-grid");
   const empty = document.getElementById("providers-empty");
@@ -78,18 +93,8 @@ function handleCategoryClick(categoryId) {
   refreshProviders();
 }
 
-export async function ProvidersPage() {
+export function ProvidersPage() {
   state = { providers: [], categories: [], categoryMap: {}, activeCategory: null, searchTerm: "", loading: false };
-
-  try {
-    const cats = await getCategories();
-    state.categories = cats;
-    state.categoryMap = Object.fromEntries(cats.map(c => [c.id, c.name]));
-  } catch (err) {
-    console.error("Error loading categories:", err);
-  }
-
-  await refreshProviders();
 
   return `
     <div class="flex min-h-screen bg-[#FFF8F1]">
@@ -114,15 +119,13 @@ export async function ProvidersPage() {
               </div>
             </div>
 
-            <div class="flex items-center gap-3 overflow-x-auto pb-1 mb-8" id="categories-container">
-              <button class="category-pill shrink-0 px-5 py-2 rounded-full text-sm font-medium transition-all cursor-pointer bg-[#755B00] text-white" data-category-id="null">
-                Todos
-              </button>
-              ${state.categories.map(cat => `
-                <button class="category-pill shrink-0 px-5 py-2 rounded-full text-sm font-medium transition-all cursor-pointer bg-[#F8F5F0] text-[#4D4637] hover:bg-[#FEF3C7]" data-category-id="${cat.id}">
-                  ${cat.name}
-                </button>
-              `).join('')}
+            <div id="categories-container" class="flex items-center gap-3 overflow-x-auto pb-1 mb-8">
+              <div class="h-9 w-20 bg-[#E9E1D7] rounded-full animate-pulse shrink-0"></div>
+              <div class="h-9 w-24 bg-[#E9E1D7] rounded-full animate-pulse shrink-0"></div>
+              <div class="h-9 w-20 bg-[#E9E1D7] rounded-full animate-pulse shrink-0"></div>
+              <div class="h-9 w-28 bg-[#E9E1D7] rounded-full animate-pulse shrink-0"></div>
+              <div class="h-9 w-24 bg-[#E9E1D7] rounded-full animate-pulse shrink-0"></div>
+              <div class="h-9 w-20 bg-[#E9E1D7] rounded-full animate-pulse shrink-0"></div>
             </div>
 
             <div id="providers-empty" class="hidden flex flex-col items-center justify-center py-20 text-[#9E8E6E]">
@@ -132,7 +135,7 @@ export async function ProvidersPage() {
             </div>
 
             <div id="providers-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-              ${state.providers.map(p => ProviderCard(p, state.categoryMap[p.category_id])).join('')}
+              ${skeletonCards(8)}
             </div>
 
           </div>
@@ -143,6 +146,22 @@ export async function ProvidersPage() {
     ${AddToEventModal()}
     ${QuoteModal()}
   `;
+}
+
+function skeletonCards(count) {
+  return Array(count).fill(0).map(() => `
+    <div class="bg-white rounded-2xl border border-[#E9E1D7] p-5 animate-pulse">
+      <div class="h-4 bg-[#E9E1D7] rounded w-3/4 mb-3"></div>
+      <div class="h-3 bg-[#E9E1D7] rounded w-1/2 mb-4"></div>
+      <div class="h-3 bg-[#E9E1D7] rounded w-full mb-2"></div>
+      <div class="h-3 bg-[#E9E1D7] rounded w-5/6 mb-4"></div>
+      <div class="flex gap-2 mb-3">
+        <div class="h-9 bg-[#E9E1D7] rounded-xl flex-1"></div>
+        <div class="h-9 bg-[#E9E1D7] rounded-xl flex-1"></div>
+      </div>
+      <div class="h-8 bg-[#E9E1D7] rounded-xl w-full"></div>
+    </div>
+  `).join('');
 }
 
 function QuoteModal() {
@@ -174,7 +193,18 @@ window.hideQuoteModal = function () {
   modal.classList.remove("flex");
 };
 
-export function initProvidersPage() {
+export async function initProvidersPage() {
+  try {
+    const cats = await getCategories();
+    state.categories = cats;
+    state.categoryMap = Object.fromEntries(cats.map(c => [c.id, c.name]));
+  } catch (err) {
+    console.error("Error loading categories:", err);
+  }
+
+  renderCategoriesPills();
+  await refreshProviders();
+
   document.getElementById("provider-search")?.addEventListener("input", (e) => {
     handleSearch(e.target.value);
   });
