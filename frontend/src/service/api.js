@@ -157,8 +157,9 @@ export async function updateProfile(name, password) {
   return data;
 }
 
-export async function getEvents() {
-  return await apiFetch('/events');   // ← CORREGIDO
+export async function getEvents(status) {
+  const query = status ? `?status=${encodeURIComponent(status)}` : '';
+  return await apiFetch(`/events${query}`);
 }
 
 // Obtener un evento por ID
@@ -278,6 +279,11 @@ export async function deleteEventItem(eventId, itemId) {
   return await apiFetch(`/events/${eventId}/items/${itemId}`, {
     method: 'DELETE'
   });
+}
+
+// --- Event History (log de estados) ---
+export async function getEventHistory(eventId) {
+  return await apiFetch(`/events/${eventId}/history`);
 }
 
 // --- Event Tasks (Kanban) ---

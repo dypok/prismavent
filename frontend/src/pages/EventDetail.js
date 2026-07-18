@@ -1,7 +1,7 @@
 import { Sidebar } from "../components/Sidebar.js";
 import { Topbar } from "../components/Topbar.js";
 import { EventStepper } from "../components/EventStepper.js";
-import { getEventById, updateEvent, updateEventStatus, createEventItem, updateEventItem, deleteEventItem, getEventTasks } from "../service/api.js";
+import { getEventById, updateEvent, updateEventStatus, createEventItem, updateEventItem, deleteEventItem, getEventTasks, getEventHistory } from "../service/api.js";
 import { TasksPanel } from "../components/TasksPanel.js";
 import { initWeatherWidget } from "../components/WeatherWidget.js";
 import { icon } from "../components/Icons.js";
@@ -477,6 +477,15 @@ export async function EventDetail(eventId) {
                     </div>
                   </div>
                   ` : ''}
+
+                  <!-- Timeline de cambios de estado -->
+                  <div class="mt-6 pt-6 border-t border-[#F5EDE0]">
+                    <button onclick="toggleHistoryTimeline()" class="flex items-center justify-between w-full text-left">
+                      <h3 class="text-sm font-semibold text-[#4D4637] uppercase tracking-wider">Historial de cambios</h3>
+                      <svg id="history-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-[#9E8E6E] transition-transform duration-200"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div id="history-timeline" class="hidden mt-4 space-y-3"></div>
+                  </div>
                 </div>
               </aside>
 
@@ -1030,3 +1039,70 @@ document.addEventListener("click", async (e) => {
     delete modal.dataset.pendingDeleteCard;
   }
 });
+
+// ── History Timeline ──
+window.toggleHistoryTimeline = function () {
+  const timeline = document.getElementById("history-timeline");
+  const chevron = document.getElementById("history-chevron");
+  if (!timeline) return;
+  const isOpen = !timeline.classList.contains("hidden");
+  timeline.classList.toggle("hidden");
+  if (chevron) chevron.style.transform = isOpen ? "" : "rotate(180deg)";
+  if (!isOpen && timeline.dataset.loaded !== "true") {
+    const eventId = window.__eventData?.eventId;
+    if (eventId) loadEventHistory(eventId);
+  }
+};
+
+async function loadEventHistory(eventId) {
+  const timeline = document.getElementById("history-timeline");
+  if (!timeline) return;
+
+  timeline.innerHTML = `<div class="flex items-center justify-center py-4 text-[#9E8E6E] text-sm"><span class="animate-spin w-4 h-4 border-2 border-[#9E8E6E] border-t-transparent rounded-full mr-2"></span>Cargando...</div>`;
+
+  try {
+    const history = await getEventHistory(eventId);
+    timeline.dataset.loaded = "true";
+
+    if (history.length === 0) {
+      timeline.innerHTML = `<p class="text-sm text-[#9E8E6E] text-center py-4">Sin cambios registrados</p>`;
+      return;
+    }
+
+    const statusLabels = {
+      borrador: "Borrador",
+      confirmado: "Confirmado",
+      in_progress: "En Progreso",
+      done: "Realizado",
+      finalizado: "Finalizado",
+    };
+
+    timeline.innerHTML = history.map((entry, i) => {
+      const isFirst = i === 0;
+      const isLast = i === history.length - 1;
+      const date = new Date(entry.changed_at + "Z").toLocaleString("es-ES", {
+        day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+      });
+      const from = entry.previous_status ? statusLabels[entry.previous_status] || entry.previous_status : "—";
+      const to = statusLabels[entry.new_status] || entry.new_status;
+
+      return `
+        <div class="flex gap-3">
+          <div class="flex flex-col items-center shrink-0">
+            <div class="w-3 h-3 rounded-full ${isFirst ? 'bg-[#755B00]' : 'bg-[#E9E1D7]'} ring-2 ring-white"></div>
+            ${!isLast ? `<div class="w-0.5 flex-1 bg-[#E9E1D7] mt-1"></div>` : ''}
+          </div>
+          <div class="pb-${isLast ? '0' : '4'} flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 text-sm">
+              <span class="font-medium text-[#1E1B15]">${to}</span>
+              ${entry.previous_status ? `<span class="text-[#9E8E6E] text-xs">(desde ${from})</span>` : '<span class="text-[#9E8E6E] text-xs">(creado)</span>'}
+            </div>
+            <p class="text-xs text-[#9E8E6E] mt-0.5">${date}</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    timeline.innerHTML = `<p class="text-sm text-red-500 text-center py-4">Error al cargar historial</p>`;
+  }
+}

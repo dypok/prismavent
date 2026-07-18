@@ -42,6 +42,13 @@ def auto_transition_event_status(event: dict, db: Session) -> dict:
             text("UPDATE events SET status = :status, updated_at = NOW() WHERE id = :id"),
             {"id": event["id"], "status": new_status}
         )
+        db.execute(
+            text("""
+                INSERT INTO event_history (event_id, previous_status, new_status, changed_by)
+                VALUES (:event_id, :previous_status, :new_status, NULL)
+            """),
+            {"event_id": event["id"], "previous_status": current, "new_status": new_status}
+        )
         db.commit()
         event["status"] = new_status
 

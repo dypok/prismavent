@@ -250,6 +250,19 @@ def update_event_status(
             }
         ).fetchone()
 
+        db.execute(
+            text("""
+                INSERT INTO event_history (event_id, previous_status, new_status, changed_by)
+                VALUES (:event_id, :previous_status, :new_status, :changed_by)
+            """),
+            {
+                "event_id": event_id,
+                "previous_status": event["status"],
+                "new_status": payload.status,
+                "changed_by": current_user.id,
+            }
+        )
+
         db.commit()
         return map_event_to_detail(updated._mapping, db)
     except Exception as e:

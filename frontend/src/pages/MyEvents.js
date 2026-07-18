@@ -98,8 +98,9 @@ export default class MyEvents {
 
         try {
             const events = await api.getEvents();
+            const activeEvents = events.filter(e => e.status !== 'done' && e.status !== 'finalizado');
 
-            if (events.length === 0) {
+            if (activeEvents.length === 0) {
                 statsGrid.parentElement.classList.add('hidden');
                 if (searchBar) searchBar.classList.add('hidden');
                 grid.className = "flex-1 flex flex-col items-center justify-center min-h-[60vh]";
@@ -125,8 +126,8 @@ export default class MyEvents {
             if (searchBar) searchBar.classList.remove('hidden');
             grid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5";
 
-            const total = events.length;
-            const borradores = events.filter(e => e.status === 'borrador' || !e.status).length;
+            const total = activeEvents.length;
+            const borradores = activeEvents.filter(e => e.status === 'borrador' || !e.status).length;
             const activos = total - borradores;
 
             statsGrid.innerHTML = `
@@ -187,7 +188,7 @@ export default class MyEvents {
                 </div>
             `;
 
-            events.forEach(event => {
+            activeEvents.forEach(event => {
                 const date = new Date(event.event_date);
                 const formattedDate = date.toLocaleDateString('es-ES', { 
                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
