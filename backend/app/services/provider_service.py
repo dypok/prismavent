@@ -8,18 +8,23 @@ def list_providers(db: Session, category_id: Optional[str] = None, search: Optio
     """
     Fetches the list of providers from the database, optionally filtering by category_id or name (search).
     """
-    query = "SELECT * FROM providers WHERE 1=1"
+    query = """
+        SELECT p.*, c.name AS city_name
+        FROM providers p
+        LEFT JOIN cities c ON c.id = p.city_id
+        WHERE 1=1
+    """
     params = {}
     
     if category_id:
-        query += " AND category_id = :category_id"
+        query += " AND p.category_id = :category_id"
         params["category_id"] = category_id
         
     if search:
-        query += " AND name ILIKE :search"
+        query += " AND p.name ILIKE :search"
         params["search"] = f"%{search}%"
         
-    query += " ORDER BY name ASC"
+    query += " ORDER BY p.name ASC"
     
     res = db.execute(text(query), params).fetchall()
     return [dict(row._mapping) for row in res] if res else []
@@ -30,7 +35,12 @@ def get_provider_by_id(provider_id: str, db: Session) -> dict:
     Raises 404 if not found.
     """
     res = db.execute(
-        text("SELECT * FROM providers WHERE id = :id"),
+        text("""
+            SELECT p.*, c.name AS city_name
+            FROM providers p
+            LEFT JOIN cities c ON c.id = p.city_id
+            WHERE p.id = :id
+        """),
         {"id": provider_id}
     ).fetchone()
     

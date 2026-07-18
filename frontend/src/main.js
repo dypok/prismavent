@@ -409,7 +409,7 @@ async function renderPage() {
       return;
     }
     try {
-      document.querySelector("#app").innerHTML = await ProvidersPage();
+      document.querySelector("#app").innerHTML = ProvidersPage();
       initProvidersPage();
     } catch (err) {
       console.error("Error al cargar ProvidersPage:", err);
