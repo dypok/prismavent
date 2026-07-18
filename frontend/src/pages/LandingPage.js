@@ -312,8 +312,8 @@ export function initLandingPage() {
 
 async function loadStats() {
   try {
-    const { getPublicStats } = await import('../service/api.js');
-    const stats = await getPublicStats();
+    const res = await fetch(`http://localhost:8000/stats`);
+    const stats = await res.json();
     const fmt = (n) => n >= 1000 ? Math.floor(n / 1000) + 'K+' : n + '+';
     const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = fmt(val || 0); };
     setStat('stat-events', stats.total_events);

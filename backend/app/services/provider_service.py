@@ -287,7 +287,7 @@ def get_admin_metrics(db: Session) -> dict:
     total_categories = db.execute(text("SELECT COUNT(*) FROM provider_categories")).scalar() or 0
     total_events = db.execute(text("SELECT COUNT(*) FROM events")).scalar() or 0
     total_guests = db.execute(text("SELECT COALESCE(SUM(guest_count), 0) FROM events")).scalar() or 0
-    total_users = db.execute(text("SELECT COUNT(*) FROM profiles")).scalar() or 0
+    total_users = db.execute(text("SELECT COUNT(*) FROM auth.users")).scalar() or 0
 
     providers_without_reviews_count = db.execute(
         text("SELECT COUNT(*) FROM providers p WHERE NOT EXISTS (SELECT 1 FROM provider_reviews r WHERE r.provider_id = p.id)")
@@ -345,7 +345,7 @@ def get_public_stats(db: Session) -> dict:
     total_events = db.execute(text("SELECT COUNT(*) FROM events")).scalar() or 0
     total_guests = db.execute(text("SELECT COALESCE(SUM(guest_count), 0) FROM events")).scalar() or 0
     total_providers = db.execute(text("SELECT COUNT(*) FROM providers")).scalar() or 0
-    total_users = db.execute(text("SELECT COUNT(*) FROM profiles")).scalar() or 0
+    total_users = db.execute(text("SELECT COUNT(*) FROM auth.users")).scalar() or 0
     return {
         "total_events": total_events,
         "total_guests": total_guests,

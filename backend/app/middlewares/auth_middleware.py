@@ -6,7 +6,7 @@ from app.core.supabase import get_supabase_client
 class SupabaseAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
-        if path in ["/", "/auth/register", "/auth/register/", "/auth/login", "/auth/login/"] or path.startswith(("/docs", "/redoc", "/openapi.json")):
+        if path in ["/", "/auth/register", "/auth/register/", "/auth/login", "/auth/login/"] or path.startswith(("/docs", "/redoc", "/openapi.json", "/stats")):
             return await call_next(request)
         
         if request.method == "OPTIONS":
