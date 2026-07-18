@@ -316,6 +316,10 @@ export async function getEventWeather(eventId) {
   return await apiFetch(`/events/${eventId}/weather`);
 }
 
+export async function getAdminMetrics() {
+  return await apiFetch("/admin/metrics");
+}
+
 export default {
   updateProfile,
   login,
@@ -348,5 +352,6 @@ export default {
   updateEventTask,
   moveEventTask,
   deleteEventTask,
-  getEventWeather
+  getEventWeather,
+  getAdminMetrics
 };
