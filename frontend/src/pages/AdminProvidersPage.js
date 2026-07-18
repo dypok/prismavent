@@ -438,15 +438,17 @@ export async function AdminProvidersPage() {
     loading: false, modalMode: null, editingProvider: null, deleteTarget: null
   };
 
-  try {
-    const cats = await getCategories();
-    state.categories = cats;
-    state.categoryMap = Object.fromEntries(cats.map(c => [c.id, c.name]));
-  } catch (err) {
-    console.error("Error loading categories:", err);
-  }
-
-  await loadProviders();
+  setTimeout(async () => {
+    try {
+      const cats = await getCategories();
+      state.categories = cats;
+      state.categoryMap = Object.fromEntries(cats.map(c => [c.id, c.name]));
+    } catch (err) {
+      console.error("Error loading categories:", err);
+    }
+    await loadProviders();
+    renderTable();
+  }, 0);
 
   return `
     <div class="flex min-h-screen bg-[#FFF8F1]">
@@ -459,10 +461,47 @@ export async function AdminProvidersPage() {
               <a href="/admin/providers" onclick="event.preventDefault(); navigateTo('/admin/providers')" class="px-4 py-2 text-sm font-medium rounded-lg bg-[#755B00] text-white transition-all">Proveedores</a>
               <a href="/admin/categories" onclick="event.preventDefault(); navigateTo('/admin/categories')" class="px-4 py-2 text-sm font-medium rounded-lg text-[#4D4637] hover:bg-[#FEF3C7] hover:text-[#755B00] transition-all">Categorías</a>
             </div>
-            <div id="admin-providers-content">${tableHTML()}</div>
+            <div id="admin-providers-content">${skeletonTable()}</div>
           </div>
         </div>
       </main>
+    </div>
+  `;
+}
+
+function skeletonTable() {
+  return `
+    <div class="animate-pulse space-y-4">
+      <div class="flex justify-between items-center mb-6">
+        <div class="space-y-2">
+          <div class="h-7 bg-[#E9E1D7] rounded w-48"></div>
+          <div class="h-4 bg-[#E9E1D7] rounded w-64"></div>
+        </div>
+        <div class="h-10 bg-[#E9E1D7] rounded-xl w-36"></div>
+      </div>
+      <div class="flex gap-3 mb-6">
+        <div class="h-10 bg-[#E9E1D7] rounded-xl flex-1"></div>
+        <div class="h-10 bg-[#E9E1D7] rounded-xl w-44"></div>
+      </div>
+      <div class="bg-white rounded-2xl border border-[#E9E1D7] overflow-hidden">
+        ${Array(5).fill(0).map(() => `
+          <div class="flex items-center gap-4 p-4 border-b border-[#E9E1D7]">
+            <div class="h-10 w-10 bg-[#E9E1D7] rounded-lg shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 bg-[#E9E1D7] rounded w-1/3"></div>
+              <div class="h-3 bg-[#E9E1D7] rounded w-1/5"></div>
+            </div>
+            <div class="h-6 bg-[#E9E1D7] rounded-full w-20 hidden md:block"></div>
+            <div class="h-4 bg-[#E9E1D7] rounded w-24 hidden lg:block"></div>
+            <div class="h-4 bg-[#E9E1D7] rounded w-16 hidden sm:block"></div>
+            <div class="h-4 bg-[#E9E1D7] rounded w-20 hidden sm:block"></div>
+            <div class="flex gap-2">
+              <div class="h-8 w-8 bg-[#E9E1D7] rounded-lg"></div>
+              <div class="h-8 w-8 bg-[#E9E1D7] rounded-lg"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
   `;
 }

@@ -520,3 +520,14 @@ window.addEventListener('popstate', renderPage);
 
 // Exponer para navegación programática desde navigateTo()
 window.renderPage = renderPage;
+
+// Remover loading cover y mostrar prismas
+setTimeout(() => {
+  const cover = document.getElementById("loading-cover");
+  if (cover) {
+    cover.style.opacity = "0";
+    setTimeout(() => cover.remove(), 300);
+  }
+  const prism = document.getElementById("prism-bg");
+  if (prism) prism.classList.remove("opacity-0");
+}, 50);

@@ -245,12 +245,15 @@ window.confirmDeleteCategory = async function () {
 export async function AdminCategoriesPage() {
   state = { categories: [], loading: false, modalMode: null, editingCategory: null, deleteTarget: null };
 
-  try {
-    const data = await apiFetch("/admin/provider-categories");
-    state.categories = data || [];
-  } catch (err) {
-    console.error("Error loading categories:", err);
-  }
+  setTimeout(async () => {
+    try {
+      const data = await apiFetch("/admin/provider-categories");
+      state.categories = data || [];
+    } catch (err) {
+      console.error("Error loading categories:", err);
+    }
+    renderContent();
+  }, 0);
 
   return `
     <div class="flex min-h-screen bg-[#FFF8F1]">
@@ -264,63 +267,7 @@ export async function AdminCategoriesPage() {
               <a href="/admin/categories" onclick="event.preventDefault(); navigateTo('/admin/categories')" class="px-4 py-2 text-sm font-medium rounded-lg bg-[#755B00] text-white transition-all">Categorías</a>
             </div>
             <div id="admin-categories-content">
-              ${state.categories.length === 0 ? `
-                <div class="flex flex-col items-center justify-center py-20 text-[#9E8E6E]">
-                  <span class="text-5xl mb-4 opacity-50">${icon('layout', 48, 'opacity-30')}</span>
-                  <p class="text-lg font-medium">No hay categorías</p>
-                  <p class="text-sm mt-1">Crea una nueva categoría para empezar</p>
-                </div>
-              ` : `
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                  <div>
-                    <h1 class="text-3xl lg:text-4xl font-bold text-[#1E1B15] tracking-tight">Categorías</h1>
-                    <p class="text-sm text-[#9E8E6E] mt-1">Administra las categorías de proveedores</p>
-                  </div>
-                  <button onclick="window.openCreateCategoryModal()" class="flex items-center gap-2 px-5 py-2.5 bg-[#755B00] text-white font-semibold rounded-xl hover:bg-[#5F4A00] transition-all cursor-pointer shrink-0">
-                    ${icon('plus', 18)} Nueva categoría
-                  </button>
-                </div>
-                <div class="bg-white rounded-2xl border border-[#E9E1D7] overflow-hidden shadow-sm">
-                  <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                      <thead>
-                        <tr class="border-b border-[#E9E1D7] bg-[#F8F5F0]">
-                          <th class="text-left px-4 py-3 font-semibold text-[#4D4637] text-xs tracking-widest uppercase">Nombre</th>
-                          <th class="text-center px-4 py-3 font-semibold text-[#4D4637] text-xs tracking-widest uppercase hidden sm:table-cell">Proveedores</th>
-                          <th class="text-center px-4 py-3 font-semibold text-[#4D4637] text-xs tracking-widest uppercase">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${state.categories.map(c => `
-                          <tr class="border-b border-[#E9E1D7] hover:bg-[#FEF3C7]/30 transition-colors">
-                            <td class="px-4 py-3">
-                              <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FEF3C7] to-[#F8F5F0] flex items-center justify-center shrink-0">
-                                  ${icon('layout', 16, 'text-[#755B00] opacity-60')}
-                                </div>
-                                <span class="font-semibold text-[#1E1B15]">${c.name}</span>
-                              </div>
-                            </td>
-                            <td class="px-4 py-3 text-center hidden sm:table-cell">
-                              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#F8F5F0] text-sm font-semibold text-[#4D4637]">${c.provider_count || 0}</span>
-                            </td>
-                            <td class="px-4 py-3">
-                              <div class="flex items-center justify-center gap-2">
-                                <button onclick="window.openEditCategoryModal('${c.id}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] transition-all cursor-pointer" title="Editar">
-                                  ${icon('pencil', 16)}
-                                </button>
-                                <button onclick="window.openDeleteCategoryModal('${c.id}', '${c.name.replace(/'/g, "\\'")}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-[#9E8E6E] hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer" title="Eliminar">
-                                  ${icon('trash-2', 16)}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        `).join('')}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              `}
+              ${skeletonCategories()}
             </div>
           </div>
         </div>
@@ -328,3 +275,112 @@ export async function AdminCategoriesPage() {
     </div>
   `;
 }
+
+function skeletonCategories() {
+  return `
+    <div class="animate-pulse space-y-4">
+      <div class="flex justify-between items-center mb-6">
+        <div class="space-y-2">
+          <div class="h-7 bg-[#E9E1D7] rounded w-36"></div>
+          <div class="h-4 bg-[#E9E1D7] rounded w-52"></div>
+        </div>
+        <div class="h-10 bg-[#E9E1D7] rounded-xl w-36"></div>
+      </div>
+      <div class="bg-white rounded-2xl border border-[#E9E1D7] overflow-hidden">
+        ${Array(4).fill(0).map(() => `
+          <div class="flex items-center gap-4 p-4 border-b border-[#E9E1D7]">
+            <div class="h-9 w-9 bg-[#E9E1D7] rounded-lg shrink-0"></div>
+            <div class="h-4 bg-[#E9E1D7] rounded w-1/3"></div>
+            <div class="h-7 w-7 bg-[#E9E1D7] rounded-full ml-auto"></div>
+            <div class="flex gap-2">
+              <div class="h-8 w-8 bg-[#E9E1D7] rounded-lg"></div>
+              <div class="h-8 w-8 bg-[#E9E1D7] rounded-lg"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderContent() {
+  const container = document.getElementById("admin-categories-content");
+  if (!container) return;
+  container.innerHTML = buildCategoriesHTML();
+}
+
+function buildCategoriesHTML() {
+  if (state.categories.length === 0) {
+    return `
+      <div class="flex flex-col items-center justify-center py-20 text-[#9E8E6E]">
+        <span class="text-5xl mb-4 opacity-50">${icon('layout', 48, 'opacity-30')}</span>
+        <p class="text-lg font-medium">No hay categorías</p>
+        <p class="text-sm mt-1">Crea una nueva categoría para empezar</p>
+      </div>
+    `;
+  }
+  return `
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-3xl lg:text-4xl font-bold text-[#1E1B15] tracking-tight">Categorías</h1>
+        <p class="text-sm text-[#9E8E6E] mt-1">Administra las categorías de proveedores</p>
+      </div>
+      <button onclick="window.openCreateCategoryModal()" class="flex items-center gap-2 px-5 py-2.5 bg-[#755B00] text-white font-semibold rounded-xl hover:bg-[#5F4A00] transition-all cursor-pointer shrink-0">
+        ${icon('plus', 18)} Nueva categoría
+      </button>
+    </div>
+    <div class="bg-white rounded-2xl border border-[#E9E1D7] overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-[#E9E1D7] bg-[#F8F5F0]">
+              <th class="text-left px-4 py-3 font-semibold text-[#4D4637] text-xs tracking-widest uppercase">Nombre</th>
+              <th class="text-center px-4 py-3 font-semibold text-[#4D4637] text-xs tracking-widest uppercase hidden sm:table-cell">Proveedores</th>
+              <th class="text-center px-4 py-3 font-semibold text-[#4D4637] text-xs tracking-widest uppercase">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${state.categories.map(c => `
+              <tr class="border-b border-[#E9E1D7] hover:bg-[#FEF3C7]/30 transition-colors">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FEF3C7] to-[#F8F5F0] flex items-center justify-center shrink-0">
+                      ${icon('layout', 16, 'text-[#755B00] opacity-60')}
+                    </div>
+                    <span class="font-semibold text-[#1E1B15]">${c.name}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-center hidden sm:table-cell">
+                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#F8F5F0] text-sm font-semibold text-[#4D4637]">${c.provider_count || 0}</span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-center gap-2">
+                    <button onclick="window.openEditCategoryModal('${c.id}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-[#9E8E6E] hover:text-[#755B00] hover:bg-[#FEF3C7] transition-all cursor-pointer" title="Editar">
+                      ${icon('pencil', 16)}
+                    </button>
+                    <button onclick="window.openDeleteCategoryModal('${c.id}', '${c.name.replace(/'/g, "\\'")}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-[#9E8E6E] hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer" title="Eliminar">
+                      ${icon('trash-2', 16)}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// Override render() to call buildCategoriesHTML for CRUD updates
+const originalRender = render;
+render = function() {
+  const container = document.getElementById("admin-categories-content");
+  if (!container) return;
+  container.innerHTML = buildCategoriesHTML();
+  // Append modals if needed
+  const modalHtml = (state.modalMode ? renderFormModal() : '') + (state.deleteTarget ? renderDeleteModal() : '');
+  if (modalHtml) container.innerHTML += modalHtml;
+  // Re-attach form listeners if modal is shown
+  if (state.modalMode) attachFormListeners();
+};
