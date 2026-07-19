@@ -291,3 +291,74 @@ def delete_provider_with_integrity(provider_id: str, db: Session) -> None:
         {"id": provider_id}
     )
     db.commit()
+
+def get_admin_metrics(db: Session) -> dict:
+    total_providers = db.execute(text("SELECT COUNT(*) FROM providers")).scalar() or 0
+    total_categories = db.execute(text("SELECT COUNT(*) FROM provider_categories")).scalar() or 0
+    total_events = db.execute(text("SELECT COUNT(*) FROM events")).scalar() or 0
+    total_guests = db.execute(text("SELECT COALESCE(SUM(guest_count), 0) FROM events")).scalar() or 0
+    total_users = db.execute(text("SELECT COUNT(*) FROM auth.users")).scalar() or 0
+
+    providers_without_reviews_count = db.execute(
+        text("SELECT COUNT(*) FROM providers p WHERE NOT EXISTS (SELECT 1 FROM provider_reviews r WHERE r.provider_id = p.id)")
+    ).scalar() or 0
+
+    top_rated_rows = db.execute(
+        text("""
+            SELECT p.id, p.name, pc.name AS category_name, ct.name AS city_name,
+                COALESCE(AVG(r.rating)::numeric(2,1), p.rating) AS display_rating
+            FROM providers p
+            LEFT JOIN provider_reviews r ON r.provider_id = p.id
+            JOIN provider_categories pc ON pc.id = p.category_id
+            LEFT JOIN cities ct ON ct.id = p.city_id
+            GROUP BY p.id, p.name, pc.name, ct.name, p.rating
+            ORDER BY display_rating DESC NULLS LAST
+            LIMIT 5
+        """)
+    ).fetchall()
+    top_rated = [dict(row._mapping) for row in top_rated_rows] if top_rated_rows else []
+
+    categories_rows = db.execute(
+        text("""
+            SELECT c.id, c.name, COUNT(p.id) AS count
+            FROM provider_categories c
+            LEFT JOIN providers p ON p.category_id = c.id
+            GROUP BY c.id, c.name
+            ORDER BY c.name
+        """)
+    ).fetchall()
+    categories_with_counts = [dict(row._mapping) for row in categories_rows] if categories_rows else []
+
+    events_status_rows = db.execute(
+        text("""
+            SELECT status, COUNT(*) AS count
+            FROM events
+            GROUP BY status
+            ORDER BY status
+        """)
+    ).fetchall()
+    events_by_status = [dict(row._mapping) for row in events_status_rows] if events_status_rows else []
+
+    return {
+        "total_providers": total_providers,
+        "total_categories": total_categories,
+        "top_rated": top_rated,
+        "categories_with_counts": categories_with_counts,
+        "providers_without_reviews_count": providers_without_reviews_count,
+        "total_events": total_events,
+        "total_guests": total_guests,
+        "total_users": total_users,
+        "events_by_status": events_by_status
+    }
+
+def get_public_stats(db: Session) -> dict:
+    total_events = db.execute(text("SELECT COUNT(*) FROM events")).scalar() or 0
+    total_guests = db.execute(text("SELECT COALESCE(SUM(guest_count), 0) FROM events")).scalar() or 0
+    total_providers = db.execute(text("SELECT COUNT(*) FROM providers")).scalar() or 0
+    total_users = db.execute(text("SELECT COUNT(*) FROM auth.users")).scalar() or 0
+    return {
+        "total_events": total_events,
+        "total_guests": total_guests,
+        "total_providers": total_providers,
+        "total_users": total_users,
+    }

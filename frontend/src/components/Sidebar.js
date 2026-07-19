@@ -72,49 +72,53 @@ export function Sidebar(active = "new-event") {
       <!-- Menú de Navegación -->
       <nav class="flex-1">
         <ul class="space-y-1">
+          ${isAdmin() ? `
+          <!-- Admin menu -->
           <li onclick="navigateTo('/dashboard')" 
               class="nav-item hover:bg-white hover:text-[#755B00] 
               ${isActive('/dashboard') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
             <span class="icon-wrap">${icon('layout', 20)}</span>
             <span class="nav-label">Dashboard</span>
           </li>
-
+          <li onclick="navigateTo('/admin/providers')" 
+              class="nav-item hover:bg-white hover:text-[#755B00]
+              ${isActive('/admin/providers') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
+            <span class="icon-wrap">${icon('settings', 20)}</span>
+            <span class="nav-label">Administrar</span>
+          </li>
+          ` : `
+          <!-- User menu -->
+          <li onclick="navigateTo('/dashboard')" 
+              class="nav-item hover:bg-white hover:text-[#755B00] 
+              ${isActive('/dashboard') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
+            <span class="icon-wrap">${icon('layout', 20)}</span>
+            <span class="nav-label">Dashboard</span>
+          </li>
           <li onclick="navigateTo('/events')" 
               class="nav-item hover:bg-white hover:text-[#755B00] 
               ${isActive('/events') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
             <span class="icon-wrap">${icon('calendar', 20)}</span>
             <span class="nav-label">Mis Eventos</span>
           </li>
-
           <li onclick="navigateTo('/events/new')" 
               class="nav-item hover:bg-white hover:text-[#755B00] 
               ${isActive('/events/new') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
             <span class="icon-wrap">${icon('plus', 20)}</span>
             <span class="nav-label">Nuevo evento</span>
           </li>
-
           <li onclick="navigateTo('/providers')" 
               class="nav-item hover:bg-white hover:text-[#755B00] 
               ${isActive('/providers') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
             <span class="icon-wrap">${icon('store', 20)}</span>
             <span class="nav-label">Proovedores</span>
           </li>
-
           <li onclick="navigateTo('/history')" 
               class="nav-item hover:bg-white hover:text-[#755B00] 
               ${isActive('/history') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
             <span class="icon-wrap">${icon('clock', 20)}</span>
             <span class="nav-label">Historial</span>
           </li>
-
-          ${isAdmin() ? `
-          <li onclick="navigateTo('/admin/providers')" 
-              class="nav-item hover:bg-white hover:text-[#755B00] border-l-2 border-[#755B00]
-              ${isActive('/admin/providers') ? 'bg-[#FEF3C7] text-[#755B00] font-semibold' : 'text-[#1E1B15]'}">
-            <span class="icon-wrap">${icon('shield', 20)}</span>
-            <span class="nav-label">Panel Admin</span>
-          </li>
-          ` : ''}
+          `}
         </ul>
       </nav>
 

@@ -54,22 +54,22 @@ export function LandingPage() {
 
   <!-- ===== ESTADÍSTICAS ===== -->
   <section class="relative bg-white border-y border-[#E9E1D7] py-8 lg:py-10">
-    <div class="max-w-7xl mx-auto px-4 lg:px-8 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8" id="stats-grid">
       <div class="text-center animate-fade-in-up">
-        <p class="text-3xl lg:text-4xl font-bold text-[#755B00]">10,000+</p>
+        <p id="stat-events" class="text-3xl lg:text-4xl font-bold text-[#755B00]">--</p>
         <p class="text-sm text-[#9E8E6E] mt-1">eventos creados</p>
       </div>
       <div class="text-center animate-fade-in-up">
-        <p class="text-3xl lg:text-4xl font-bold text-[#755B00]">50,000+</p>
+        <p id="stat-guests" class="text-3xl lg:text-4xl font-bold text-[#755B00]">--</p>
         <p class="text-sm text-[#9E8E6E] mt-1">invitados gestionados</p>
       </div>
       <div class="text-center animate-fade-in-up">
-        <p class="text-3xl lg:text-4xl font-bold text-[#376847]">98%</p>
-        <p class="text-sm text-[#9E8E6E] mt-1">satisfacción</p>
+        <p id="stat-providers" class="text-3xl lg:text-4xl font-bold text-[#376847]">--</p>
+        <p class="text-sm text-[#9E8E6E] mt-1">proveedores registrados</p>
       </div>
       <div class="text-center animate-fade-in-up">
-        <p class="text-3xl lg:text-4xl font-bold text-[#C9A84C]">4.9</p>
-        <p class="text-sm text-[#9E8E6E] mt-1">★★★★★ valoración</p>
+        <p id="stat-users" class="text-3xl lg:text-4xl font-bold text-[#C9A84C]">--</p>
+        <p class="text-sm text-[#9E8E6E] mt-1">usuarios registrados</p>
       </div>
     </div>
   </section>
@@ -264,6 +264,8 @@ function socialIcon(platform) {
 }
 
 export function initLandingPage() {
+  loadStats();
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -305,5 +307,25 @@ export function initLandingPage() {
     window.addEventListener('scroll', () => {
       backToTop.style.display = window.scrollY > 400 ? 'flex' : 'none';
     });
+  }
+}
+
+async function loadStats() {
+  try {
+    const res = await fetch(`http://localhost:8000/stats`);
+    const stats = await res.json();
+    const fmt = (n) => n >= 1000 ? Math.floor(n / 1000) + 'K+' : n + '+';
+    const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = fmt(val || 0); };
+    setStat('stat-events', stats.total_events);
+    setStat('stat-guests', stats.total_guests);
+    setStat('stat-providers', stats.total_providers);
+    setStat('stat-users', stats.total_users);
+  } catch (e) {
+    // Fallback to defaults
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('stat-events', '--');
+    set('stat-guests', '--');
+    set('stat-providers', '--');
+    set('stat-users', '--');
   }
 }

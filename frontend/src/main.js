@@ -529,5 +529,9 @@ setTimeout(() => {
     setTimeout(() => cover.remove(), 300);
   }
   const prism = document.getElementById("prism-bg");
-  if (prism) prism.classList.remove("opacity-0");
+  if (prism) {
+    prism.style.display = "block";
+    prism.classList.add("opacity-0", "transition-opacity", "duration-700");
+    requestAnimationFrame(() => prism.classList.remove("opacity-0"));
+  }
 }, 50);
