@@ -39,7 +39,7 @@ export function Auth() {
                     <div>
                     <label class="block text-xs tracking-widest text-gray-500 mb-1.5">PASSWORD</label>
                     <div class="relative">
-                        <input type="password" id="login-password" placeholder="123456"
+                        <input type="password" id="login-password" placeholder="123456" maxlength="128"
                             class="w-full px-5 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#C9A84C] text-base">
                         <button type="button" onclick="togglePassword(this)" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xl">𓁺</button>
                     </div>
@@ -75,23 +75,24 @@ export function Auth() {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                     <label class="block text-xs tracking-widest text-gray-500 mb-1">FULL NAME</label>
-                    <input type="text" id="signup-name" placeholder="Carlos Mendoza" 
+                    <input type="text" id="signup-name" placeholder="Carlos Mendoza" maxlength="100"
                             class="w-full px-5 py-2.5 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#C9A84C] text-base">
                     </div>
 
                     <div>
                     <label class="block text-xs tracking-widest text-gray-500 mb-1">EMAIL ADDRESS</label>
-                    <input type="email" id="signup-email" placeholder="carlos@agency.com" 
+                    <input type="email" id="signup-email" placeholder="carlos@agency.com" maxlength="255"
                             class="w-full px-5 py-2.5 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#C9A84C] text-base">
                     </div>
 
                     <div>
                     <label class="block text-xs tracking-widest text-gray-500 mb-1">PASSWORD</label>
                     <div class="relative">
-                        <input type="password" id="signup-password" placeholder="Crea una contraseña segura" 
+                        <input type="password" id="signup-password" placeholder="Crea una contraseña segura" maxlength="128"
                             class="w-full px-5 py-2.5 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#C9A84C] text-base">
                         <button type="button" onclick="togglePassword(this)" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xl">𓁺</button>
                     </div>
+                    <p class="text-[10px] text-[#9E8E6E] mt-1 leading-relaxed">Mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo</p>
                     </div>
 
                     <div>
@@ -194,6 +195,26 @@ window.closeModalAndRedirect = function() {
 
 // ====================== MANEJO DE FORMULARIOS ======================
 
+let loginAttempts = 0;
+let loginBlockedUntil = null;
+
+function updateLoginBlockUI(submitBtn, errorEl) {
+  if (!loginBlockedUntil) return;
+  const remaining = Math.ceil((loginBlockedUntil - Date.now()) / 1000);
+  if (remaining <= 0) {
+    loginBlockedUntil = null;
+    loginAttempts = 0;
+    submitBtn.disabled = false;
+    submitBtn.textContent = "ACCESS WORKSPACE →";
+    errorEl.classList.add("hidden");
+    return;
+  }
+  submitBtn.disabled = true;
+  errorEl.textContent = `Demasiados intentos. Reintenta en ${remaining}s.`;
+  errorEl.classList.remove("hidden");
+  setTimeout(() => updateLoginBlockUI(submitBtn, errorEl), 1000);
+}
+
 document.addEventListener("submit", async (e) => {
   // Login
   if (e.target.id === "login-form") {
@@ -204,19 +225,32 @@ document.addEventListener("submit", async (e) => {
     const errorEl = document.getElementById("login-error");
     const submitBtn = e.target.querySelector('button[type="submit"]');
 
+    if (loginBlockedUntil && loginBlockedUntil > Date.now()) {
+      updateLoginBlockUI(submitBtn, errorEl);
+      return;
+    }
+
     errorEl.classList.add("hidden");
     submitBtn.disabled = true;
     submitBtn.textContent = "Entrando...";
 
     try {
       await login(email, password);
+      loginAttempts = 0;
+      loginBlockedUntil = null;
       window.history.pushState({}, "", "/dashboard");
       window.dispatchEvent(new PopStateEvent("popstate"));
     } catch (err) {
-      errorEl.textContent = err.message || "No se pudo iniciar sesión.";
-      errorEl.classList.remove("hidden");
-      submitBtn.disabled = false;
-      submitBtn.textContent = "ACCESS WORKSPACE →";
+      loginAttempts++;
+      if (loginAttempts >= 3) {
+        loginBlockedUntil = Date.now() + 30000;
+        updateLoginBlockUI(submitBtn, errorEl);
+      } else {
+        errorEl.textContent = err.message || "No se pudo iniciar sesión.";
+        errorEl.classList.remove("hidden");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "ACCESS WORKSPACE →";
+      }
     }
   }
 
