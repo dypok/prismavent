@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from app.database import engine, Base
+from app.core.rate_limit import limiter
+from app.middlewares.security_headers import SecurityHeadersMiddleware
 from app.routers.auth import router as auth_router
 from app.routers.events import router as events_router
 from app.routers.templates import router as templates_router
@@ -21,7 +25,10 @@ from app.routers.admin_provider_categories import router as admin_provider_categ
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Prismavent API", version="1.0.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(SupabaseAuthMiddleware)
 app.add_middleware(
     CORSMiddleware,
