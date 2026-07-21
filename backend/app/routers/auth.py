@@ -6,27 +6,32 @@ from fastapi import Request
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import SessionLocal, get_db
+from app.core.rate_limit import limiter
+from app.utils.security import sanitize_string
+from app.services.auth_service import log_failed_attempt
 import httpx
 import os
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register")
-def register(payload: RegisterRequest):
+@limiter.limit("5/minute")
+def register(request: Request, payload: RegisterRequest):
     try:
         supabase_client = get_supabase_client()
+        safe_name = sanitize_string(payload.name)
+        safe_phone = sanitize_string(payload.phone)
         response = supabase_client.auth.sign_up({
             "email": payload.email,
             "password": payload.password,
             "options": {
                 "data": {
-                    "name": payload.name,
-                    "phone": payload.phone
+                    "name": safe_name,
+                    "phone": safe_phone
                 }
             }
         })
         user_id = response.user.id
-        # Create profile row for the new user
         db = SessionLocal()
         try:
             db.execute(
@@ -34,7 +39,7 @@ def register(payload: RegisterRequest):
                     INSERT INTO profiles (id, full_name, phone, city_id, role)
                     VALUES (:id, :full_name, :phone, :city_id, 'user')
                 """),
-                {"id": user_id, "full_name": payload.name, "phone": payload.phone, "city_id": payload.city_id}
+                {"id": user_id, "full_name": safe_name, "phone": safe_phone, "city_id": payload.city_id}
             )
             db.commit()
         except Exception as profile_error:
@@ -50,7 +55,8 @@ def register(payload: RegisterRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/login")
-def login(payload: LoginRequest):
+@limiter.limit("5/minute")
+def login(request: Request, payload: LoginRequest):
     try:
         supabase_client = get_supabase_client()
         response = supabase_client.auth.sign_in_with_password({
@@ -63,7 +69,18 @@ def login(payload: LoginRequest):
             "user": response.user
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        try:
+            db = SessionLocal()
+            log_failed_attempt(
+                db,
+                email=payload.email,
+                ip_address=request.client.host if request.client else "unknown",
+                user_agent=request.headers.get("user-agent")
+            )
+            db.close()
+        except Exception:
+            pass
+        raise HTTPException(status_code=400, detail="Invalid email or password")
 
 @router.post("/logout")
 def logout():
