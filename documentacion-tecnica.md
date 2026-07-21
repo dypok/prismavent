@@ -160,12 +160,29 @@ La versión actual de la plataforma incluye las siguientes funcionalidades:
 - Meta tags SEO (Open Graph, Twitter Cards, description, keywords)
 - Botón "Comenzar gratis" redirige a la página de registro
 - Prismas flotantes animados en el fondo de toda la aplicación
+- Estadísticas dinámicas con datos reales desde `GET /stats` (eventos, invitados, proveedores, usuarios)
+- Loading cover con spinner y logo mientras carga la SPA
 
 #### 3.1.13 Diseño responsive
 - Sidebar adaptativo con toggle en móvil y hover-expand en desktop
 - Todas las páginas adaptadas a pantallas desde 320px hasta 1920px
 - Tablas con scroll horizontal en móvil, grids responsivos, formularios apilables
 - Barra de progreso (EventStepper) responsiva con overflow-x-auto en móvil
+
+#### 3.1.14 Seguridad y rendimiento
+- Rate limiting en endpoints de autenticación con slowapi (5 intentos/minuto por IP)
+- Conexión a base de datos con pool de conexiones configurado: `pool_pre_ping=True`, `pool_recycle=300`, `pool_size=5`
+- Loading cover con logo de Prismavent y spinner mientras carga la SPA
+- Skeleton loading con `animate-pulse` en páginas de proveedores, historial y admin
+
+#### 3.1.15 Panel de administración
+- Sistema de roles (admin/user) con rutas protegidas vía `require_admin()`
+- Sidebar con navegación diferenciada: admins solo ven Dashboard + Administrar + Cerrar Sesión
+- CRUD completo de proveedores con tabla, búsqueda, filtro por categoría y paginación
+- CRUD completo de categorías de proveedores con protección de integridad referencial
+- Dashboard admin con métricas: total eventos, invitados, usuarios, proveedores, distribución por estado
+- Preservación de datos en modales al cerrar accidentalmente (con botón "Limpiar")
+- Endpoint público `GET /stats` para estadísticas de la landing page sin autenticación
 
 ### 3.2 Fuera del alcance (MVP)
 
@@ -254,6 +271,13 @@ Entidades responsables de la ejecución de hackatones, eventos tecnológicos, mu
 | DEPLOY-04 | Completar documento técnico final | Alta | 3 | v1.1 | 🔄 En progreso |
 | DEPLOY-05 | Preparar y ensayar pitch comercial en inglés (10 min) | Alta | 3 | v1.1 | ⏳ Pendiente |
 | DEPLOY-06 | Preparar y ensayar pitch técnico en español (20 min) | Alta | 3 | v1.1 | ⏳ Pendiente |
+| **EPIC 12 — Panel de administración** | | | | | |
+| ADMIN-01 | Sistema de roles (admin/user) con sidebar diferenciado | Alta | 3 | v2.0 | ✅ Done |
+| ADMIN-02 | CRUD de proveedores con tabla, búsqueda, filtros y paginación | Alta | 5 | v2.0 | ✅ Done |
+| ADMIN-03 | CRUD de categorías de proveedores con integridad referencial | Alta | 3 | v2.0 | ✅ Done |
+| ADMIN-04 | Dashboard admin con métricas (eventos, usuarios, proveedores, distribución) | Alta | 3 | v2.0 | ✅ Done |
+| ADMIN-05 | Endpoint público `GET /stats` para landing page con datos reales | Alta | 2 | v2.0 | ✅ Done |
+| ADMIN-06 | Preservación de datos en modales al cerrar + botón Limpiar | Media | 1 | v2.0 | ✅ Done |
 
 ### 4.2 Historias de usuario adicionales (completadas fuera de la planificación inicial)
 
@@ -272,16 +296,25 @@ Entidades responsables de la ejecución de hackatones, eventos tecnológicos, mu
 | **EPIC 10 (Extensión) — Landing page** | | | | | |
 | LAND-01 | Landing page institucional con SEO y animaciones | Alta | 3 | v1.1 | ✅ Done |
 
-### 4.3 Historias de usuario — Post-MVP (planificadas)
+### 4.3 Historias de usuario del panel de administracion
 
-| ID | HISTORIA DE USUARIO | PRIORIDAD | SP | VERSIÓN |
+| ID | HISTORIA DE USUARIO | PRIORIDAD | SP | VERSION | ESTADO |
+|---|---|---|---|---|---|
+| **EPIC 12 — Panel de administracion** | | | | | |
+| ADMIN-01 | Sistema de roles (admin/user) con sidebar diferenciado | Alta | 3 | v2.0 | Listo |
+| ADMIN-02 | CRUD de proveedores con tabla, busqueda, filtros y paginacion | Alta | 5 | v2.0 | Listo |
+| ADMIN-03 | CRUD de categorias de proveedores con integridad referencial | Alta | 3 | v2.0 | Listo |
+| ADMIN-04 | Dashboard admin con metricas (eventos, usuarios, proveedores, distribucion) | Alta | 3 | v2.0 | Listo |
+| ADMIN-05 | Endpoint publico GET /stats para landing page con datos reales | Alta | 2 | v2.0 | Listo |
+| ADMIN-06 | Preservacion de datos en modales al cerrar + boton Limpiar | Media | 1 | v2.0 | Listo |
+
+### 4.4 Historias de usuario — Post-MVP (planificadas)
+
+| ID | HISTORIA DE USUARIO | PRIORIDAD | SP | VERSION |
 |---|---|---|---|---|
-| **EPIC 11 — Post-MVP: Fundación técnica y presencia digital** | | | | |
-| PMVP-01 | Landing page institucional (SEO, analytics, optimización) | Alta | 3 | v2.0 |
-| PMVP-02 | Ciberseguridad: rate limiting, headers HTTP, sanitización | Alta | 3 | v2.0 |
-| PMVP-03 | Calidad de código: linters, type hints, tests, manejo de archivos | Alta | 5 | v2.0 |
-| **EPIC 12 — Panel de administración de proveedores** | | | | |
-| ADMIN-01 | Panel de administración: roles, CRUD proveedores y categorías, métricas | Alta | 8 | v2.0 |
+| **EPIC 11 — Post-MVP: Fundacion tecnica y presencia digital** | | | | |
+| PMVP-02 | Ciberseguridad: rate limiting, headers HTTP, sanitizacion | Alta | 3 | v2.0 |
+| PMVP-03 | Calidad de codigo: linters, type hints, tests, manejo de archivos | Alta | 5 | v2.0 |
 
 ### 4.4 Definition of Done (DoD)
 
@@ -348,8 +381,9 @@ Entidades responsables de la ejecución de hackatones, eventos tecnológicos, mu
 │            FASTAPI (Google Cloud Run)                 │
 │                                                      │
 │  ┌─────────────┐  ┌──────────────┐  ┌─────────────┐ │
-│  │ Middlewares  │  │   Routers    │  │  Services   │ │
-│  │ CORS + Auth  │──│  11 routers  │──│  6 services │ │
+│  │ Middlewares      │  │   Routers     │  │  Services    │ │
+│  │ Security + Auth  │──│  15 routers   │──│  8 services  │ │
+│  │ CORS + Rate limit│  │  + GET /stats │  │             │ │
 │  └─────────────┘  └──────────────┘  └─────────────┘ │
 │                                                      │
 │  Google Cloud Run: autoescala, HTTPS, 2M req/mes     │
@@ -389,11 +423,15 @@ Se comunica exclusivamente con el backend mediante peticiones HTTP usando `fetch
 Es el núcleo del sistema. Está construida con FastAPI (Python 3.11+) y servida mediante Uvicorn. Esta capa es responsable de todas las reglas de negocio del sistema:
 
 - **Arquitectura por capas**: `routers/` (11 routers HTTP), `services/` (6 servicios de lógica de negocio), `schemas/` (10 esquemas Pydantic para validación), `models/` (9 modelos SQLAlchemy ORM), `middlewares/` (autenticación JWT + CORS)
-- **11 routers**: auth, events, templates, guests, event_items, weather, providers, provider_categories, user_templates, event_tasks, cities
-- **6 servicios**: budget_service, event_service, event_task_service, guest_service, provider_service, weather_service
+- **15 routers**: auth, events, templates, guests, event_items, weather, providers, provider_categories, user_templates, event_tasks, cities, admin_providers, admin_provider_categories, admin_metrics, public_stats
+- **8 servicios**: auth_service, budget_service, event_service, event_task_service, guest_service, provider_service, weather_service, security utils
+- **Middleware de seguridad**: `SecurityHeadersMiddleware` que agrega headers de seguridad HTTP (X-Content-Type-Options, X-Frame-Options, HSTS, CSP)
 - **Middleware de autenticación**: `SupabaseAuthMiddleware` que verifica JWT con `supabase.auth.get_user(token)` en cada ruta protegida, con manejo de CORS integrado
+- **Rate limiting**: SlowAPI con límite de 5 intentos por minuto en endpoints `/auth/login` y `/auth/register`
 
-La API está desplegada en Google Cloud Run con autoescalado a cero cuando no hay tráfico, HTTPS automático y hasta 2 millones de requests por mes en el tier gratuito.
+La API cuenta con **15 routers** (auth, events, guests, event_items, weather, providers, provider_categories, templates, user_templates, event_tasks, cities, admin_providers, admin_provider_categories, admin_metrics) y un endpoint público `GET /stats` sin autenticación para la landing page.
+
+Está desplegada en Google Cloud Run con autoescalado a cero cuando no hay tráfico, HTTPS automático y hasta 2 millones de requests por mes en el tier gratuito.
 
 #### 5.2.3 Capa de persistencia — Base de datos
 
@@ -413,22 +451,23 @@ El diagrama entidad-relación completo fue creado en dbdiagram.io y está dispon
 
 ### 6.2 Descripción de tablas
 
-A continuación se describen las entidades principales del sistema:
+A continuación se describen las entidades principales del sistema (13 tablas en total):
 
 | Tabla | Descripción |
 |---|---|
-| `profiles` | Información extendida de usuarios autenticados (full_name, role). Vinculada 1:1 con `auth.users` de Supabase |
-| `event_types` | Categorías de eventos (bodas, cumpleaños, tech, personalizado) con metadatos visuales |
-| `templates` | Plantillas predefinidas del sistema con sus `default_items` en JSONB |
-| `user_templates` | Plantillas personalizadas creadas por usuarios, con `items` en JSONB |
-| `events` | Entidad central con datos del evento: fecha, presupuesto, invitados, estado, ciudad |
-| `event_items` | Recursos vinculados a un evento con cantidad, precio unitario, confirmación y proveedor asociado |
-| `event_tasks` | Tareas del tablero Kanban vinculadas a un evento con título, descripción y estado |
-| `guests` | Invitados de un evento con nombre, confirmación (RSVP) y notas |
-| `event_history` | Registro de cambios de estado de eventos (previous_status → new_status, timestamp) |
-| `providers` | Catálogo de proveedores con datos de contacto, ubicación, precio referencial y rating |
+| `cities` | Ciudades de referencia para eventos y proveedores (con departamento y país) |
+| `profiles` | Información extendida de usuarios autenticados (full_name, phone, avatar_url, city_id, role admin/user). Vinculada 1:1 con `auth.users` de Supabase |
+| `event_types` | Categorías de eventos (bodas, cumpleaños, tech, personalizado) con metadatos visuales (color_bg, color_icon) |
+| `templates` | Plantillas predefinidas del sistema con sus `default_items` en JSONB, vinculadas a event_types |
+| `user_templates` | Plantillas personalizadas creadas por usuarios, con `items` en JSONB, vinculadas a event_types |
 | `provider_categories` | Categorías de proveedores (Catering, Sonido, Decoración, Fotografía, etc.) |
-| `cities` | Ciudades de referencia para eventos y proveedores |
+| `providers` | Catálogo de proveedores con datos de contacto, ubicación, precio referencial, rating, email, website, image_url |
+| `provider_reviews` | Reseñas de proveedores con rating (1-5), comentario, vinculadas a provider + user (unique) |
+| `events` | Entidad central con datos del evento: fecha, presupuesto, invitados, estado, ciudad, ubicación, duración, descripción |
+| `event_items` | Recursos vinculados a un evento con cantidad, precio unitario, confirmación, notas y proveedor asociado |
+| `event_tasks` | Tareas del tablero Kanban con título, descripción, estado (todo/in_progress/done), prioridad (low/medium/high), due_date |
+| `guests` | Invitados de un evento con nombre, confirmación (RSVP) y notas |
+| `event_history` | Registro de cambios de estado de eventos (previous_status → new_status, changed_by, comment, timestamp) |
 
 ### 6.3 Relaciones y cardinalidades
 
@@ -442,6 +481,8 @@ A continuación se describen las entidades principales del sistema:
 - **Proveedores a Items (1:N)**: Un proveedor puede estar referenciado en múltiples ítems de eventos
 - **Ciudades a Eventos (1:N)**: Cada ciudad puede estar asociada a múltiples eventos
 - **Ciudades a Proveedores (1:N)**: Cada ciudad puede estar asociada a múltiples proveedores
+- **Proveedores a Reseñas (1:N)**: Un proveedor puede tener múltiples reseñas de usuarios
+- **Eventos a Tareas (1:N)**: Cada evento tiene múltiples tareas en el tablero Kanban
 
 ### 6.4 Reglas de negocio
 
@@ -469,6 +510,12 @@ El modelo de datos incorpora restricciones para garantizar el cumplimiento de la
 20. Los invitados se gestionan con nombre completo y estado de confirmación (RSVP)
 21. El pronóstico del clima solo está disponible para fechas dentro de los próximos 7 días; fuera de ese rango se muestra un mensaje informativo
 22. El widget de clima se oculta automáticamente para eventos en estado `finalizado`
+23. Las tareas Kanban tienen estados: `todo`, `in_progress`, `done` y se pueden mover entre columnas
+24. La fecha límite (`due_date`) de una tarea no puede superar la fecha del evento
+25. Los invitados se gestionan por nombre completo con estado de confirmación (RSVP) y notas opcionales
+26. El catálogo de proveedores es administrado solo por usuarios con rol `admin` mediante endpoints dedicados
+27. Las reseñas de proveedores son únicas por usuario-proveedor (no se puede reseñar dos veces)
+28. Los datos estadísticos públicos (`GET /stats`) no requieren autenticación
 
 ---
 
@@ -481,7 +528,10 @@ El modelo de datos incorpora restricciones para garantizar el cumplimiento de la
 - **Validación**: Pydantic v2 (schemas para request/response, validadores custom)
 - **Servidor**: Uvicorn (ASGI, alta concurrencia)
 - **Variables de entorno**: python-dotenv
-- **Testing**: pytest (71 tests: unitarios + integración, mock de APIs externas)
+- **Seguridad**: Sanitización de inputs (`sanitize_string()` elimina HTML), validación de UUIDs, logging de intentos fallidos de login
+- **Headers de seguridad**: Middleware personalizado que inyecta X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security y Content-Security-Policy
+- **Rate limiting**: slowapi (5 intentos/minuto en `/auth/login` y `/auth/register`)
+- **Testing**: pytest (108 tests: unitarios + integración, mock de APIs externas)
 
 ### 7.2 Base de datos
 - **Motor**: PostgreSQL 15 (vía Supabase)
@@ -491,6 +541,8 @@ El modelo de datos incorpora restricciones para garantizar el cumplimiento de la
 - **Base**: HTML5 + CSS3 + JavaScript Vanilla
 - **Estilos**: Tailwind CSS v4
 - **Arquitectura**: SPA (Single Page Application) con router basado en `pushState`/`popstate`
+- **Páginas**: 15 páginas SPA (Landing, Auth, Dashboard, MyEvents, EventDetail, CreateEvent, CustomEventFlow, TemplateEventFlow, Providers, Guests, Resources, Tasks, History, AdminProviders, AdminCategories)
+- **Componentes**: 23 componentes reutilizables (Sidebar, Topbar, Icons, Toast, EventCard, EventStepper, EventTemplatesGrid, CustomEventForm, NewEventSelection, BudgetPanel, BudgetProgressGauge, GuestPanel, GuestModal, ProviderCard, ProviderDrawer, TasksPanel, WeatherWidget, AddToEventModal, DeleteEventModal, DeleteResourceModal, EditEventModal, SaveTemplateModal)
 - **Iconos**: Sistema de iconos SVG personalizados (`Icons.js`)
 - **Tipografía**: Playfair Display (títulos) + DM Sans (cuerpo)
 
@@ -507,8 +559,8 @@ El modelo de datos incorpora restricciones para garantizar el cumplimiento de la
 - **OpenWeatherMap**: Pronóstico del clima para el día del evento. API gratuita, sin tarjeta de crédito. Los datos se obtienen mediante el endpoint `GET /events/{id}/weather` que consulta la API externa y retorna temperatura, condición, descripción e ícono.
 
 ### 7.6 Despliegue
-- **Frontend**: Vercel (deploy automático desde rama `main`, CDN global, SSL gratuito)
-- **Backend**: Google Cloud Run (Dockerizado, autoescala a 0, HTTPS automático, 2M requests/mes gratis)
+- **Frontend**: Vercel ([prismavent.vercel.app](https://prismavent.vercel.app), deploy automático desde rama `main`, CDN global, SSL gratuito)
+- **Backend**: Google Cloud Run o servidor e2 ([http://34.139.94.6:8000](http://34.139.94.6:8000)), Dockerizado
 - **Base de datos**: Supabase (PostgreSQL 15 gestionado, Auth integrado, Row Level Security)
 
 ---
@@ -594,7 +646,9 @@ Como parte del desarrollo, se implementó una landing page institucional para Pr
 
 - **Archivo**: `frontend/src/pages/LandingPage.js`
 - **Animaciones**: Intersection Observer para efecto fade-in-up en todas las secciones al hacer scroll
-- **Prismas flotantes**: Animación decorativa de fondo con prismas geométricos (triángulos) que flotan hacia arriba, usando los colores de la marca (dorado, verde, terracota) con opacidad sutil
+- **Prismas flotantes**: 10 triángulos SVG animados con colores de marca, flotan hacia arriba rotando 360°. Inician ocultos (`display:none`) y aparecen con fade-in tras el render para evitar parpadeo.
+- **Loading cover**: Pantalla de carga con logo Prismavent + spinner animado, se desvanece 50ms después del primer render vía JS.
+- **Estadísticas dinámicas**: Las cifras se cargan desde `GET /stats` (endpoint público, sin autenticación) con formato `1K+`, mostrando datos reales de eventos, invitados, proveedores y usuarios registrados.
 - **SEO**: Meta tags implementados en `index.html`: description, keywords, Open Graph (og:title, og:description, og:image, og:type, og:url, og:locale), Twitter Cards (twitter:card, twitter:title, twitter:description, twitter:image)
 - **Favicon**: Logo de Prismavent (`logo.png` en `public/`)
 - **Rendering condicional**: La landing page se renderiza como parte del SPA en `main.js`, con la lógica: `path === '/' → LandingPage()`, `path === '/auth' → Auth()`. Los usuarios autenticados son redirigidos a `/dashboard`
@@ -635,9 +689,9 @@ Una vez completado el MVP, se han planificado las siguientes épicas para contin
 | Epic 8 — Proveedores | Sprint 2 | 3 | 10 | ✅ Done |
 | Epic 9 — Historial | Sprint 2 | 2 | 4 | ✅ Done |
 | Epic 10 — Despliegue | Sprint 2 | 6 (+ 1 ext.) | 16 (+ 3) | 🔄 En progreso |
-| Epic 11 — Post-MVP | Futuro | 3 | 11 | ⏳ Pendiente |
-| Epic 12 — Admin | Futuro | 1 | 8 | ⏳ Pendiente |
-| **TOTAL** | | **45+** | **128+** | |
+| Epic 11 — Post-MVP | Futuro | 2 | 8 | ⏳ Pendiente |
+| Epic 12 — Admin | Sprint 3 | 6 | 17 | ✅ Done |
+| **TOTAL** | | **51** | **155+** | |
 
 ---
 
