@@ -11,7 +11,7 @@ class RegisterRequest(BaseModel):
 
     @field_validator("password")
     @classmethod
-    def validate_password(cls, v):
+    def validate_password(cls, v: str) -> str:
         if not re.search(r'[a-z]', v):
             raise ValueError("Password must contain at least one lowercase letter")
         if not re.search(r'[A-Z]', v):

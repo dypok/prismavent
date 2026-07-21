@@ -12,7 +12,7 @@ router = APIRouter(prefix="/provider-categories", tags=["provider-categories"])
 def list_provider_categories(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db)
-):
+) -> List[ProviderCategoryResponse]:
     rows = db.execute(
         text("SELECT id, name FROM provider_categories ORDER BY name")
     ).fetchall()
