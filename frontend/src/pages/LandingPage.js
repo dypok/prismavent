@@ -312,7 +312,8 @@ export function initLandingPage() {
 
 async function loadStats() {
   try {
-    const res = await fetch(`https://bridge-mortgages-delivers-remaining.trycloudflare.com/stats`);
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const res = await fetch(`${apiUrl}/stats`);
     const stats = await res.json();
     const fmt = (n) => n >= 1000 ? Math.floor(n / 1000) + 'K+' : n + '+';
     const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = fmt(val || 0); };
