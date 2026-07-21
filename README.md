@@ -1,54 +1,46 @@
-# 🚀 Prismavent - Core Repository
+![Version](https://img.shields.io/badge/Estado-v1.0-C9A84C?style=flat)
+![License](https://img.shields.io/badge/License-MIT-376847?style=flat)
 
-Bienvenido al repositorio oficial de Prismavent. Este proyecto es una plataforma integral de gestión de eventos desarrollada bajo metodologías ágiles (Scrum) y estructurada con una arquitectura limpia.
+# Prismavent
+
+**Plataforma integral para la planificación y gestión de eventos.**
+
+[![GitHub](https://img.shields.io/badge/GitHub-dypok/prismavent-755B00?style=flat&logo=github)](https://github.com/dypok/prismavent)
+[![Frontend](https://img.shields.io/badge/Frontend-Vercel-000?style=flat&logo=vercel)](https://prismavent.vercel.app)
+[![Backend](https://img.shields.io/badge/API-FastAPI-009688?style=flat&logo=fastapi)](https://github.com/dypok/prismavent)
+
+Prismavent permite crear, organizar y supervisar bodas, conferencias, cumpleaños y celebraciones desde un único lugar — gestionando invitados, presupuestos, proveedores, tareas y más.
 
 **Autor Principal y Líder Técnico:** Dylan Gamero  
-**Escuadrón de Desarrollo:** Sayder, Daniel, Bryan, Leonardo, Dilan.
+**Escuadrón de Desarrollo:** Sayder, Daniel, Bryan, Leonardo, Dilan
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Capturas de Pantalla
 
-**Backend:**
-* **Framework:** FastAPI (Python 3.11)
-* **Base de Datos:** PostgreSQL (Alojada en la nube vía Supabase)
-* **ORM:** SQLAlchemy (Estructura en 3FN)
-* **Contenerización:** Docker & Docker Compose
+| Landing Page | Dashboard | Login |
+|---|---|---|
+| ![Landing](documentation/screenshots/landing.png) | ![Dashboard](documentation/screenshots/dashboard.png) | ![Login](documentation/screenshots/login.png) |
 
-**Frontend:**
-* **Tecnologías:** HTML5, TailwindCSS
-* **Lenguaje:** JavaScript
+| Mis Eventos | Crear Evento | Detalle del Evento |
+|---|---|---|
+| ![Mis Eventos](documentation/screenshots/my_events.png) | ![Crear Evento](documentation/screenshots/create_event.png) | ![Detalle](documentation/screenshots/my_event.png) |
 
----
+| Plantillas | Kanban | Historial |
+|---|---|---|
+| ![Plantillas](documentation/screenshots/create_event_template.png) | ![Kanban](documentation/screenshots/kanban.png) | ![Historial](documentation/screenshots/history.png) |
 
-## 🚀 Cómo inicializar el proyecto en local
+| Proveedores | Panel Admin | Editar Proveedores |
+|---|---|---|
+| ![Proveedores](documentation/screenshots/providers.png) | ![Admin](documentation/screenshots/admin_dashboard.png) | ![Editar](documentation/screenshots/edit_providers.png) |
 
-Para garantizar que todo el equipo trabaje en el mismo entorno sin conflictos de dependencias, el backend está completamente contenerizado. 
-
-<<<<<<< Updated upstream
-### Pre-requisitos
-* [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo.
-* [Node.js](https://nodejs.org/) (Para levantar el frontend localmente).
-* Git configurado.
-=======
-### Para administradores
-| Funcionalidad | Descripción |
-|---|---|
-| **CRUD de proveedores** | Tabla con búsqueda, filtros y paginación |
-| **CRUD de categorías** | Gestión de categorías con integridad referencial |
-| **Métricas** | Dashboard con totales, distribución por estado y más |
-| **Sidebar exclusivo** | Navegación adaptada al rol |
-
-### Experiencia de usuario
-- **Landing page** institucional con estadísticas dinámicas
-- **Diseño responsive** — funciona en móvil, tablet y escritorio
-- **Animaciones** sutiles (prismas flotantes, fade-in-up, transiciones)
-- **Carga inteligente** — skeletons, loading cover y datos perezosos
-- **SPA** — navegación fluida sin recargar la página
+| Editar Categorías |
+|---|
+| ![Categorías](documentation/screenshots/edit_categories.png) |
 
 ---
 
-## <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#755B00" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg> Stack Tecnológico
+## Stack Tecnológico
 
 | Capa | Tecnología | Propósito |
 |---|---|---|
@@ -57,22 +49,14 @@ Para garantizar que todo el equipo trabaje en el mismo entorno sin conflictos de
 | **Backend** | Python 3.11+ / FastAPI | API REST asíncrona |
 | **Base de datos** | PostgreSQL 15 (Supabase) | Persistencia y Auth |
 | **Autenticación** | Supabase Auth + JWT | Registro, login, roles |
-| **ORM** | SQLAlchemy 2.0 | Pool de conexiones |
 | **Validación** | Pydantic v2 | Schemas request/response |
 | **Servidor ASGI** | Uvicorn | Servidor de producción |
 | **Rate limiting** | slowapi | 5 intentos/min en auth |
-| **HTTP Client** | httpx | Llamadas a OpenWeatherMap |
 | **Despliegue** | Vercel (frontend) + Google Cloud (backend) | Producción |
-
-### Dependencias clave
-```
-fastapi, uvicorn, SQLAlchemy, psycopg2-binary, supabase,
-pydantic, python-dotenv, httpx, slowapi, PyJWT, starlette
-```
 
 ---
 
-## <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#755B00" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px"><polyline points="4 17 10 11 10 3"/><polyline points="16 21 20 17 20 11"/><polyline points="8 21 12 17 12 11"/></svg> Arquitectura
+## Arquitectura
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -101,80 +85,177 @@ pydantic, python-dotenv, httpx, slowapi, PyJWT, starlette
 
 ---
 
-## <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#755B00" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Capturas de Pantalla
+## Características
 
-| Landing Page | Dashboard | Eventos | Proveedores |
-|---|---|---|---|
-| Hero + estadísticas | Métricas admin | Grid con progreso | Catálogo con filtros |
-| Panel Admin | Tablero Kanban | Detalle evento | Gestión invitados |
-| CRUD proveedores | CRUD categorías | Historial | Login |
+### Para organizadores de eventos
 
-*(Capturas disponibles en la carpeta `docs/screenshots/`)*
+| Funcionalidad | Descripción |
+|---|---|
+| **Creación de eventos** | Desde plantillas predefinidas (Boda, Cumpleaños, Tech, Personalizado) o desde cero |
+| **Gestión de recursos** | Añade, edita y elimina recursos con cantidades y precios |
+| **Control de presupuesto** | Presupuesto estimado automático con alertas al superar el límite |
+| **Invitados** | Registro, confirmación RSVP y conteo de asistentes |
+| **Tablero Kanban** | Tareas organizadas en: Por Hacer, En Progreso, Realizado con drag & drop |
+| **Proveedores** | Catálogo local con filtros por categoría y búsqueda |
+| **Clima** | Pronóstico integrado para la fecha del evento (OpenWeatherMap) |
+| **Historial** | Eventos finalizados con resumen y línea de tiempo de cambios |
+| **Dashboard** | Estadísticas, próximos eventos y acceso rápido |
+
+### Para administradores
+
+| Funcionalidad | Descripción |
+|---|---|
+| **CRUD de proveedores** | Tabla con búsqueda, filtros y paginación |
+| **CRUD de categorías** | Gestión de categorías con integridad referencial |
+| **Métricas** | Dashboard con totales, distribución por estado y más |
+| **Sidebar exclusivo** | Navegación adaptada al rol |
 
 ---
 
-## <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#755B00" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px"><polyline points="4 14 8 14 8 20 16 20 16 14 20 14"/><polygon points="4 14 12 2 20 14"/><line x1="12" y1="2" x2="12" y2="14"/></svg> Instalación Local
+## Instalación Local
 
-### Requisitos previos
-- Node.js 18+
-- Docker y Docker Compose (opcional)
-- Cuenta en [Supabase](https://supabase.com) (gratis)
+### Requisitos
+- Node.js 18+, Docker
 
 ### Backend
->>>>>>> Stashed changes
 
-### Paso 1: Clonar el repositorio
-Asegúrate de clonar el proyecto y posicionarte en la rama de desarrollo:
 ```bash
-git clone https://github.com/dypok/prismavent.git
-cd prismavent
-git checkout develop
+cd prismavent/backend
+docker compose build
+docker compose up -d
 ```
-### Paso 2: Variables de entorno 
-Configurar el archivo .env
-```
-DATABASE_URL=postgresql://postgres.tu_id:TuContraseña@aws-0-region.pooler.supabase.com:6543/postgres 
- ```
-### Paso 3: Levantar el backend (docker)
-```
-docker compose up --build
-```
+Disponible en `http://localhost:8000`.
 
-### Paso 4: Levantar el frontend
-```
+### Frontend
+
+```bash
+cd prismavent/frontend
 npm install
 npm run dev
 ```
 
-## Cómo trabajar con gitflow?
+Disponible en `http://localhost:5173`.
 
-Reglas de las Ramas Principales
+### Variables de Entorno
 
-🔒 main: Rama de producción. Código 100% estable y funcional. Prohibido hacer commits directos aquí.
+| Variable | Descripción |
+|---|---|
+| `DATABASE_URL` | URL de conexión PostgreSQL |
+| `SUPABASE_URL` | URL del proyecto Supabase |
+| `SUPABASE_ANON_KEY` | Clave anónima de Supabase |
+| `SUPABASE_JWT_SECRET` | Secreto JWT de Supabase |
+| `OPENWEATHER_API_KEY` | API key de OpenWeatherMap |
+| `VITE_API_URL` | URL del backend (para frontend en producción) |
 
-🧪 develop: Rama de integración. Aquí se unen el trabajo del frontend y el backend. Prohibido hacer commits directos aquí.
+---
 
-Cómo trabajar en una nueva tarea (Paso a Paso)
-Todos los integrantes del escuadrón deben seguir este flujo exacto al tomar una tarjeta de GitHub Projects:
+## API Endpoints
 
-### 1. Actualizar tu entorno base:
-```
-git checkout develop
-git pull origin develop
-```
-### 2. Crea tu rama aislada
+### Autenticación
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/auth/register` | Registro de usuario |
+| POST | `/auth/login` | Inicio de sesión |
+| POST | `/auth/logout` | Cierre de sesión |
+| GET | `/auth/me` | Perfil del usuario autenticado |
+| PUT | `/auth/profile` | Actualizar nombre/contraseña |
+
+### Eventos
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/events` | Listar eventos del usuario (filtrable por status) |
+| POST | `/events` | Crear evento (con o sin plantilla) |
+| GET | `/events/{id}` | Detalle del evento con recursos, invitados y presupuesto |
+| PATCH | `/events/{id}` | Editar evento |
+| DELETE | `/events/{id}` | Eliminar evento (solo borrador) |
+| PATCH | `/events/{id}/status` | Cambiar estado (borrador → confirmado) |
+| GET | `/events/{id}/history` | Historial de cambios de estado |
+
+### Recursos, Invitados y Tareas
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET/POST | `/events/{id}/items` | CRUD recursos del evento |
+| PATCH/DELETE | `/events/{id}/items/{iid}` | Editar/eliminar recurso |
+| GET/POST | `/events/{id}/guests` | CRUD invitados |
+| PATCH/DELETE | `/events/{id}/guests/{gid}` | Editar/eliminar invitado |
+| GET/POST | `/events/{id}/tasks` | CRUD tareas Kanban |
+| PATCH | `/events/{id}/tasks/{tid}/move` | Mover tarea entre columnas |
+
+### Proveedores y Catálogo
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/providers` | Listar proveedores (filtrable por categoría y búsqueda) |
+| GET | `/providers/{id}` | Detalle del proveedor |
+| GET | `/provider-categories` | Listar categorías de proveedores |
+| GET | `/templates` | Listar plantillas del sistema |
+| GET | `/cities` | Listar ciudades disponibles |
+| GET | `/stats` | Estadísticas públicas (sin autenticación) |
+| GET | `/events/{id}/weather` | Pronóstico del clima para el evento |
+
+### Administración (solo admin)
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/admin/providers` | Listar proveedores (paginado, con filtros) |
+| POST | `/admin/providers` | Crear proveedor |
+| PUT | `/admin/providers/{id}` | Actualizar proveedor |
+| DELETE | `/admin/providers/{id}` | Eliminar proveedor |
+| GET/POST/PUT/DELETE | `/admin/provider-categories` | CRUD categorías |
+| GET | `/admin/metrics` | Métricas del dashboard admin |
+
+Documentación interactiva: `http://localhost:8000/docs` (Swagger UI).
+
+---
+
+## Estructura del Proyecto
 
 ```
-git checkout -b feature/nombre-de-la-tarea
+prismavent/
+├── backend/                     # API REST con FastAPI
+│   ├── app/
+│   │   ├── main.py              # Entry point + middlewares
+│   │   ├── database.py          # SQLAlchemy + pool config
+│   │   ├── dependencies.py      # get_current_user, require_admin
+│   │   ├── core/                # Supabase client, rate limit
+│   │   ├── middlewares/         # Auth JWT, Security Headers
+│   │   ├── routers/     (15)    # Endpoints HTTP
+│   │   ├── services/    (12)    # Lógica de negocio
+│   │   ├── schemas/     (14)    # Validación Pydantic
+│   │   ├── models/      (10)    # Modelos SQLAlchemy
+│   │   └── utils/               # sanitize, validate UUID
+│   ├── docs/                    # Documentación backend
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+├── frontend/                    # SPA con Vanilla JS
+│   ├── index.html               # Entry point + SEO meta
+│   ├── vercel.json              # SPA fallback para Vercel
+│   ├── src/
+│   │   ├── main.js              # Router SPA (17 rutas)
+│   │   ├── style.css            # Tailwind + animaciones
+│   │   ├── pages/      (15)     # Páginas SPA
+│   │   ├── components/  (23)    # Componentes reutilizables
+│   │   └── service/api.js      # Cliente API centralizado
+│   └── package.json
+│
+├── documentation/               # User Stories documentadas
+│   ├── UH1-87.md ... UH14-215.md
+│   ├── UH-LandingPage.md
+│   └── screenshots/             # Capturas de pantalla
+│
+└── README.md
 ```
 
-### 3. Programa y guarda tus cambios
-```
-git add .
-git commit -m "feat: descripción clara de lo que hiciste"
-```
+---
 
-### 4. Subes tu rama a github
-```
-git push -u origin feature/nombre-de-la-tarea
-```
+## Enlaces
+
+| Recurso | URL |
+|---|---|
+| Repositorio | [https://github.com/dypok/prismavent](https://github.com/dypok/prismavent) |
+| Frontend (Vercel) | [https://prismavent.vercel.app](https://prismavent.vercel.app) |
+| Documentación API | `/docs` (local) o `/docs` en el backend desplegado |
+
+---
+
+<p align="center">
+  <strong>Prismavent</strong> — <em>From start to glow, we've got the flow.</em><br>
