@@ -247,6 +247,19 @@ prismavent/
 
 ---
 
+## Equipo
+
+| Integrante | Rol |
+|---|---|
+| **Dylan Gamero** | Product Owner / Backend Developer |
+| **Daniel Echeverría** | Líder Técnico / Backend Developer |
+| **Brayan Lozada** | Backend Developer |
+| **Dilan Chávez** | Frontend Developer |
+| **Leonardo Pérez** | Frontend Developer |
+| **Sayder Carreño** | Scrum Master |
+
+---
+
 ## Enlaces
 
 | Recurso | URL |
