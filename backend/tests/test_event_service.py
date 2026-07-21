@@ -1,7 +1,7 @@
 import os
 import sys
 import unittest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from fastapi import HTTPException
 
 # Add backend directory to sys.path so app can be imported
@@ -32,7 +32,7 @@ class TestEventService(unittest.TestCase):
 
     def test_validate_event_date_not_past_past(self):
         """Should raise HTTPException (400) if date is in the past."""
-        yesterday = date.today() - timedelta(days=1)
+        yesterday = datetime.now(timezone.utc) - timedelta(days=1)
         with self.assertRaises(HTTPException) as ctx:
             validate_event_date_not_past(yesterday)
         self.assertEqual(ctx.exception.status_code, 400)
@@ -40,9 +40,9 @@ class TestEventService(unittest.TestCase):
 
     def test_validate_event_date_not_past_future_or_none(self):
         """Should not raise error if date is today, in the future, or None."""
-        tomorrow = date.today() + timedelta(days=1)
+        tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
         try:
-            validate_event_date_not_past(date.today())
+            validate_event_date_not_past(datetime.now(timezone.utc) + timedelta(seconds=5))
             validate_event_date_not_past(tomorrow)
             validate_event_date_not_past(None)
         except HTTPException:
@@ -52,7 +52,7 @@ class TestEventService(unittest.TestCase):
         """Should not raise error when transitioning to the immediately next status."""
         try:
             validate_status_transition("borrador", "confirmado")
-            validate_status_transition("confirmado", "finalizado")
+            validate_status_transition("confirmado", "in_progress")
         except HTTPException:
             self.fail("validate_status_transition raised HTTPException unexpectedly")
 
@@ -80,7 +80,7 @@ class TestEventService(unittest.TestCase):
     def test_validate_status_transition_at_end(self):
         """Should raise HTTPException (400) when trying to change from the last status."""
         with self.assertRaises(HTTPException) as ctx:
-            validate_status_transition("finalizado", "borrador")
+            validate_status_transition("done", "borrador")
         self.assertEqual(ctx.exception.status_code, 400)
         self.assertIn("es el final de la secuencia", ctx.exception.detail)
 

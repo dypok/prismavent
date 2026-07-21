@@ -6,5 +6,5 @@ from app.services import provider_service
 router = APIRouter(prefix="/stats", tags=["public-stats"])
 
 @router.get("")
-def get_public_stats(db: Session = Depends(get_db)):
+def get_public_stats(db: Session = Depends(get_db)) -> dict:
     return provider_service.get_public_stats(db)

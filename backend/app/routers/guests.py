@@ -13,10 +13,7 @@ def get_guests(
     event_id: str,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
-):
-    """
-    Returns the list of guests associated with the event.
-    """
+) -> List[GuestResponse]:
     return guest_service.get_guests_by_event(event_id, current_user.id, db)
 
 @router.post("/{event_id}/guests", response_model=GuestResponse)
@@ -25,10 +22,7 @@ def create_guest(
     payload: GuestCreate,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
-):
-    """
-    Registers a new guest to the event list and synchronizes guest_count if needed.
-    """
+) -> GuestResponse:
     return guest_service.create_guest(event_id, current_user.id, payload, db)
 
 @router.patch("/{event_id}/guests/{guest_id}", response_model=GuestResponse)
@@ -38,10 +32,7 @@ def update_guest(
     payload: GuestUpdate,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
-):
-    """
-    Edits an existing guest details (full name, confirmation status, notes).
-    """
+) -> GuestResponse:
     return guest_service.update_guest(event_id, guest_id, current_user.id, payload, db)
 
 @router.delete("/{event_id}/guests/{guest_id}")
@@ -50,9 +41,6 @@ def delete_guest(
     guest_id: str,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
-):
-    """
-    Deletes a guest from the event.
-    """
+) -> dict:
     guest_service.delete_guest(event_id, guest_id, current_user.id, db)
     return {"message": "Invitado eliminado exitosamente"}

@@ -16,7 +16,7 @@ def list_providers_admin(
     category_id: Optional[str] = None,
     current_user = Depends(require_admin),
     db: Session = Depends(get_db)
-):
+) -> AdminProviderListResponse:
     providers, total = provider_service.list_providers_paginated(
         db, page=page, per_page=per_page, search=search, category_id=category_id
     )
@@ -35,7 +35,7 @@ def get_provider_admin(
     provider_id: str,
     current_user = Depends(require_admin),
     db: Session = Depends(get_db)
-):
+) -> ProviderDetailResponse:
     provider = provider_service.get_provider_detail(provider_id, db)
     provider["can_edit"] = True
     return provider
@@ -45,7 +45,7 @@ def create_provider_admin(
     payload: ProviderCreate,
     current_user = Depends(require_admin),
     db: Session = Depends(get_db)
-):
+) -> ProviderResponse:
     provider = provider_service.create_provider(payload, db)
     provider["can_edit"] = True
     return provider
@@ -56,7 +56,7 @@ def update_provider_admin(
     payload: ProviderCreate,
     current_user = Depends(require_admin),
     db: Session = Depends(get_db)
-):
+) -> ProviderResponse:
     update_payload = ProviderUpdate(**payload.model_dump())
     provider = provider_service.update_provider(provider_id, update_payload, db)
     provider["can_edit"] = True
@@ -67,6 +67,6 @@ def delete_provider_admin(
     provider_id: str,
     current_user = Depends(require_admin),
     db: Session = Depends(get_db)
-):
+) -> None:
     provider_service.delete_provider_with_integrity(provider_id, db)
     return Response(status_code=204)

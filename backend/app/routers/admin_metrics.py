@@ -11,5 +11,5 @@ router = APIRouter(prefix="/admin/metrics", tags=["admin-metrics"])
 def get_admin_metrics(
     current_user = Depends(require_admin),
     db: Session = Depends(get_db)
-):
+) -> AdminMetricsResponse:
     return provider_service.get_admin_metrics(db)

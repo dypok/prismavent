@@ -50,24 +50,8 @@ def get_provider_by_id(provider_id: str, db: Session) -> dict:
     return dict(res._mapping)
 
 def create_provider(payload: ProviderCreate, db: Session) -> dict:
-    """
-    Creates a new provider after validating category_id and city_id.
-    """
-    # Validate category exists
-    category = db.execute(
-        text("SELECT 1 FROM provider_categories WHERE id = :id"),
-        {"id": payload.category_id}
-    ).fetchone()
-    if not category:
-        raise HTTPException(status_code=400, detail="Categoría no encontrada")
-        
-    # Validate city exists
-    city = db.execute(
-        text("SELECT 1 FROM cities WHERE id = :id"),
-        {"id": payload.city_id}
-    ).fetchone()
-    if not city:
-        raise HTTPException(status_code=400, detail="Ciudad no encontrada")
+    _validate_foreign_key(db, "provider_categories", payload.category_id, "Categoría no encontrada")
+    _validate_foreign_key(db, "cities", payload.city_id, "Ciudad no encontrada")
         
     insert_res = db.execute(
         text("""
@@ -94,96 +78,52 @@ def create_provider(payload: ProviderCreate, db: Session) -> dict:
     row = insert_res.fetchone()
     return dict(row._mapping)
 
+def _apply_field(updates: list, params: dict, field: str, value):
+    if value is not None:
+        updates.append(f"{field} = :{field}")
+        params[field] = value
+
+
+def _validate_foreign_key(db: Session, table: str, value: str, error_msg: str):
+    exists = db.execute(
+        text(f"SELECT 1 FROM {table} WHERE id = :id"),
+        {"id": value}
+    ).fetchone()
+    if not exists:
+        raise HTTPException(status_code=400, detail=error_msg)
+
+
 def update_provider(provider_id: str, payload: ProviderUpdate, db: Session) -> dict:
-    """
-    Updates an existing provider partially, after validating existence, category_id, and city_id if provided.
-    """
-    # Check existence
     prov = db.execute(
         text("SELECT * FROM providers WHERE id = :id"),
         {"id": provider_id}
     ).fetchone()
     if not prov:
         raise HTTPException(status_code=404, detail="Proveedor no encontrado")
-        
+
     updates = []
     params = {"id": provider_id}
-    
+
     if payload.category_id is not None:
-        category = db.execute(
-            text("SELECT 1 FROM provider_categories WHERE id = :id"),
-            {"id": payload.category_id}
-        ).fetchone()
-        if not category:
-            raise HTTPException(status_code=400, detail="Categoría no encontrada")
-        updates.append("category_id = :category_id")
-        params["category_id"] = payload.category_id
-        
+        _validate_foreign_key(db, "provider_categories", payload.category_id, "Categoría no encontrada")
+        _apply_field(updates, params, "category_id", payload.category_id)
     if payload.city_id is not None:
-        city = db.execute(
-            text("SELECT 1 FROM cities WHERE id = :id"),
-            {"id": payload.city_id}
-        ).fetchone()
-        if not city:
-            raise HTTPException(status_code=400, detail="Ciudad no encontrada")
-        updates.append("city_id = :city_id")
-        params["city_id"] = payload.city_id
-        
-    if payload.name is not None:
-        updates.append("name = :name")
-        params["name"] = payload.name
-        
-    if payload.description is not None:
-        updates.append("description = :description")
-        params["description"] = payload.description
-        
-    if payload.phone is not None:
-        updates.append("phone = :phone")
-        params["phone"] = payload.phone
+        _validate_foreign_key(db, "cities", payload.city_id, "Ciudad no encontrada")
+        _apply_field(updates, params, "city_id", payload.city_id)
 
-    if payload.email is not None:
-        updates.append("email = :email")
-        params["email"] = payload.email
+    for field in ["name", "description", "phone", "email", "website", "address",
+                   "image_url", "reference_price", "price_unit", "rating"]:
+        _apply_field(updates, params, field, getattr(payload, field, None))
 
-    if payload.website is not None:
-        updates.append("website = :website")
-        params["website"] = payload.website
-
-    if payload.address is not None:
-        updates.append("address = :address")
-        params["address"] = payload.address
-
-    if payload.image_url is not None:
-        updates.append("image_url = :image_url")
-        params["image_url"] = payload.image_url
-        
-    if payload.reference_price is not None:
-        updates.append("reference_price = :reference_price")
-        params["reference_price"] = payload.reference_price
-        
-    if payload.price_unit is not None:
-        updates.append("price_unit = :price_unit")
-        params["price_unit"] = payload.price_unit
-        
-    if payload.rating is not None:
-        updates.append("rating = :rating")
-        params["rating"] = payload.rating
-        
     if not updates:
         return dict(prov._mapping)
-        
+
     update_res = db.execute(
-        text(f"""
-            UPDATE providers
-            SET {', '.join(updates)}
-            WHERE id = :id
-            RETURNING *
-        """),
+        text(f"UPDATE providers SET {', '.join(updates)} WHERE id = :id RETURNING *"),
         params
     )
     db.commit()
-    row = update_res.fetchone()
-    return dict(row._mapping)
+    return dict(update_res.fetchone()._mapping)
 
 def delete_provider(provider_id: str, db: Session) -> None:
     """
@@ -350,6 +290,14 @@ def get_admin_metrics(db: Session) -> dict:
         "total_users": total_users,
         "events_by_status": events_by_status
     }
+
+def check_admin_role(user_id: str, db: Session) -> bool:
+    profile = db.execute(
+        text("SELECT role FROM profiles WHERE id = :id"),
+        {"id": user_id}
+    ).fetchone()
+    return profile is not None and profile[0] == "admin"
+
 
 def get_public_stats(db: Session) -> dict:
     total_events = db.execute(text("SELECT COUNT(*) FROM events")).scalar() or 0
