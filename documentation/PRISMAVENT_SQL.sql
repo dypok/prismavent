@@ -231,6 +231,18 @@ CREATE TABLE IF NOT EXISTS provider_reviews (
 );
 
 -- ============================
+-- REGISTRO DE INTENTOS FALLIDOS DE LOGIN
+-- ============================
+
+CREATE TABLE IF NOT EXISTS failed_login_attempts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) NOT NULL,
+  ip_address VARCHAR(45) NOT NULL,
+  user_agent TEXT,
+  attempted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ============================
 -- FUNCIONES / TRIGGERS
 -- ============================
 
@@ -351,3 +363,8 @@ CREATE INDEX IF NOT EXISTS idx_provider_reviews_user_id
   ON provider_reviews(user_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_provider_reviews_provider_user_unique
   ON provider_reviews(provider_id, user_id);
+
+CREATE INDEX IF NOT EXISTS idx_failed_login_attempts_ip
+  ON failed_login_attempts(ip_address, attempted_at);
+CREATE INDEX IF NOT EXISTS idx_failed_login_attempts_email
+  ON failed_login_attempts(email, attempted_at);
