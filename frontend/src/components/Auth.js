@@ -92,7 +92,7 @@ export function Auth() {
                             class="w-full px-5 py-2.5 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#C9A84C] text-base">
                         <button type="button" onclick="togglePassword(this)" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xl">𓁺</button>
                     </div>
-                    <p class="text-[10px] text-[#9E8E6E] mt-1 leading-relaxed">Mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo</p>
+                    <p class="text-[10px] text-[#9E8E6E] mt-1 leading-relaxed">Mínimo 8 caracteres, mayúscula, minúscula, número y símbolo</p>
                     </div>
 
                     <div>
