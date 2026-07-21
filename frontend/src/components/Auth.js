@@ -195,15 +195,34 @@ window.closeModalAndRedirect = function() {
 
 // ====================== MANEJO DE FORMULARIOS ======================
 
-let loginAttempts = 0;
-let loginBlockedUntil = null;
+function getLoginAttempts() {
+  return parseInt(sessionStorage.getItem("login_attempts") || "0", 10);
+}
+
+function setLoginAttempts(n) {
+  sessionStorage.setItem("login_attempts", String(n));
+}
+
+function getLoginBlockedUntil() {
+  const val = sessionStorage.getItem("login_blocked_until");
+  return val ? parseInt(val, 10) : null;
+}
+
+function setLoginBlockedUntil(ts) {
+  if (ts === null) {
+    sessionStorage.removeItem("login_blocked_until");
+  } else {
+    sessionStorage.setItem("login_blocked_until", String(ts));
+  }
+}
 
 function updateLoginBlockUI(submitBtn, errorEl) {
-  if (!loginBlockedUntil) return;
-  const remaining = Math.ceil((loginBlockedUntil - Date.now()) / 1000);
+  const blockedUntil = getLoginBlockedUntil();
+  if (!blockedUntil) return;
+  const remaining = Math.ceil((blockedUntil - Date.now()) / 1000);
   if (remaining <= 0) {
-    loginBlockedUntil = null;
-    loginAttempts = 0;
+    setLoginBlockedUntil(null);
+    setLoginAttempts(0);
     submitBtn.disabled = false;
     submitBtn.textContent = "ACCESS WORKSPACE →";
     errorEl.classList.add("hidden");
@@ -225,7 +244,8 @@ document.addEventListener("submit", async (e) => {
     const errorEl = document.getElementById("login-error");
     const submitBtn = e.target.querySelector('button[type="submit"]');
 
-    if (loginBlockedUntil && loginBlockedUntil > Date.now()) {
+    const blockedUntil = getLoginBlockedUntil();
+    if (blockedUntil && blockedUntil > Date.now()) {
       updateLoginBlockUI(submitBtn, errorEl);
       return;
     }
@@ -236,14 +256,15 @@ document.addEventListener("submit", async (e) => {
 
     try {
       await login(email, password);
-      loginAttempts = 0;
-      loginBlockedUntil = null;
+      setLoginAttempts(0);
+      setLoginBlockedUntil(null);
       window.history.pushState({}, "", "/dashboard");
       window.dispatchEvent(new PopStateEvent("popstate"));
     } catch (err) {
-      loginAttempts++;
-      if (loginAttempts >= 3) {
-        loginBlockedUntil = Date.now() + 30000;
+      const attempts = getLoginAttempts() + 1;
+      setLoginAttempts(attempts);
+      if (attempts >= 3) {
+        setLoginBlockedUntil(Date.now() + 30000);
         updateLoginBlockUI(submitBtn, errorEl);
       } else {
         errorEl.textContent = err.message || "No se pudo iniciar sesión.";
