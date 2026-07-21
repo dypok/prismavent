@@ -1,6 +1,6 @@
 import { setUserName, setUserRole } from "../utils/authUtils.js";
 
-const BASE_URL = "http://34.139.94.6:8000";
+const BASE_URL = "";
 const TOKEN_KEY = "prismavent_access_token";
 
 // --- Manejo del token en localStorage ---

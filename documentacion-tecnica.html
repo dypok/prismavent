@@ -12,8 +12,8 @@
   code { background: #FEF3C7; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
   pre { background: #F8F5F0; padding: 15px; border-radius: 8px; border: 1px solid #E9E1D7; overflow-x: auto; }
   pre code { background: none; padding: 0; }
-  table { border-collapse: collapse; width: 100%; margin: 15px 0; }
-  th, td { border: 1px solid #E9E1D7; padding: 8px 12px; text-align: left; }
+  table { border-collapse: collapse; width: 100%; margin: 15px 0; font-size: 0.9em; }
+  th, td { border: 1px solid #E9E1D7; padding: 6px 10px; text-align: left; }
   th { background: #FEF3C7; color: #755B00; }
   li { margin: 4px 0; }
   hr { border: none; border-top: 1px solid #E9E1D7; margin: 30px 0; }
@@ -184,12 +184,29 @@
 <li>Meta tags SEO (Open Graph, Twitter Cards, description, keywords)</li>
 <li>Botón "Comenzar gratis" redirige a la página de registro</li>
 <li>Prismas flotantes animados en el fondo de toda la aplicación</li>
+<li>Estadísticas dinámicas con datos reales desde <code>GET /stats</code> (eventos, invitados, proveedores, usuarios)</li>
+<li>Loading cover con spinner y logo mientras carga la SPA</li>
 </ul>
 <h4>3.1.13 Diseño responsive</h4>
 <ul><li>Sidebar adaptativo con toggle en móvil y hover-expand en desktop</li>
 <li>Todas las páginas adaptadas a pantallas desde 320px hasta 1920px</li>
 <li>Tablas con scroll horizontal en móvil, grids responsivos, formularios apilables</li>
 <li>Barra de progreso (EventStepper) responsiva con overflow-x-auto en móvil</li>
+</ul>
+<h4>3.1.14 Seguridad y rendimiento</h4>
+<ul><li>Rate limiting en endpoints de autenticación con slowapi (5 intentos/minuto por IP)</li>
+<li>Conexión a base de datos con pool de conexiones configurado: <code>pool_pre_ping=True</code>, <code>pool_recycle=300</code>, <code>pool_size=5</code></li>
+<li>Loading cover con logo de Prismavent y spinner mientras carga la SPA</li>
+<li>Skeleton loading con <code>animate-pulse</code> en páginas de proveedores, historial y admin</li>
+</ul>
+<h4>3.1.15 Panel de administración</h4>
+<ul><li>Sistema de roles (admin/user) con rutas protegidas vía <code>require_admin()</code></li>
+<li>Sidebar con navegación diferenciada: admins solo ven Dashboard + Administrar + Cerrar Sesión</li>
+<li>CRUD completo de proveedores con tabla, búsqueda, filtro por categoría y paginación</li>
+<li>CRUD completo de categorías de proveedores con protección de integridad referencial</li>
+<li>Dashboard admin con métricas: total eventos, invitados, usuarios, proveedores, distribución por estado</li>
+<li>Preservación de datos en modales al cerrar accidentalmente (con botón "Limpiar")</li>
+<li>Endpoint público <code>GET /stats</code> para estadísticas de la landing page sin autenticación</li>
 </ul>
 <h3>3.2 Fuera del alcance (MVP)</h3>
 <br>
@@ -278,6 +295,13 @@
 <p>| DEPLOY-04 | Completar documento técnico final | Alta | 3 | v1.1 | 🔄 En progreso |</p>
 <p>| DEPLOY-05 | Preparar y ensayar pitch comercial en inglés (10 min) | Alta | 3 | v1.1 | ⏳ Pendiente |</p>
 <p>| DEPLOY-06 | Preparar y ensayar pitch técnico en español (20 min) | Alta | 3 | v1.1 | ⏳ Pendiente |</p>
+<p>| <strong>EPIC 12 — Panel de administración</strong> | | | | | |</p>
+<p>| ADMIN-01 | Sistema de roles (admin/user) con sidebar diferenciado | Alta | 3 | v2.0 | ✅ Done |</p>
+<p>| ADMIN-02 | CRUD de proveedores con tabla, búsqueda, filtros y paginación | Alta | 5 | v2.0 | ✅ Done |</p>
+<p>| ADMIN-03 | CRUD de categorías de proveedores con integridad referencial | Alta | 3 | v2.0 | ✅ Done |</p>
+<p>| ADMIN-04 | Dashboard admin con métricas (eventos, usuarios, proveedores, distribución) | Alta | 3 | v2.0 | ✅ Done |</p>
+<p>| ADMIN-05 | Endpoint público <code>GET /stats</code> para landing page con datos reales | Alta | 2 | v2.0 | ✅ Done |</p>
+<p>| ADMIN-06 | Preservación de datos en modales al cerrar + botón Limpiar | Media | 1 | v2.0 | ✅ Done |</p>
 <br>
 <h3>4.2 Historias de usuario adicionales (completadas fuera de la planificación inicial)</h3>
 <br>
@@ -296,16 +320,25 @@
 <p>| <strong>EPIC 10 (Extensión) — Landing page</strong> | | | | | |</p>
 <p>| LAND-01 | Landing page institucional con SEO y animaciones | Alta | 3 | v1.1 | ✅ Done |</p>
 <br>
-<h3>4.3 Historias de usuario — Post-MVP (planificadas)</h3>
+<h3>4.3 Historias de usuario del panel de administracion</h3>
 <br>
-<p>| ID | HISTORIA DE USUARIO | PRIORIDAD | SP | VERSIÓN |</p>
+<p>| ID | HISTORIA DE USUARIO | PRIORIDAD | SP | VERSION | ESTADO |</p>
+<p>|---|---|---|---|---|---|</p>
+<p>| <strong>EPIC 12 — Panel de administracion</strong> | | | | | |</p>
+<p>| ADMIN-01 | Sistema de roles (admin/user) con sidebar diferenciado | Alta | 3 | v2.0 | Listo |</p>
+<p>| ADMIN-02 | CRUD de proveedores con tabla, busqueda, filtros y paginacion | Alta | 5 | v2.0 | Listo |</p>
+<p>| ADMIN-03 | CRUD de categorias de proveedores con integridad referencial | Alta | 3 | v2.0 | Listo |</p>
+<p>| ADMIN-04 | Dashboard admin con metricas (eventos, usuarios, proveedores, distribucion) | Alta | 3 | v2.0 | Listo |</p>
+<p>| ADMIN-05 | Endpoint publico GET /stats para landing page con datos reales | Alta | 2 | v2.0 | Listo |</p>
+<p>| ADMIN-06 | Preservacion de datos en modales al cerrar + boton Limpiar | Media | 1 | v2.0 | Listo |</p>
+<br>
+<h3>4.4 Historias de usuario — Post-MVP (planificadas)</h3>
+<br>
+<p>| ID | HISTORIA DE USUARIO | PRIORIDAD | SP | VERSION |</p>
 <p>|---|---|---|---|---|</p>
-<p>| <strong>EPIC 11 — Post-MVP: Fundación técnica y presencia digital</strong> | | | | |</p>
-<p>| PMVP-01 | Landing page institucional (SEO, analytics, optimización) | Alta | 3 | v2.0 |</p>
-<p>| PMVP-02 | Ciberseguridad: rate limiting, headers HTTP, sanitización | Alta | 3 | v2.0 |</p>
-<p>| PMVP-03 | Calidad de código: linters, type hints, tests, manejo de archivos | Alta | 5 | v2.0 |</p>
-<p>| <strong>EPIC 12 — Panel de administración de proveedores</strong> | | | | |</p>
-<p>| ADMIN-01 | Panel de administración: roles, CRUD proveedores y categorías, métricas | Alta | 8 | v2.0 |</p>
+<p>| <strong>EPIC 11 — Post-MVP: Fundacion tecnica y presencia digital</strong> | | | | |</p>
+<p>| PMVP-02 | Ciberseguridad: rate limiting, headers HTTP, sanitizacion | Alta | 3 | v2.0 |</p>
+<p>| PMVP-03 | Calidad de codigo: linters, type hints, tests, manejo de archivos | Alta | 5 | v2.0 |</p>
 <br>
 <h3>4.4 Definition of Done (DoD)</h3>
 <br>
@@ -372,8 +405,9 @@
 <p>│            FASTAPI (Google Cloud Run)                 │</p>
 <p>│                                                      │</p>
 <p>│  ┌─────────────┐  ┌──────────────┐  ┌─────────────┐ │</p>
-<p>│  │ Middlewares  │  │   Routers    │  │  Services   │ │</p>
-<p>│  │ CORS + Auth  │──│  11 routers  │──│  6 services │ │</p>
+<p>│  │ Middlewares      │  │   Routers     │  │  Services    │ │</p>
+<p>│  │ Security + Auth  │──│  15 routers   │──│  8 services  │ │</p>
+<p>│  │ CORS + Rate limit│  │  + GET /stats │  │             │ │</p>
 <p>│  └─────────────┘  └──────────────┘  └─────────────┘ │</p>
 <p>│                                                      │</p>
 <p>│  Google Cloud Run: autoescala, HTTPS, 2M req/mes     │</p>
@@ -413,11 +447,15 @@
 <p>Es el núcleo del sistema. Está construida con FastAPI (Python 3.11+) y servida mediante Uvicorn. Esta capa es responsable de todas las reglas de negocio del sistema:</p>
 <br>
 <ul><li><strong>Arquitectura por capas</strong>: </code>routers/<code> (11 routers HTTP), </code>services/<code> (6 servicios de lógica de negocio), </code>schemas/<code> (10 esquemas Pydantic para validación), </code>models/<code> (9 modelos SQLAlchemy ORM), </code>middlewares/<code> (autenticación JWT + CORS)</li>
-<li><strong>11 routers</strong>: auth, events, templates, guests, event_items, weather, providers, provider_categories, user_templates, event_tasks, cities</li>
-<li><strong>6 servicios</strong>: budget_service, event_service, event_task_service, guest_service, provider_service, weather_service</li>
+<li><strong>15 routers</strong>: auth, events, templates, guests, event_items, weather, providers, provider_categories, user_templates, event_tasks, cities, admin_providers, admin_provider_categories, admin_metrics, public_stats</li>
+<li><strong>8 servicios</strong>: auth_service, budget_service, event_service, event_task_service, guest_service, provider_service, weather_service, security utils</li>
+<li><strong>Middleware de seguridad</strong>: </code>SecurityHeadersMiddleware<code> que agrega headers de seguridad HTTP (X-Content-Type-Options, X-Frame-Options, HSTS, CSP)</li>
 <li><strong>Middleware de autenticación</strong>: </code>SupabaseAuthMiddleware<code> que verifica JWT con </code>supabase.auth.get_user(token)<code> en cada ruta protegida, con manejo de CORS integrado</li>
+<li><strong>Rate limiting</strong>: SlowAPI con límite de 5 intentos por minuto en endpoints </code>/auth/login<code> y </code>/auth/register<code></li>
 </ul>
-<p>La API está desplegada en Google Cloud Run con autoescalado a cero cuando no hay tráfico, HTTPS automático y hasta 2 millones de requests por mes en el tier gratuito.</p>
+<p>La API cuenta con <strong>15 routers</strong> (auth, events, guests, event_items, weather, providers, provider_categories, templates, user_templates, event_tasks, cities, admin_providers, admin_provider_categories, admin_metrics) y un endpoint público </code>GET /stats<code> sin autenticación para la landing page.</p>
+<br>
+<p>Está desplegada en Google Cloud Run con autoescalado a cero cuando no hay tráfico, HTTPS automático y hasta 2 millones de requests por mes en el tier gratuito.</p>
 <br>
 <h4>5.2.3 Capa de persistencia — Base de datos</h4>
 <br>
@@ -437,22 +475,23 @@
 <br>
 <h3>6.2 Descripción de tablas</h3>
 <br>
-<p>A continuación se describen las entidades principales del sistema:</p>
+<p>A continuación se describen las entidades principales del sistema (13 tablas en total):</p>
 <br>
 <p>| Tabla | Descripción |</p>
 <p>|---|---|</p>
-<p>| </code>profiles<code> | Información extendida de usuarios autenticados (full_name, role). Vinculada 1:1 con </code>auth.users<code> de Supabase |</p>
-<p>| </code>event_types<code> | Categorías de eventos (bodas, cumpleaños, tech, personalizado) con metadatos visuales |</p>
-<p>| </code>templates<code> | Plantillas predefinidas del sistema con sus </code>default_items<code> en JSONB |</p>
-<p>| </code>user_templates<code> | Plantillas personalizadas creadas por usuarios, con </code>items<code> en JSONB |</p>
-<p>| </code>events<code> | Entidad central con datos del evento: fecha, presupuesto, invitados, estado, ciudad |</p>
-<p>| </code>event_items<code> | Recursos vinculados a un evento con cantidad, precio unitario, confirmación y proveedor asociado |</p>
-<p>| </code>event_tasks<code> | Tareas del tablero Kanban vinculadas a un evento con título, descripción y estado |</p>
-<p>| </code>guests<code> | Invitados de un evento con nombre, confirmación (RSVP) y notas |</p>
-<p>| </code>event_history<code> | Registro de cambios de estado de eventos (previous_status → new_status, timestamp) |</p>
-<p>| </code>providers<code> | Catálogo de proveedores con datos de contacto, ubicación, precio referencial y rating |</p>
+<p>| </code>cities<code> | Ciudades de referencia para eventos y proveedores (con departamento y país) |</p>
+<p>| </code>profiles<code> | Información extendida de usuarios autenticados (full_name, phone, avatar_url, city_id, role admin/user). Vinculada 1:1 con </code>auth.users<code> de Supabase |</p>
+<p>| </code>event_types<code> | Categorías de eventos (bodas, cumpleaños, tech, personalizado) con metadatos visuales (color_bg, color_icon) |</p>
+<p>| </code>templates<code> | Plantillas predefinidas del sistema con sus </code>default_items<code> en JSONB, vinculadas a event_types |</p>
+<p>| </code>user_templates<code> | Plantillas personalizadas creadas por usuarios, con </code>items<code> en JSONB, vinculadas a event_types |</p>
 <p>| </code>provider_categories<code> | Categorías de proveedores (Catering, Sonido, Decoración, Fotografía, etc.) |</p>
-<p>| </code>cities<code> | Ciudades de referencia para eventos y proveedores |</p>
+<p>| </code>providers<code> | Catálogo de proveedores con datos de contacto, ubicación, precio referencial, rating, email, website, image_url |</p>
+<p>| </code>provider_reviews<code> | Reseñas de proveedores con rating (1-5), comentario, vinculadas a provider + user (unique) |</p>
+<p>| </code>events<code> | Entidad central con datos del evento: fecha, presupuesto, invitados, estado, ciudad, ubicación, duración, descripción |</p>
+<p>| </code>event_items<code> | Recursos vinculados a un evento con cantidad, precio unitario, confirmación, notas y proveedor asociado |</p>
+<p>| </code>event_tasks<code> | Tareas del tablero Kanban con título, descripción, estado (todo/in_progress/done), prioridad (low/medium/high), due_date |</p>
+<p>| </code>guests<code> | Invitados de un evento con nombre, confirmación (RSVP) y notas |</p>
+<p>| </code>event_history<code> | Registro de cambios de estado de eventos (previous_status → new_status, changed_by, comment, timestamp) |</p>
 <br>
 <h3>6.3 Relaciones y cardinalidades</h3>
 <br>
@@ -466,6 +505,8 @@
 <li><strong>Proveedores a Items (1:N)</strong>: Un proveedor puede estar referenciado en múltiples ítems de eventos</li>
 <li><strong>Ciudades a Eventos (1:N)</strong>: Cada ciudad puede estar asociada a múltiples eventos</li>
 <li><strong>Ciudades a Proveedores (1:N)</strong>: Cada ciudad puede estar asociada a múltiples proveedores</li>
+<li><strong>Proveedores a Reseñas (1:N)</strong>: Un proveedor puede tener múltiples reseñas de usuarios</li>
+<li><strong>Eventos a Tareas (1:N)</strong>: Cada evento tiene múltiples tareas en el tablero Kanban</li>
 </ul>
 <h3>6.4 Reglas de negocio</h3>
 <br>
@@ -493,6 +534,12 @@
 <li>Los invitados se gestionan con nombre completo y estado de confirmación (RSVP)</li>
 <li>El pronóstico del clima solo está disponible para fechas dentro de los próximos 7 días; fuera de ese rango se muestra un mensaje informativo</li>
 <li>El widget de clima se oculta automáticamente para eventos en estado </code>finalizado<code></li>
+<li>Las tareas Kanban tienen estados: </code>todo<code>, </code>in_progress<code>, </code>done<code> y se pueden mover entre columnas</li>
+<li>La fecha límite (</code>due_date<code>) de una tarea no puede superar la fecha del evento</li>
+<li>Los invitados se gestionan por nombre completo con estado de confirmación (RSVP) y notas opcionales</li>
+<li>El catálogo de proveedores es administrado solo por usuarios con rol </code>admin<code> mediante endpoints dedicados</li>
+<li>Las reseñas de proveedores son únicas por usuario-proveedor (no se puede reseñar dos veces)</li>
+<li>Los datos estadísticos públicos (</code>GET /stats<code>) no requieren autenticación</li>
 </ul>
 <hr>
 <br>
@@ -505,7 +552,10 @@
 <li><strong>Validación</strong>: Pydantic v2 (schemas para request/response, validadores custom)</li>
 <li><strong>Servidor</strong>: Uvicorn (ASGI, alta concurrencia)</li>
 <li><strong>Variables de entorno</strong>: python-dotenv</li>
-<li><strong>Testing</strong>: pytest (71 tests: unitarios + integración, mock de APIs externas)</li>
+<li><strong>Seguridad</strong>: Sanitización de inputs (</code>sanitize_string()<code> elimina HTML), validación de UUIDs, logging de intentos fallidos de login</li>
+<li><strong>Headers de seguridad</strong>: Middleware personalizado que inyecta X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security y Content-Security-Policy</li>
+<li><strong>Rate limiting</strong>: slowapi (5 intentos/minuto en </code>/auth/login<code> y </code>/auth/register<code>)</li>
+<li><strong>Testing</strong>: pytest (108 tests: unitarios + integración, mock de APIs externas)</li>
 </ul>
 <h3>7.2 Base de datos</h3>
 <ul><li><strong>Motor</strong>: PostgreSQL 15 (vía Supabase)</li>
@@ -515,6 +565,8 @@
 <ul><li><strong>Base</strong>: HTML5 + CSS3 + JavaScript Vanilla</li>
 <li><strong>Estilos</strong>: Tailwind CSS v4</li>
 <li><strong>Arquitectura</strong>: SPA (Single Page Application) con router basado en </code>pushState<code>/</code>popstate<code></li>
+<li><strong>Páginas</strong>: 15 páginas SPA (Landing, Auth, Dashboard, MyEvents, EventDetail, CreateEvent, CustomEventFlow, TemplateEventFlow, Providers, Guests, Resources, Tasks, History, AdminProviders, AdminCategories)</li>
+<li><strong>Componentes</strong>: 23 componentes reutilizables (Sidebar, Topbar, Icons, Toast, EventCard, EventStepper, EventTemplatesGrid, CustomEventForm, NewEventSelection, BudgetPanel, BudgetProgressGauge, GuestPanel, GuestModal, ProviderCard, ProviderDrawer, TasksPanel, WeatherWidget, AddToEventModal, DeleteEventModal, DeleteResourceModal, EditEventModal, SaveTemplateModal)</li>
 <li><strong>Iconos</strong>: Sistema de iconos SVG personalizados (</code>Icons.js<code>)</li>
 <li><strong>Tipografía</strong>: Playfair Display (títulos) + DM Sans (cuerpo)</li>
 </ul>
@@ -531,8 +583,8 @@
 <ul><li><strong>OpenWeatherMap</strong>: Pronóstico del clima para el día del evento. API gratuita, sin tarjeta de crédito. Los datos se obtienen mediante el endpoint </code>GET /events/{id}/weather<code> que consulta la API externa y retorna temperatura, condición, descripción e ícono.</li>
 </ul>
 <h3>7.6 Despliegue</h3>
-<ul><li><strong>Frontend</strong>: Vercel (deploy automático desde rama </code>main<code>, CDN global, SSL gratuito)</li>
-<li><strong>Backend</strong>: Google Cloud Run (Dockerizado, autoescala a 0, HTTPS automático, 2M requests/mes gratis)</li>
+<ul><li><strong>Frontend</strong>: Vercel ([prismavent.vercel.app](https://prismavent.vercel.app), deploy automático desde rama </code>main<code>, CDN global, SSL gratuito)</li>
+<li><strong>Backend</strong>: Google Cloud Run o servidor e2 ([http://34.139.94.6:8000](http://34.139.94.6:8000)), Dockerizado</li>
 <li><strong>Base de datos</strong>: Supabase (PostgreSQL 15 gestionado, Auth integrado, Row Level Security)</li>
 </ul>
 <hr>
@@ -618,7 +670,9 @@
 <br>
 <ul><li><strong>Archivo</strong>: </code>frontend/src/pages/LandingPage.js<code></li>
 <li><strong>Animaciones</strong>: Intersection Observer para efecto fade-in-up en todas las secciones al hacer scroll</li>
-<li><strong>Prismas flotantes</strong>: Animación decorativa de fondo con prismas geométricos (triángulos) que flotan hacia arriba, usando los colores de la marca (dorado, verde, terracota) con opacidad sutil</li>
+<li><strong>Prismas flotantes</strong>: 10 triángulos SVG animados con colores de marca, flotan hacia arriba rotando 360°. Inician ocultos (</code>display:none<code>) y aparecen con fade-in tras el render para evitar parpadeo.</li>
+<li><strong>Loading cover</strong>: Pantalla de carga con logo Prismavent + spinner animado, se desvanece 50ms después del primer render vía JS.</li>
+<li><strong>Estadísticas dinámicas</strong>: Las cifras se cargan desde </code>GET /stats<code> (endpoint público, sin autenticación) con formato </code>1K+<code>, mostrando datos reales de eventos, invitados, proveedores y usuarios registrados.</li>
 <li><strong>SEO</strong>: Meta tags implementados en </code>index.html<code>: description, keywords, Open Graph (og:title, og:description, og:image, og:type, og:url, og:locale), Twitter Cards (twitter:card, twitter:title, twitter:description, twitter:image)</li>
 <li><strong>Favicon</strong>: Logo de Prismavent (</code>logo.png<code> en </code>public/<code>)</li>
 <li><strong>Rendering condicional</strong>: La landing page se renderiza como parte del SPA en </code>main.js<code>, con la lógica: </code>path === '/' → LandingPage()<code>, </code>path === '/auth' → Auth()<code>. Los usuarios autenticados son redirigidos a </code>/dashboard<code></li>
@@ -659,9 +713,9 @@
 <p>| Epic 8 — Proveedores | Sprint 2 | 3 | 10 | ✅ Done |</p>
 <p>| Epic 9 — Historial | Sprint 2 | 2 | 4 | ✅ Done |</p>
 <p>| Epic 10 — Despliegue | Sprint 2 | 6 (+ 1 ext.) | 16 (+ 3) | 🔄 En progreso |</p>
-<p>| Epic 11 — Post-MVP | Futuro | 3 | 11 | ⏳ Pendiente |</p>
-<p>| Epic 12 — Admin | Futuro | 1 | 8 | ⏳ Pendiente |</p>
-<p>| <strong>TOTAL</strong> | | <strong>45+</strong> | <strong>128+</strong> | |</p>
+<p>| Epic 11 — Post-MVP | Futuro | 2 | 8 | ⏳ Pendiente |</p>
+<p>| Epic 12 — Admin | Sprint 3 | 6 | 17 | ✅ Done |</p>
+<p>| <strong>TOTAL</strong> | | <strong>51</strong> | <strong>155+</strong> | |</p>
 <br>
 <hr>
 <br>
