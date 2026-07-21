@@ -1,6 +1,6 @@
 import { setUserName, setUserRole } from "../utils/authUtils.js";
 
-const BASE_URL = "https://bridge-mortgages-delivers-remaining.trycloudflare.com";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const TOKEN_KEY = "prismavent_access_token";
 
 // --- Manejo del token en localStorage ---
