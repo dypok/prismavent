@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/Estado-MVP%20v1.0-C9A84C?style=flat)
+![Version](https://img.shields.io/badge/Estado-v1.0-C9A84C?style=flat)
 ![License](https://img.shields.io/badge/License-MIT-376847?style=flat)
 
 # Prismavent
@@ -115,28 +115,16 @@ Prismavent permite crear, organizar y supervisar bodas, conferencias, cumpleaño
 ## Instalación Local
 
 ### Requisitos
-- Python 3.11+, Node.js 18+, Docker (opcional)
+- Node.js 18+, Docker
 
 ### Backend
 
 ```bash
-git clone https://github.com/dypok/prismavent.git
 cd prismavent/backend
-
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-cp .env.example .env  # Configurar credenciales de Supabase
-uvicorn app.main:app --reload --port 8000
-```
-
-### Backend con Docker
-
-```bash
-cd prismavent/backend
+docker compose build
 docker compose up -d
 ```
+Disponible en `http://localhost:8000`.
 
 ### Frontend
 
@@ -271,5 +259,3 @@ prismavent/
 
 <p align="center">
   <strong>Prismavent</strong> — <em>From start to glow, we've got the flow.</em><br>
-  <a href="https://github.com/dypok/prismavent">https://github.com/dypok/prismavent</a>
-</p>
