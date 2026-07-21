@@ -1,0 +1,126 @@
+from pydantic import BaseModel, field_validator, Field
+from typing import Optional
+from decimal import Decimal
+from datetime import datetime
+from uuid import UUID
+from app.schemas.event_item import EventItemOut
+from app.schemas.guest import GuestResponse
+
+class EventHistoryOut(BaseModel):
+    id: UUID
+    event_id: UUID
+    previous_status: Optional[str] = None
+    new_status: str
+    changed_by: Optional[UUID] = None
+    comment: Optional[str] = None
+    changed_at: datetime
+
+class EventCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    event_date: datetime
+    guest_count: Optional[int] = 0
+    max_budget: Optional[Decimal] = None
+    template_id: Optional[str] = None
+    user_template_id: Optional[str] = None
+    city_id: Optional[str] = None
+    city_custom: Optional[str] = None
+    event_type_id: Optional[str] = None
+    location: Optional[str] = None
+    duration: Optional[int] = 0
+    visibility_status: Optional[str] = "active"
+
+    @field_validator("event_date")
+    @classmethod
+    def event_date_must_be_future(cls, value: datetime) -> datetime:
+        now = datetime.now(value.tzinfo) if value.tzinfo else datetime.now()
+        if value < now:
+            raise ValueError("event_date debe ser una fecha futura")
+        return value
+
+class EventResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    name: str
+    description: Optional[str] = None
+    event_date: datetime
+    guest_count: int
+    max_budget: Optional[Decimal] = None
+    template_id: Optional[UUID] = None
+    user_template_id: Optional[UUID] = None
+    city_id: Optional[UUID] = None
+    city_custom: Optional[str] = None
+    city_name: Optional[str] = None
+    event_type_id: Optional[UUID] = None
+    event_type_name: Optional[str] = None
+    location: Optional[str] = None
+    duration: Optional[int] = 0
+    status: str
+    visibility_status: str
+    confirmed_guests_count: int = 0
+    total_estimated: Decimal = Decimal("0.0")
+    total_gastado: Decimal = Decimal("0.0")
+    created_at: datetime
+    updated_at: datetime
+
+class EventDetailOut(BaseModel):
+    id: UUID
+    user_id: UUID
+    name: str
+    description: Optional[str] = None
+    event_date: datetime
+    guest_count: int
+    max_budget: Optional[Decimal] = None
+    template_id: Optional[UUID] = None
+    user_template_id: Optional[UUID] = None
+    city_id: Optional[UUID] = None
+    city_custom: Optional[str] = None
+    city_name: Optional[str] = None
+    event_type_id: Optional[UUID] = None
+    event_type_name: Optional[str] = None
+    location: Optional[str] = None
+    duration: Optional[int] = 0
+    status: str
+    visibility_status: str
+    event_items: list[EventItemOut]
+    guests: list[GuestResponse] = []
+    registered_guests_count: int = 0
+    confirmed_guests_count: int = 0
+    unconfirmed_guests_count: int = 0
+    total_estimated: Decimal
+    total_gastado: Decimal = Decimal("0.0")
+    over_budget: bool
+    budget_exceeded_by: Decimal
+    created_at: datetime
+    updated_at: datetime
+
+
+class EventUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    event_date: Optional[datetime] = None
+    guest_count: Optional[int] = Field(default=None, ge=0)
+    max_budget: Optional[Decimal] = Field(default=None, ge=0)
+    city_id: Optional[UUID] = None
+    city_custom: Optional[str] = None
+    location: Optional[str] = None
+    duration: Optional[int] = Field(default=None, ge=0)
+    visibility_status: Optional[str] = None
+
+# Estados válidos del ciclo de vida de un evento
+# borrador → confirmado (manual) → in_progress (auto, día del evento) → done (auto, día siguiente)
+VALID_EVENT_STATUSES = {"borrador", "confirmado", "in_progress", "done", "finalizado"}
+
+STATUS_SEQUENCE = ["borrador", "confirmado", "in_progress", "done"]
+
+class EventStatusUpdate(BaseModel):
+    status: str
+
+    @field_validator("status")
+    @classmethod
+    def status_must_be_valid(cls, value: str) -> str:
+        if value not in VALID_EVENT_STATUSES:
+            raise ValueError(
+                f"status inválido: '{value}'. Debe ser uno de: {', '.join(sorted(VALID_EVENT_STATUSES))}"
+            )
+        return value
